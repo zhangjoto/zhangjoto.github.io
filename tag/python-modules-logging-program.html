@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:og="http://ogp.me/ns#"
+      xmlns:fb="https://www.facebook.com/2008/fbml">
+<head>
+    <title>python modules logging program - Coding Coding</title>
+    <!-- Using the latest rendering mode for IE -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+
+    <!-- Open Graph tags -->
+            <meta property="og:type" content="website"/>
+            <meta property="og:title" content="Coding Coding"/>
+            <meta property="og:url" content="http://127.0.0.1:8000"/>
+            <meta property="og:description" content="Coding Coding"/>
+
+    <!-- Bootstrap -->
+        <link rel="stylesheet" href="http://127.0.0.1:8000/theme/css/bootstrap.min.css" type="text/css"/>
+    <link href="http://127.0.0.1:8000/theme/css/font-awesome.min.css" rel="stylesheet">
+
+    <link href="http://127.0.0.1:8000/theme/css/pygments/native.css" rel="stylesheet">
+    <link rel="stylesheet" href="http://127.0.0.1:8000/theme/css/style.css" type="text/css"/>
+
+
+</head>
+<body>
+
+<div class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a href="http://127.0.0.1:8000/" class="navbar-brand">
+Coding Coding            </a>
+        </div>
+        <div class="collapse navbar-collapse navbar-ex1-collapse">
+            <ul class="nav navbar-nav">
+                        <li >
+                            <a href="http://127.0.0.1:8000/category/python.html">Python</a>
+                        </li>
+                        <li >
+                            <a href="http://127.0.0.1:8000/category/tuxedo.html">Tuxedo</a>
+                        </li>
+                        <li >
+                            <a href="http://127.0.0.1:8000/category/vim.html">Vim</a>
+                        </li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="http://127.0.0.1:8000/archives.html"><i class="fa fa-th-list"></i><span class="icon-label">Archives</span></a></li>
+            </ul>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+</div> <!-- /.navbar -->
+
+<div class="container">
+    <div class="row">
+        <div class="col-sm-9">
+
+            <article>
+                <h2><a href="http://127.0.0.1:8000/loggingmo-kuai-shuo-ming-ji-shi-yong.html">logging模块说明及使用</a></h2>
+                <div class="summary"><div class="section" id="id1">
+<h2>基本知识</h2>
+<p>logging是python的标准库模块，它为应用程序提供了灵活的手段来记录事件、错误、警告和调试信息。对这些信息可以进行收集、筛选、写入文件、发送给系统日志等操作，甚至还可以通过网络发送给远程计算机。</p>
+<div class="section" id="id2">
+<h3>日志级别</h3>
+<p>logging模块生成的每条消息都由一些文本和指示其严重性的相关级别组成。级别包含符号名称和数字值，如下表所示：</p>
+<table border="1" class="docutils">
+<caption>日志级别</caption>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">级别</th>
+<th class="head">值</th>
+<th class="head">描述</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>CRITICAL</td>
+<td>50</td>
+<td>关键错误/消息</td>
+</tr>
+<tr><td>ERROR</td>
+<td>40</td>
+<td>错误</td>
+</tr>
+<tr><td>WARNING</td>
+<td>30</td>
+<td>警告消息</td>
+</tr>
+<tr><td>INFO</td>
+<td>20</td>
+<td>通知消息</td>
+</tr>
+<tr><td>DEBUG</td>
+<td>10</td>
+<td>调试</td>
+</tr>
+<tr><td>NOTSET</td>
+<td>0</td>
+<td>无级别</td>
+</tr>
+</tbody>
+</table>
+<p>应用在定义了每一条日志消息的级别后，可以通过定义筛选器来灵活调整日志的输出内容和输出量。</p>
+</div>
+<div class="section" id="id3">
+<h3>基本配置</h3>
+<p>在使用logging模块的任意其他函数前</p>
+</div>
+</div>
+
+                    <a class="btn btn-default btn-xs" href="http://127.0.0.1:8000/loggingmo-kuai-shuo-ming-ji-shi-yong.html">more ...</a>
+                </div>
+            </article>
+            <hr/>
+
+        </div>
+        <div class="col-sm-3 well well-sm" id="sidebar">
+
+<aside>
+    <section>
+        <ul class="list-group list-group-flush">
+                <li class="list-group-item"><h4><i class="fa fa-home fa-lg"></i><span class="icon-label">Social</span></h4>
+                  <ul class="list-group" id="social">
+                    <li class="list-group-item"><a href="#"><i
+                            class="fa fa-you can add links in your config file-square fa-lg"></i> You can add links in your config file
+                    </a></li>
+                    <li class="list-group-item"><a href="#"><i
+                            class="fa fa-another social link-square fa-lg"></i> Another social link
+                    </a></li>
+                  </ul>
+                </li>
+
+
+
+                <li class="list-group-item"><a href="http://127.0.0.1:8000/"><h4><i class="fa fa-tags fa-lg"></i><span class="icon-label">Tags</span></h4></a>
+                    <ul class="list-group" id="tags">
+                        <li class="list-group-item tag-1">
+                            <a href="http://127.0.0.1:8000/tag/tuxedo.html">
+                                tuxedo
+                            </a>
+                        </li>
+                        <li class="list-group-item tag-4">
+                            <a href="http://127.0.0.1:8000/tag/tmconfig.html">
+                                tmconfig
+                            </a>
+                        </li>
+                        <li class="list-group-item tag-4">
+                            <a href="http://127.0.0.1:8000/tag/python-modules-logging-program.html">
+                                python modules logging program
+                            </a>
+                        </li>
+                        <li class="list-group-item tag-4">
+                            <a href="http://127.0.0.1:8000/tag/mib.html">
+                                MIB
+                            </a>
+                        </li>
+                        <li class="list-group-item tag-4">
+                            <a href="http://127.0.0.1:8000/tag/vim.html">
+                                vim
+                            </a>
+                        </li>
+                        <li class="list-group-item tag-4">
+                            <a href="http://127.0.0.1:8000/tag/cscope.html">
+                                cscope
+                            </a>
+                        </li>
+                        <li class="list-group-item tag-4">
+                            <a href="http://127.0.0.1:8000/tag/ctags.html">
+                                ctags
+                            </a>
+                        </li>
+                        <li class="list-group-item tag-4">
+                            <a href="http://127.0.0.1:8000/tag/ud32.html">
+                                ud32
+                            </a>
+                        </li>
+                        <li class="list-group-item tag-4">
+                            <a href="http://127.0.0.1:8000/tag/taglist.html">
+                                taglist
+                            </a>
+                        </li>
+                    </ul>
+                </li>    
+    <li class="list-group-item"><h4><i class="fa fa-external-link-square fa-lg"></i><span class="icon-label">Links</span></h4>
+      <ul class="list-group" id="links">
+        <li class="list-group-item">
+            <a href="http://getpelican.com/" target="_blank">
+                Pelican
+            </a>
+        </li>
+        <li class="list-group-item">
+            <a href="http://python.org/" target="_blank">
+                Python.org
+            </a>
+        </li>
+        <li class="list-group-item">
+            <a href="http://jinja.pocoo.org/" target="_blank">
+                Jinja2
+            </a>
+        </li>
+        <li class="list-group-item">
+            <a href="#" target="_blank">
+                You can modify those links in your config file
+            </a>
+        </li>
+      </ul>
+    </li>
+
+        </ul>
+    </section>
+
+</aside>        </div>
+    </div>
+</div>
+<footer>
+   <div class="container">
+      <hr>
+      <div class="row">
+         <div class="col-xs-10">&copy; 2014 zhangjoto
+            &middot; Powered by <a href="https://github.com/DandyDev/pelican-bootstrap3" target="_blank">pelican-bootstrap3</a>,
+            <a href="http://docs.getpelican.com/" target="_blank">Pelican</a>,
+            <a href="http://getbootstrap.com" target="_blank">Bootstrap</a>         </div>
+         <div class="col-xs-2"><p class="pull-right"><i class="fa fa-arrow-up"></i> <a href="#">Back to top</a></p></div>
+      </div>
+   </div>
+</footer>
+<script src="//code.jquery.com/jquery.js"></script>
+
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="http://127.0.0.1:8000/theme/js/bootstrap.min.js"></script>
+
+<!-- Enable responsive features in IE8 with Respond.js (https://github.com/scottjehl/Respond) -->
+<script src="http://127.0.0.1:8000/theme/js/respond.min.js"></script>
+
+</body>
+</html>

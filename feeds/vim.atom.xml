@@ -1,0 +1,361 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Coding Coding</title><link href="Y/" rel="alternate"></link><link href="Y/feeds/vim.atom.xml" rel="self"></link><id>Y/</id><updated>2014-07-13T00:00:00+02:00</updated><entry><title>vim代码阅读</title><link href="Y/.html" rel="alternate"></link><updated>2014-07-13T00:00:00+02:00</updated><author><name>zhangjoto</name></author><id>tag:,2014-07-13:Y/.html</id><summary type="html">&lt;div class="contents topic" id="contents"&gt;
+&lt;p class="topic-title first"&gt;Contents&lt;/p&gt;
+&lt;ul class="simple"&gt;
+&lt;li&gt;&lt;a class="reference internal" href="#ctags" id="id5"&gt;ctags&lt;/a&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a class="reference internal" href="#tag" id="id6"&gt;tag文件生成&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class="reference internal" href="#id1" id="id7"&gt;vim中的使用方法&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a class="reference internal" href="#cscope" id="id8"&gt;cscope&lt;/a&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a class="reference internal" href="#id2" id="id9"&gt;建立数据库&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class="reference internal" href="#id3" id="id10"&gt;vim中的使用方法&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class="reference internal" href="#cscopectags" id="id11"&gt;同时使用cscope与ctags&lt;/a&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a class="reference internal" href="#id4" id="id12"&gt;限制&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a class="reference internal" href="#taglist" id="id13"&gt;taglist&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;div class="section" id="ctags"&gt;
+&lt;h2&gt;&lt;a class="toc-backref" href="#id5"&gt;ctags&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;为源代码生成tag文件，指明变量、宏、函数等元素的定义和代码位置等，阅读代码的过程
+中可以利用tag文件快速在引用和定义之间跳转。支持的语言不仅有C，还包括了
+Awk/Cobol/Java/Make/Perl/Python/Sh/SQL/Tcl等语言，其完整列表可使用以下命令获得：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;ctags --list-languages
+&lt;/pre&gt;&lt;/div&gt;
+&lt;div class="section" id="tag"&gt;
+&lt;h3&gt;&lt;a class="toc-backref" href="#id6"&gt;tag文件生成&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;常用选项包括：&lt;/p&gt;
+&lt;table border="1" class="docutils"&gt;
+&lt;colgroup&gt;
+&lt;col width="17%" /&gt;
+&lt;col width="83%" /&gt;
+&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td&gt;选项&lt;/td&gt;
+&lt;td&gt;含义&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;-a&lt;/td&gt;
+&lt;td&gt;等同于--append&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;-f&lt;/td&gt;
+&lt;td&gt;指定生成的tagfile文件名&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;-h&lt;/td&gt;
+&lt;td&gt;将指定的文件扩展名识别为头文件，以逗号分隔&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;-L&lt;/td&gt;
+&lt;td&gt;从指定文件中读入需要生成tag的文件名列表&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;-R&lt;/td&gt;
+&lt;td&gt;等同于--recurse&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;--langmap=&lt;/td&gt;
+&lt;td&gt;控制文件名与程序语言的映射，格式为语言名:[+]文件扩展名或文件名模
+式的列表，+表示追加&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;各选项的详细说明参见&amp;quot;Exuberant Ctags中文手册&amp;quot;&lt;/p&gt;
+&lt;p&gt;实际使用示例：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;ctags -R --langmap&lt;span class="o"&gt;=&lt;/span&gt;c:+.pc.ec.sqc --exclude&lt;span class="o"&gt;=&lt;/span&gt;tmp
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;即可将.pc/.ec/.sqc识别为C的源代码文件，并为当前目录下的所有C代码生成tag，同时排
+除tmp目录中的文件。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id1"&gt;
+&lt;h3&gt;&lt;a class="toc-backref" href="#id7"&gt;vim中的使用方法&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;首先在.vimrc中指定tag文件的位置（默认只会在当前目录查找tag文件）&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="k"&gt;set&lt;/span&gt; &lt;span class="k"&gt;tags&lt;/span&gt;&lt;span class="p"&gt;=~&lt;/span&gt;&lt;span class="sr"&gt;/src/&lt;/span&gt;&lt;span class="k"&gt;tags&lt;/span&gt;&lt;span class="p"&gt;,~&lt;/span&gt;&lt;span class="sr"&gt;/public/&lt;/span&gt;&lt;span class="k"&gt;tags&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;相关的基本命令和快捷键如下：&lt;/p&gt;
+&lt;table border="1" class="docutils"&gt;
+&lt;colgroup&gt;
+&lt;col width="18%" /&gt;
+&lt;col width="14%" /&gt;
+&lt;col width="68%" /&gt;
+&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td&gt;命令/快捷键&lt;/td&gt;
+&lt;td&gt;助记&lt;/td&gt;
+&lt;td&gt;功能&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;Ctrl-]&lt;/td&gt;
+&lt;td&gt;&amp;nbsp;&lt;/td&gt;
+&lt;td&gt;跳转到与光标所在单词匹配的第一个tag&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;g]&lt;/td&gt;
+&lt;td&gt;global ]&lt;/td&gt;
+&lt;td&gt;搜索所有与光标所在单词匹配的tag，并列出供选择(vi无
+此功能)&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;Ctrl-t&lt;/td&gt;
+&lt;td&gt;&amp;nbsp;&lt;/td&gt;
+&lt;td&gt;返回&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;:ts [ident]&lt;/td&gt;
+&lt;td&gt;tags select&lt;/td&gt;
+&lt;td&gt;列出与ident匹配的所有tag，ident未指定则使用当前值(vi
+无此功能)&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;:ta {ident}&lt;/td&gt;
+&lt;td&gt;tag&lt;/td&gt;
+&lt;td&gt;跳转到指定tag，当记不住tag全名时，以/pattern的方式使
+用正则会跳转到第一个匹配，配合:ts使用即可&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;:tj [ident]&lt;/td&gt;
+&lt;td&gt;tag jump&lt;/td&gt;
+&lt;td&gt;只有一个匹配时效果同:ta，有多个匹配时效果同:ts(vi无
+此功能)&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;:tn&lt;/td&gt;
+&lt;td&gt;tag next&lt;/td&gt;
+&lt;td&gt;跳转到下一个匹配(vi无此功能)&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;:tp&lt;/td&gt;
+&lt;td&gt;tag prev&lt;/td&gt;
+&lt;td&gt;跳转到上一个匹配(vi无此功能)&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;:tags&lt;/td&gt;
+&lt;td&gt;&amp;nbsp;&lt;/td&gt;
+&lt;td&gt;显示tag栈&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;vim -t {ident}&lt;/td&gt;
+&lt;td&gt;&amp;nbsp;&lt;/td&gt;
+&lt;td&gt;打开vim并直接跳到指定tag，与:ta一样可以使用正则，不
+过实际传递给vim的ident会受shell解析的影响&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="section" id="cscope"&gt;
+&lt;h2&gt;&lt;a class="toc-backref" href="#id8"&gt;cscope&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;这部分内容主要参考易水博客和vim中文手册&amp;quot;help cscope&amp;quot;节整理，尤其是vim中文手册，
+强烈建议多看看。&lt;/p&gt;
+&lt;ul class="simple"&gt;
+&lt;li&gt;&lt;a class="reference external" href="http://easwy.com/blog/archives/advanced-vim-skills-cscope/"&gt;http://easwy.com/blog/archives/advanced-vim-skills-cscope/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class="reference external" href="http://vimcdoc.sourceforge.net/doc/if_cscop.html"&gt;http://vimcdoc.sourceforge.net/doc/if_cscop.html&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;cscope功能上比ctags更强，不过它在默认情况下仅对C/lex/yacc类型的文件进行处理，想
+在其它语言的项目中使用它还要用到一点技巧。&lt;/p&gt;
+&lt;p&gt;cscope被设计来回答以下几个问题：&lt;/p&gt;
+&lt;ul class="simple"&gt;
+&lt;li&gt;什么地方用到了这个符号？&lt;/li&gt;
+&lt;li&gt;这是在什么地方定义的？&lt;/li&gt;
+&lt;li&gt;这个变量在哪里被赋值？&lt;/li&gt;
+&lt;li&gt;这个全局符号的定义在哪里？&lt;/li&gt;
+&lt;li&gt;这个函数在源文件中的哪个地方？&lt;/li&gt;
+&lt;li&gt;哪些函数调用了这个函数？&lt;/li&gt;
+&lt;li&gt;这个函数调用了哪些函数？&lt;/li&gt;
+&lt;li&gt;信息 &amp;quot;out of space&amp;quot; 从哪来？&lt;/li&gt;
+&lt;li&gt;这个源文件在整个目录结构中处于什么位置？&lt;/li&gt;
+&lt;li&gt;哪些文件包含这个头文件？&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;cscope在第一次被使用在指定的源文件时会建立一个符号的数据库。接下来调用时，
+cscope仅仅重建那些被改动或者和新文件相关的数据库。那些没有被改动的文件相关的数
+据库会被直接复制使用。这使得重建数据库要比第一次运行快许多。&lt;/p&gt;
+&lt;div class="section" id="id2"&gt;
+&lt;h3&gt;&lt;a class="toc-backref" href="#id9"&gt;建立数据库&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;其常用选项包括：&lt;/p&gt;
+&lt;table border="1" class="docutils"&gt;
+&lt;colgroup&gt;
+&lt;col width="8%" /&gt;
+&lt;col width="92%" /&gt;
+&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td&gt;选项&lt;/td&gt;
+&lt;td&gt;含义&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;-R&lt;/td&gt;
+&lt;td&gt;在生成索引文件时，搜索子目录树中的代码&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;-b&lt;/td&gt;
+&lt;td&gt;只生成索引文件，不进入cscope的界面&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;-q&lt;/td&gt;
+&lt;td&gt;生成cscope.in.out和cscope.po.out文件，加快cscope的索引速度&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;-k&lt;/td&gt;
+&lt;td&gt;在生成索引文件时，不搜索/usr/include目录&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;-i&lt;/td&gt;
+&lt;td&gt;为cscope指定源文件列表(默认为当前目录的cscope.files)，可以使用&amp;quot;-&amp;quot;， 表示
+由标准输入获得文件列表&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;-Idir&lt;/td&gt;
+&lt;td&gt;在-I选项指出的目录中查找头文件&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;-u&lt;/td&gt;
+&lt;td&gt;扫描所有文件，重新生成交叉索引文件&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;-C&lt;/td&gt;
+&lt;td&gt;在搜索时忽略大小写&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;-Ppath&lt;/td&gt;
+&lt;td&gt;在以相对路径表示的文件前加上的path，这样，你不用切换到你数据库文件所在的
+目录也可以使用它了&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;常见的使用方式有两种，如果需要使用源文件列表：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;find . -name &lt;span class="s2"&gt;&amp;quot;*.h&amp;quot;&lt;/span&gt; -o -name &lt;span class="s2"&gt;&amp;quot;*.c&amp;quot;&lt;/span&gt; -o -name &lt;span class="s2"&gt;&amp;quot;*.cc&amp;quot;&lt;/span&gt; &amp;gt; cscope.files
+cscope -bkq
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;否则：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;cscope -Rqkb
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id3"&gt;
+&lt;h3&gt;&lt;a class="toc-backref" href="#id10"&gt;vim中的使用方法&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;我们首先利用vim中的help看看使用cscope相关的命令有哪些：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="k"&gt;cs&lt;/span&gt; help
+&lt;span class="k"&gt;cscope&lt;/span&gt; commands:
+add  : Add &lt;span class="k"&gt;a&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; database             &lt;span class="p"&gt;(&lt;/span&gt;Usage: add &lt;span class="k"&gt;file&lt;/span&gt;&lt;span class="p"&gt;|&lt;/span&gt;&lt;span class="nb"&gt;dir&lt;/span&gt; [&lt;span class="k"&gt;pre&lt;/span&gt;&lt;span class="p"&gt;-&lt;/span&gt;&lt;span class="nb"&gt;path&lt;/span&gt;] [flags]&lt;span class="p"&gt;)&lt;/span&gt;
+find : Query &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="k"&gt;a&lt;/span&gt; pattern            &lt;span class="p"&gt;(&lt;/span&gt;Usage: find &lt;span class="k"&gt;c&lt;/span&gt;&lt;span class="p"&gt;|&lt;/span&gt;&lt;span class="k"&gt;d&lt;/span&gt;&lt;span class="p"&gt;|&lt;/span&gt;&lt;span class="k"&gt;e&lt;/span&gt;&lt;span class="p"&gt;|&lt;/span&gt;&lt;span class="k"&gt;f&lt;/span&gt;&lt;span class="p"&gt;|&lt;/span&gt;&lt;span class="k"&gt;g&lt;/span&gt;&lt;span class="p"&gt;|&lt;/span&gt;&lt;span class="k"&gt;i&lt;/span&gt;&lt;span class="p"&gt;|&lt;/span&gt;&lt;span class="k"&gt;s&lt;/span&gt;&lt;span class="p"&gt;|&lt;/span&gt;&lt;span class="k"&gt;t&lt;/span&gt; name&lt;span class="p"&gt;)&lt;/span&gt;
+       &lt;span class="k"&gt;c&lt;/span&gt;: Find functions calling this &lt;span class="k"&gt;function&lt;/span&gt;
+       &lt;span class="k"&gt;d&lt;/span&gt;: Find functions called by this &lt;span class="k"&gt;function&lt;/span&gt;
+       &lt;span class="k"&gt;e&lt;/span&gt;: Find this egrep pattern
+       &lt;span class="k"&gt;f&lt;/span&gt;: Find this &lt;span class="k"&gt;file&lt;/span&gt;
+       &lt;span class="k"&gt;g&lt;/span&gt;: Find this definition
+       &lt;span class="k"&gt;i&lt;/span&gt;: Find &lt;span class="k"&gt;files&lt;/span&gt; #including this &lt;span class="k"&gt;file&lt;/span&gt;
+       &lt;span class="k"&gt;s&lt;/span&gt;: Find this C symbol
+       &lt;span class="k"&gt;t&lt;/span&gt;: Find this text string
+help : Show this message              &lt;span class="p"&gt;(&lt;/span&gt;Usage: help&lt;span class="p"&gt;)&lt;/span&gt;
+kill : Kill &lt;span class="k"&gt;a&lt;/span&gt; connection              &lt;span class="p"&gt;(&lt;/span&gt;Usage: kill #&lt;span class="p"&gt;)&lt;/span&gt;
+reset: Reinit &lt;span class="k"&gt;all&lt;/span&gt; connections         &lt;span class="p"&gt;(&lt;/span&gt;Usage: reset&lt;span class="p"&gt;)&lt;/span&gt;
+show : Show connections               &lt;span class="p"&gt;(&lt;/span&gt;Usage: show&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;对命令做一点小小的解释：&lt;/p&gt;
+&lt;table border="1" class="docutils"&gt;
+&lt;colgroup&gt;
+&lt;col width="8%" /&gt;
+&lt;col width="5%" /&gt;
+&lt;col width="87%" /&gt;
+&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td&gt;命令&lt;/td&gt;
+&lt;td&gt;简写&lt;/td&gt;
+&lt;td&gt;解释&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;add&lt;/td&gt;
+&lt;td&gt;a&lt;/td&gt;
+&lt;td&gt;添加一个数据库并连接，pre-path指定数据库中文件名的目录前缀，flags
+不详，似乎为可调用的外部命令&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;find&lt;/td&gt;
+&lt;td&gt;f&lt;/td&gt;
+&lt;td&gt;cs的最主要功能，以各种方式查询数据库，具体选项在后面会有详细一点的
+解释&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;help&lt;/td&gt;
+&lt;td&gt;h&lt;/td&gt;
+&lt;td&gt;显示cs命令的简单帮助&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;kill&lt;/td&gt;
+&lt;td&gt;k&lt;/td&gt;
+&lt;td&gt;关闭一个数据库连接&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;reset&lt;/td&gt;
+&lt;td&gt;r&lt;/td&gt;
+&lt;td&gt;重新初始化所有数据库连接&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;show&lt;/td&gt;
+&lt;td&gt;s&lt;/td&gt;
+&lt;td&gt;显示所有数据库连接&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;在vim中使用cscope提供的功能，要先用add命令包含cscope数据库。&lt;/p&gt;
+&lt;p&gt;注:当vim的工作目录不在cscope.out的所在目录，而且生成数据库没有使用绝对路径，则
+cs add时必须指定pre-path&lt;/p&gt;
+&lt;p&gt;然后就可以查找了，vim支持以下几种cscope的查询功能：&lt;/p&gt;
+&lt;table border="1" class="docutils"&gt;
+&lt;colgroup&gt;
+&lt;col width="7%" /&gt;
+&lt;col width="93%" /&gt;
+&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td&gt;类型&lt;/td&gt;
+&lt;td&gt;含义&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;s&lt;/td&gt;
+&lt;td&gt;查找C语言符号，即查找函数名、宏、枚举值等出现的地方&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;g&lt;/td&gt;
+&lt;td&gt;查找函数、宏、枚举等定义的位置，类似ctags所提供的功能&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;d&lt;/td&gt;
+&lt;td&gt;查找本函数调用的函数&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;c&lt;/td&gt;
+&lt;td&gt;查找调用本函数的函数&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;t&lt;/td&gt;
+&lt;td&gt;查找指定的字符串&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;e&lt;/td&gt;
+&lt;td&gt;查找egrep模式，相当于egrep功能，但查找速度快多了&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;f&lt;/td&gt;
+&lt;td&gt;查找并打开文件，类似vim的find功能&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;i&lt;/td&gt;
+&lt;td&gt;查找包含本文件的文件&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;div class="section" id="cscopectags"&gt;
+&lt;h3&gt;&lt;a class="toc-backref" href="#id11"&gt;同时使用cscope与ctags&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;有两个vim选项可以使vim同时使用cscope和ctags&lt;/p&gt;
+&lt;table border="1" class="docutils"&gt;
+&lt;colgroup&gt;
+&lt;col width="6%" /&gt;
+&lt;col width="94%" /&gt;
+&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td&gt;选项&lt;/td&gt;
+&lt;td&gt;含义&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;cst&lt;/td&gt;
+&lt;td&gt;设定后使得:tag/Ctrl-]/vim -t都会使用:cstag而非:tag，即同时搜索cscope数据
+库与标签文件&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;csto&lt;/td&gt;
+&lt;td&gt;指定:cstag命令查找的次序，默认值为0，此时cscope数据库优先，设为1则与此相
+反&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;给一个小小的示例吧，在vim中尝试一下这些ex命令：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="k"&gt;set&lt;/span&gt; &lt;span class="nb"&gt;cst&lt;/span&gt;
+&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="k"&gt;set&lt;/span&gt; &lt;span class="nb"&gt;nocst&lt;/span&gt;
+&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="k"&gt;set&lt;/span&gt; &lt;span class="nb"&gt;csto&lt;/span&gt;&lt;span class="p"&gt;=&lt;/span&gt;&lt;span class="m"&gt;0&lt;/span&gt;
+&lt;span class="p"&gt;:&lt;/span&gt;&lt;span class="k"&gt;set&lt;/span&gt; &lt;span class="nb"&gt;csto&lt;/span&gt;&lt;span class="p"&gt;=&lt;/span&gt;&lt;span class="m"&gt;1&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;div class="section" id="id4"&gt;
+&lt;h4&gt;&lt;a class="toc-backref" href="#id12"&gt;限制&lt;/a&gt;&lt;/h4&gt;
+&lt;ul class="simple"&gt;
+&lt;li&gt;vim对cscope的集成方式与ctags有所不同，我们在vim中使用cs add命令时，vim是通过
+fork()/execl()调起一个cscope进程读取相应的数据库，并通过pipe()与其通信发送指令
+并接受结果（在此我们可以理解为何在add一个数据库后，显示为一个connect）。因此，
+我们基本上只有在类unix系统上才可以使用cscope。&lt;/li&gt;
+&lt;li&gt;:cstag命令实际上只会调用:tj而非:tag&lt;/li&gt;
+&lt;li&gt;cscope数据库默认维护的是文件的相对路径，因此进入vim时的工作目录会影响查询后的
+跳转是否成功。目前找到的解决方法有二：&lt;ul&gt;
+&lt;li&gt;生成cscope.out时使用cscope.files，且其中指定的源文件列表均采用绝对路径；&lt;/li&gt;
+&lt;li&gt;cs add时指定pre-path；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="section" id="taglist"&gt;
+&lt;h2&gt;&lt;a class="toc-backref" href="#id13"&gt;taglist&lt;/a&gt;&lt;/h2&gt;
+&lt;/div&gt;
+</summary><category term="vim"></category></entry></feed>
