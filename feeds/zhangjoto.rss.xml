@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Keep Simple</title><link>http://zhangjoto.github.io/</link><description></description><atom:link href="http://zhangjoto.github.io/feeds/zhangjoto.rss.xml" rel="self"></atom:link><lastBuildDate>Mon, 20 Oct 2014 00:00:00 +0800</lastBuildDate><item><title>利用Docker建立Oracle 11g实验环境</title><link>http://zhangjoto.github.io/li-yong-dockerjian-li-oracle-11gshi-yan-huan-jing.html</link><description>&lt;div class="contents topic" id="contents"&gt;
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Keep Simple</title><link>http://127.0.0.1:8000/</link><description></description><atom:link href="http://127.0.0.1:8000/feeds/zhangjoto.rss.xml" rel="self"></atom:link><lastBuildDate>Mon, 20 Oct 2014 00:00:00 +0800</lastBuildDate><item><title>利用Docker建立Oracle 11g实验环境</title><link>http://127.0.0.1:8000/li-yong-dockerjian-li-oracle-11gshi-yan-huan-jing.html</link><description>&lt;div class="contents topic" id="contents"&gt;
 &lt;p class="topic-title first"&gt;Contents&lt;/p&gt;
 &lt;ul class="simple"&gt;
 &lt;li&gt;&lt;a class="reference internal" href="#id1" id="id24"&gt;基本信息&lt;/a&gt;&lt;/li&gt;
@@ -668,4 +668,4 @@ CMD /bin/bash
 &lt;/table&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">zhangjoto</dc:creator><pubDate>Mon, 20 Oct 2014 00:00:00 +0800</pubDate><guid>tag:zhangjoto.github.io,2014-10-20:li-yong-dockerjian-li-oracle-11gshi-yan-huan-jing.html</guid><category>Docker</category><category>Oracle</category></item></channel></rss>
+</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">zhangjoto</dc:creator><pubDate>Mon, 20 Oct 2014 00:00:00 +0800</pubDate><guid>tag:127.0.0.1:8000,2014-10-20:li-yong-dockerjian-li-oracle-11gshi-yan-huan-jing.html</guid><category>Docker</category><category>Oracle</category></item></channel></rss>
