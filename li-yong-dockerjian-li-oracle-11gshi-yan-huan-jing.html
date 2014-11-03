@@ -502,7 +502,7 @@ RUN echo    &quot;oracle              soft    nproc   2047&quot; &gt;&gt;/etc/se
     &amp;&amp; echo &quot;oracle              soft    nofile  1024&quot; &gt;&gt;/etc/security/limits.conf \
     &amp;&amp; echo &quot;oracle              hard    nofile  65536&quot; &gt;&gt;/etc/security/limits.conf \
     &amp;&amp; echo &quot;oracle              soft    stack   10240&quot; &gt;&gt; /etc/security/limits.conf
-RUN echo    &#39;ORACLE_SID=sandbox&#39; &gt;&gt;/home/oracle/.bash_profile \
+RUN echo    &#39;ORACLE_SID=sand&#39; &gt;&gt;/home/oracle/.bash_profile \
     &amp;&amp; echo &#39;ORACLE_BASE=$HOME/server&#39; &gt;&gt;/home/oracle/.bash_profile \
     &amp;&amp; echo &#39;ORACLE_HOME=$ORACLE_BASE/product/11.2/db&#39; &gt;&gt;/home/oracle/.bash_profile \
     &amp;&amp; echo &#39;PATH=$ORACLE_HOME/bin:$PATH&#39; &gt;&gt;/home/oracle/.bash_profile \
