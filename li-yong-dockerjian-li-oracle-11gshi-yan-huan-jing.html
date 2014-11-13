@@ -41,6 +41,9 @@ Keep Simple            </a>
         </div>
         <div class="collapse navbar-collapse navbar-ex1-collapse">
             <ul class="nav navbar-nav">
+                        <li >
+                            <a href="https://zhangjoto.github.io/category/troubleshooting.html">Troubleshooting</a>
+                        </li>
                         <li class="active">
                             <a href="https://zhangjoto.github.io/category/xu-ni-hua.html">虚拟化</a>
                         </li>
@@ -180,8 +183,8 @@ Oracle: 11.2.0.4
 <span class="go">Storage Driver: devicemapper</span>
 <span class="go"> Pool Name: docker-254:8-144185831-pool</span>
 <span class="go"> Pool Blocksize: 65.54 kB</span>
-<span class="go"> Data file: /media/stroage/docker6/devicemapper/devicemapper/data</span>
-<span class="go"> Metadata file: /media/stroage/docker6/devicemapper/devicemapper/metadata</span>
+<span class="go"> Data file: /media/storage/docker6/devicemapper/devicemapper/data</span>
+<span class="go"> Metadata file: /media/storage/docker6/devicemapper/devicemapper/metadata</span>
 <span class="go"> Data Space Used: 305.7 MB</span>
 <span class="go"> Data Space Total: 107.4 GB</span>
 <span class="go"> Metadata Space Used: 356.4 kB</span>
@@ -343,8 +346,8 @@ Oracle: 11.2.0.4
 <span class="go">Storage Driver: devicemapper</span>
 <span class="go"> Pool Name: docker-254:8-144185831-pool</span>
 <span class="go"> Pool Blocksize: 65.54 kB</span>
-<span class="go"> Data file: /media/stroage/docker6/devicemapper/devicemapper/data</span>
-<span class="go"> Metadata file: /media/stroage/docker6/devicemapper/devicemapper/metadata</span>
+<span class="go"> Data file: /media/storage/docker6/devicemapper/devicemapper/data</span>
+<span class="go"> Metadata file: /media/storage/docker6/devicemapper/devicemapper/metadata</span>
 <span class="go"> Data Space Used: 577.7 MB</span>
 <span class="go"> Data Space Total: 107.4 GB</span>
 <span class="go"> Metadata Space Used: 942.1 kB</span>
@@ -679,11 +682,13 @@ CMD /bin/bash
 <span class="go">Table truncated.</span>
 
 <span class="go">SQL&gt; shutdown immediate;</span>
+<span class="go">SQL&gt; exit</span>
 <span class="go">myDocker$ rm $ORACLE_BASE/admin/$ORACLE_SID/adump/*</span>
 <span class="go">myDocker$ rm -rf $ORACLE_HOME/log/`hostname`</span>
 <span class="go">myDocker$ rm -rf $ORACLE_HOME/diag/tnslsnr/`hostname`</span>
 <span class="go">myDocker$ rm -rf /tmp/*</span>
 <span class="go">myDocker$ exit</span>
+<span class="go">myDocker# yum clean all</span>
 <span class="go">myDocker# exit</span>
 </pre></div>
 <p>现在可以生成一个比较干净的镜像了。</p>
@@ -800,13 +805,28 @@ CMD /bin/bash
                 <li class="list-group-item"><a href="https://zhangjoto.github.io/"><h4><i class="fa fa-tags fa-lg"></i><span class="icon-label">Tags</span></h4></a>
                     <ul class="list-group" id="tags">
                         <li class="list-group-item tag-4">
-                            <a href="https://zhangjoto.github.io/tag/docker.html">
-                                Docker
+                            <a href="https://zhangjoto.github.io/tag/tuxedo.html">
+                                Tuxedo
+                            </a>
+                        </li>
+                        <li class="list-group-item tag-4">
+                            <a href="https://zhangjoto.github.io/tag/strace.html">
+                                strace
                             </a>
                         </li>
                         <li class="list-group-item tag-4">
                             <a href="https://zhangjoto.github.io/tag/oracle.html">
                                 Oracle
+                            </a>
+                        </li>
+                        <li class="list-group-item tag-4">
+                            <a href="https://zhangjoto.github.io/tag/docker.html">
+                                Docker
+                            </a>
+                        </li>
+                        <li class="list-group-item tag-4">
+                            <a href="https://zhangjoto.github.io/tag/troubleshooting.html">
+                                troubleshooting
                             </a>
                         </li>
                     </ul>

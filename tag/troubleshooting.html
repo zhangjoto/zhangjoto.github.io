@@ -3,7 +3,7 @@
       xmlns:og="http://ogp.me/ns#"
       xmlns:fb="https://www.facebook.com/2008/fbml">
 <head>
-    <title>Docker - Keep Simple</title>
+    <title>troubleshooting - Keep Simple</title>
     <!-- Using the latest rendering mode for IE -->
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta charset="utf-8">
@@ -61,45 +61,47 @@ Keep Simple            </a>
         <div class="col-sm-9">
 
             <article>
-                <h2><a href="https://zhangjoto.github.io/li-yong-dockerjian-li-oracle-11gshi-yan-huan-jing.html">利用Docker建立Oracle 11g实验环境</a></h2>
+                <h2><a href="https://zhangjoto.github.io/yi-ci-xing-neng-ce-shi-troubleshootingji-lu.html">一次性能测试troubleshooting记录</a></h2>
                 <div class="summary"><div class="contents topic" id="contents">
 <p class="topic-title first">Contents</p>
 <ul class="simple">
-<li><a class="reference internal" href="#id1" id="id24">基本信息</a></li>
-<li><a class="reference internal" href="#id2" id="id25">宿主机调整</a><ul>
-<li><a class="reference internal" href="#id3" id="id26">空间问题解决</a></li>
+<li><a class="reference internal" href="#id1" id="id8">背景</a><ul>
+<li><a class="reference internal" href="#id2" id="id9">系统基本情况</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#kvm" id="id27">直接从kvm虚拟机迁移</a><ul>
-<li><a class="reference internal" href="#id4" id="id28">虚拟机硬盘挂载</a></li>
-<li><a class="reference internal" href="#id6" id="id29">文件系统导入</a></li>
+<li><a class="reference internal" href="#id3" id="id10">现场诊断</a><ul>
+<li><a class="reference internal" href="#id4" id="id11">分析外部依赖</a></li>
+<li><a class="reference internal" href="#id5" id="id12">重现问题现象</a></li>
+<li><a class="reference internal" href="#id6" id="id13">时间消耗分析</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#docker" id="id30">Docker环境下重新安装</a><ul>
-<li><a class="reference internal" href="#id7" id="id31">基础镜像准备</a><ul>
-<li><a class="reference internal" href="#base-image" id="id32">获取官方Base Image</a></li>
-<li><a class="reference internal" href="#oracle" id="id33">Oracle安装准备</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#id11" id="id34">图形化方式安装</a></li>
-<li><a class="reference internal" href="#id14" id="id35">静默安装</a></li>
-<li><a class="reference internal" href="#dockerfile" id="id36">Dockerfile方式静默安装</a></li>
-<li><a class="reference internal" href="#image" id="id37">环境清理并创建Image</a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#id7" id="id14">最终结果</a></li>
 </ul>
 </div>
-<p>最近一直在研究Docker，尝试拿它做一些小型的开发试验环境，确实是相当好用。</p>
-<p>某日突发奇想，打算将我的Oracle实验环境迁到Docker中来。虽然最终得到的镜像有点头重脚轻，不太符合Docker推荐的使用方式，但相比虚拟机好歹也节省了些开销。</p>
-<p>实验过程中各种方式折腾了好几轮，感觉都不太完美。先将过程做个记录，期望将来能找到更好的办法。</p>
 <div class="section" id="id1">
-<h2><a class="toc-backref" href="#id24">基本信息</a></h2>
-<p>我的笔记本本地硬盘是128G的SSD，所以实验过程中使用了外置硬盘做存储，好在是USB3.0连接。另外，基本的软件版本信息如下：</p>
-<pre class="literal-block">
-OS: Arch Linux (内核3.16.4-1)64位
-Docker: 1:1.3.0-1
-容器OS: CentOS 6 ...</pre></div>
-                    <a class="btn btn-default btn-xs" href="https://zhangjoto.github.io/li-yong-dockerjian-li-oracle-11gshi-yan-huan-jing.html">more ...</a>
+<h2><a class="toc-backref" href="#id8">背景</a></h2>
+<p>前一阵子，有个朋友在某客户现场的性能测试中指标一直压不上去，所以找我去从应用和中间件角度做了一次诊断。最近消息传来，他们经过不断的排查后，最终找到了罪魁祸首，正与我判断的方向相符。这次案例的最终结果和中间的诊断过程都有一定的特点，值得说道一下。</p>
+<p>首先得介绍一下整件事情的背景和性能测试整体的环境。</p>
+<p>事情的起因是我那位朋友（为了方便，我在下面把前面提到的那位朋友就简称为L），L供职的H公司有个客户正在规划将一套OLTP系统从大型机迁移到开放平台来的方案。于是该客户挑了几支核心业务交易，找来了中外好几家公司来分头做迁移并进行性能测试，客户根据测试的结果决定跟谁合作以及最终的迁移方案。跟大型机有关的事情从来不是小单，H公司为此调来了在欧洲专做COBOL代码迁移的小组，这个小组使用工具将应用代码迁移到了Linux平台，中间件则采用了Tuxedo，客户端与Tuxedo的通信是采用阻塞方式的tpcall。</p>
+<div class="section" id="id2">
+<h3><a class="toc-backref" href="#id9">系统基本情况</a></h3>
+<p>必须要说明的一点是由于只能使用该客户指定的机器接入测试网络，唯一能将信息存入个人设备的方式就是给屏幕拍照。因此下面的描述主要是根据我的记忆整理，所有命令输入我能写出来，但输出就无法复制了。这种条件下细节与事实难免会有些出入，但我会尽力保证整体的描述的准确性。</p>
+<p>迁移后的系统部署上采用的是银行业常用的三层架构：客户端、应用服务器、数据库服务器。其软件环境大致如下：</p>
+<table border="1" class="docutils">
+<caption>软件环境</caption>
+<colgroup>
+<col width="40%" />
+<col width="60%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">层</th>
+<th class="head">基础软件</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>客户端</td>
+<td>Windows/LoadRunner ...</td></tr></tbody></table></div></div>
+                    <a class="btn btn-default btn-xs" href="https://zhangjoto.github.io/yi-ci-xing-neng-ce-shi-troubleshootingji-lu.html">more ...</a>
                 </div>
             </article>
             <hr/>
