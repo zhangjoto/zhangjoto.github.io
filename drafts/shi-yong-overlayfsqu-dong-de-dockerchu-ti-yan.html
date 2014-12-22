@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:og="http://ogp.me/ns#"
+      xmlns:fb="https://www.facebook.com/2008/fbml">
+<head>
+    <title>使用Overlayfs驱动的Docker初体验 - Keep Simple</title>
+    <!-- Using the latest rendering mode for IE -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+
+    <!-- Open Graph tags -->
+            <meta property="og:type" content="article"/>
+            <meta property="og:title" content="使用Overlayfs驱动的Docker初体验"/>
+            <meta property="og:url" content="https://zhangjoto.github.io/drafts/shi-yong-overlayfsqu-dong-de-dockerchu-ti-yan.html"/>
+            <meta property="og:description" content="首先将devicemapper下已有的镜像导出： $ docker save -o /media/Storage/dockers/centos.tar centos:centos6 $ docker save -o /media/Storage/dockers/centos.tar centos:centos6 $ docker save -o /media/Storage/dockers/centos.tar centos:centos6 $ docker info Containers: 0 Images: 43 Storage Driver: devicemapper Pool Name: docker-254:1-1279-pool Pool Blocksize: 65.54 kB Data ..."/>
+
+    <!-- Bootstrap -->
+        <link rel="stylesheet" href="https://zhangjoto.github.io/theme/css/bootstrap.min.css" type="text/css"/>
+    <link href="https://zhangjoto.github.io/theme/css/font-awesome.min.css" rel="stylesheet">
+
+    <link href="https://zhangjoto.github.io/theme/css/pygments/native.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://zhangjoto.github.io/theme/css/style.css" type="text/css"/>
+
+
+</head>
+<body>
+
+<div class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a href="https://zhangjoto.github.io/" class="navbar-brand">
+Keep Simple            </a>
+        </div>
+        <div class="collapse navbar-collapse navbar-ex1-collapse">
+            <ul class="nav navbar-nav">
+                        <li class="active">
+                            <a href="https://zhangjoto.github.io/category/docker.html">Docker</a>
+                        </li>
+                        <li >
+                            <a href="https://zhangjoto.github.io/category/troubleshooting.html">Troubleshooting</a>
+                        </li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="https://zhangjoto.github.io/archives.html"><i class="fa fa-th-list"></i><span class="icon-label">Archives</span></a></li>
+            </ul>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+</div> <!-- /.navbar -->
+
+<div class="container">
+    <div class="row">
+        <div class="col-sm-9">
+
+    <section id="content">
+        <article>
+            <header class="page-header">
+                <h1>
+                    <a href="https://zhangjoto.github.io/drafts/shi-yong-overlayfsqu-dong-de-dockerchu-ti-yan.html"
+                       rel="bookmark"
+                       title="Permalink to 使用Overlayfs驱动的Docker初体验">
+                        使用Overlayfs驱动的Docker初体验
+                    </a>
+                </h1>
+            </header>
+            <div class="entry-content">
+                <div class="panel">
+                    <div class="panel-body">
+<footer class="post-info">
+    <span class="label label-default">Date</span>
+    <span class="published">
+        <i class="fa fa-calendar"></i><time datetime="2014-12-22T00:00:00"> Mon 22 December 2014</time>
+    </span>
+
+
+
+<span class="label label-default">Tags</span>
+	<a href="https://zhangjoto.github.io/tag/docker.html">docker</a>
+        /
+	<a href="https://zhangjoto.github.io/tag/container.html">container</a>
+        /
+	<a href="https://zhangjoto.github.io/tag/overlayfs.html">overlayfs</a>
+    
+</footer><!-- /.post-info -->                    </div>
+                </div>
+                <p>首先将devicemapper下已有的镜像导出：</p>
+<div class="highlight"><pre><span class="gp">$</span> docker save -o /media/Storage/dockers/centos.tar centos:centos6
+<span class="gp">$</span> docker save -o /media/Storage/dockers/centos.tar centos:centos6
+<span class="gp">$</span> docker save -o /media/Storage/dockers/centos.tar centos:centos6
+</pre></div>
+<div class="highlight"><pre><span class="gp">$</span> docker info
+<span class="go">Containers: 0</span>
+<span class="go">Images: 43</span>
+<span class="go">Storage Driver: devicemapper</span>
+<span class="go"> Pool Name: docker-254:1-1279-pool</span>
+<span class="go"> Pool Blocksize: 65.54 kB</span>
+<span class="go"> Data file: /dev/vgroot/lvdocker</span>
+<span class="go"> Metadata file: /dev/vgroot/lvdockermeta</span>
+<span class="go"> Data Space Used: 8.291 GB</span>
+<span class="go"> Data Space Total: 17.18 GB</span>
+<span class="go"> Metadata Space Used: 6.197 MB</span>
+<span class="go"> Metadata Space Total: 16.78 MB</span>
+<span class="go"> Library Version: 1.02.92 (2014-11-28)</span>
+<span class="go">Execution Driver: native-0.2</span>
+<span class="go">Kernel Version: 3.18.1-1-ARCH</span>
+<span class="go">Operating System: Arch Linux</span>
+<span class="go">CPUs: 4</span>
+<span class="go">Total Memory: 3.753 GiB</span>
+<span class="go">Name: ksh-zen</span>
+<span class="go">ID: C56B:VEMA:MS6I:ZUGG:J3MO:53U6:IU7B:4HO2:PRRB:O3O2:HZVM:EEZ4</span>
+<span class="gp">$</span> docker images
+<span class="go">REPOSITORY          TAG                 IMAGE ID            CREATED             VIRTUAL SIZE</span>
+<span class="go">ora                 prepared            e50218f3bfab        2 weeks ago         309.7 MB</span>
+<span class="go">python              3                   474f82d465a5        3 weeks ago         814.9 MB</span>
+<span class="go">python              3.4                 474f82d465a5        3 weeks ago         814.9 MB</span>
+<span class="go">python              3.4.2               474f82d465a5        3 weeks ago         814.9 MB</span>
+<span class="go">python              latest              474f82d465a5        3 weeks ago         814.9 MB</span>
+<span class="go">postgres            9                   aaab661c1e3e        4 weeks ago         213.1 MB</span>
+<span class="go">postgres            9.3                 aaab661c1e3e        4 weeks ago         213.1 MB</span>
+<span class="go">postgres            9.3.5               aaab661c1e3e        4 weeks ago         213.1 MB</span>
+<span class="go">postgres            latest              aaab661c1e3e        4 weeks ago         213.1 MB</span>
+<span class="go">debian              latest              f6fab3b798be        6 weeks ago         85.1 MB</span>
+<span class="go">debian              wheezy              f6fab3b798be        6 weeks ago         85.1 MB</span>
+<span class="go">debian              7                   f6fab3b798be        6 weeks ago         85.1 MB</span>
+<span class="go">debian              7.7                 f6fab3b798be        6 weeks ago         85.1 MB</span>
+<span class="go">centos              centos6             70441cac1ed5        6 weeks ago         215.8 MB</span>
+</pre></div>
+<p>确认所有镜像全部成功导出后停止docker</p>
+<div class="highlight"><pre><span class="gp">$</span> sudo systemctl stop docker
+</pre></div>
+<p>销毁逻辑卷及/var/lib/docker目录下所有文件</p>
+<div class="highlight"><pre><span class="gp">$</span> su -
+<span class="gp">#</span> lvremove -f /dev/vgroot/lvdocker
+<span class="go">  Logical volume &quot;lvdocker&quot; successfully removed</span>
+<span class="gp">#</span> lvremove -f /dev/vgroot/lvdockermeta
+<span class="go">  Logical volume &quot;lvdockermeta&quot; successfully removed</span>
+<span class="gp">#</span> rm -rf /var/lib/docker
+<span class="gp">#</span> lvcreate -L 20G -n lvdocker vgroot
+<span class="go">WARNING: ext4 signature detected on /dev/vgroot/lvdocker at offset 1080. Wipe it? [y/n]: y</span>
+<span class="go">  Wiping ext4 signature on /dev/vgroot/lvdocker.</span>
+<span class="go">  Logical volume &quot;lvdocker&quot; created.</span>
+<span class="gp">#</span> mkfs -t xfs /dev/vgroot/lvdocker
+<span class="go">meta-data=/dev/vgroot/lvdocker   isize=256    agcount=4, agsize=1310720 blks</span>
+<span class="go">         =                       sectsz=512   attr=2, projid32bit=1</span>
+<span class="go">         =                       crc=0        finobt=0</span>
+<span class="go">data     =                       bsize=4096   blocks=5242880, imaxpct=25</span>
+<span class="go">         =                       sunit=0      swidth=0 blks</span>
+<span class="go">naming   =version 2              bsize=4096   ascii-ci=0 ftype=0</span>
+<span class="go">log      =internal log           bsize=4096   blocks=2560, version=2</span>
+<span class="go">         =                       sectsz=512   sunit=0 blks, lazy-count=1</span>
+<span class="go">realtime =none                   extsz=4096   blocks=0, rtextents=0</span>
+<span class="gp">#</span> mkdir /var/lib/docker
+<span class="gp">#</span> mount /dev/vgroot/lvdocker /var/lib/docker
+<span class="gp">#</span> df
+<span class="go">Filesystem                  1K-blocks      Used Available Use% Mounted on</span>
+<span class="go">/dev/mapper/vgroot-lvarch     8125880   4833020   2857048  63% /</span>
+<span class="go">dev                           1962456         0   1962456   0% /dev</span>
+<span class="go">run                           1967700       620   1967080   1% /run</span>
+<span class="go">tmpfs                         1967700         0   1967700   0% /dev/shm</span>
+<span class="go">tmpfs                         1967700         0   1967700   0% /sys/fs/cgroup</span>
+<span class="go">tmpfs                         1967700         8   1967692   1% /tmp</span>
+<span class="go">/dev/mapper/vgroot-lvboot      999320     47880    882628   6% /boot</span>
+<span class="go">/dev/mapper/vgroot-lvvar      1998672    441904   1435528  24% /var</span>
+<span class="go">/dev/mapper/vgroot-lvhome    83845120  79331008   4514112  95% /home</span>
+<span class="go">tmpfs                          393544         4    393540   1% /run/user/1000</span>
+<span class="go">/dev/sdb1                   167774792 143071912  24702880  86% /media/Storage</span>
+<span class="go">/dev/mapper/vgroot-lvdocker  20961280     32928  20928352   1% /var/lib/docker</span>
+</pre></div>
+<p>修改fstab，使其能自动挂载：</p>
+<div class="highlight"><pre><span class="gp">#</span> vi /etc/fstab
+<span class="go">/dev/mapper/vgroot-lvdocker     /var/lib/docker xfs             rw,relatime,attr2,inode64       0 2</span>
+</pre></div>
+<p>先disable掉Docker的自动启动，重启机器检查一下自动挂载是否成功</p>
+<div class="highlight"><pre><span class="gp">#</span> systemctl disable docker
+<span class="go">Removed symlink /etc/systemd/system/multi-user.target.wants/docker.service.</span>
+</pre></div>
+<p>重启</p>
+<div class="highlight"><pre><span class="gp">$</span> df
+<span class="go">Filesystem                   Size  Used Avail Use% Mounted on</span>
+<span class="go">/dev/mapper/vgroot-lvarch    7.8G  4.7G  2.8G  63% /</span>
+<span class="go">dev                          1.9G     0  1.9G   0% /dev</span>
+<span class="go">run                          1.9G  620K  1.9G   1% /run</span>
+<span class="go">tmpfs                        1.9G     0  1.9G   0% /dev/shm</span>
+<span class="go">tmpfs                        1.9G     0  1.9G   0% /sys/fs/cgroup</span>
+<span class="go">tmpfs                        1.9G  8.0K  1.9G   1% /tmp</span>
+<span class="go">/dev/mapper/vgroot-lvvar     2.0G  432M  1.4G  24% /var</span>
+<span class="go">/dev/mapper/vgroot-lvboot    976M   47M  862M   6% /boot</span>
+<span class="go">/dev/mapper/vgroot-lvdocker   20G   33M   20G   1% /var/lib/docker</span>
+<span class="go">/dev/mapper/vgroot-lvhome     80G   76G  4.4G  95% /home</span>
+<span class="go">tmpfs                        385M  4.0K  385M   1% /run/user/1000</span>
+<span class="go">/dev/sdb1                    161G  137G   24G  86% /media/Storage</span>
+</pre></div>
+<p>已经挂载，此时可以再去修改docker.server，启用overlayfs驱动。
+注意因为overlayfs仍是实验特性，因此即便内核升级到了3.18版本，在arch上也仍然默认采用devicemapper驱动。必须指明参数迫使docker启用overlayfs：</p>
+<div class="highlight"><pre><span class="gp">$</span> su -
+<span class="gp">#</span> vi /lib/systemd/system/docker.service
+<span class="go">ExecStart=/usr/bin/docker -d -H fd:// --storage-opt dm.datadev=/dev/vgroot/lvdocker --storage-opt dm.metadatadev=/dev/vgroot/lvdockermeta</span>
+<span class="go">ExecStart=/usr/bin/docker -d -H fd:// -s overlay</span>
+<span class="gp">#</span> systemctl start docker
+</pre></div>
+<div class="highlight"><pre><span class="gp">$</span> docker info
+<span class="go">Containers: 0</span>
+<span class="go">Images: 0</span>
+<span class="go">Storage Driver: overlay</span>
+<span class="go">Execution Driver: native-0.2</span>
+<span class="go">Kernel Version: 3.18.1-1-ARCH</span>
+<span class="go">Operating System: Arch Linux</span>
+<span class="go">CPUs: 4</span>
+<span class="go">Total Memory: 3.753 GiB</span>
+<span class="go">Name: ksh-zen</span>
+<span class="go">ID: C56B:VEMA:MS6I:ZUGG:J3MO:53U6:IU7B:4HO2:PRRB:O3O2:HZVM:EEZ4</span>
+</pre></div>
+<p>docker目录下面的子目录等自动创建：</p>
+<div class="highlight"><pre><span class="gp">#</span> ls /var/lib/docker
+<span class="go">containers  execdriver  graph  init  linkgraph.db  overlay  repositories-overlay  tmp  trust  volumes</span>
+<span class="gp">#</span> du -sh /var/lib/docker/*
+<span class="go">0       /var/lib/docker/containers</span>
+<span class="go">0       /var/lib/docker/execdriver</span>
+<span class="go">0       /var/lib/docker/graph</span>
+<span class="go">7.3M    /var/lib/docker/init</span>
+<span class="go">8.0K    /var/lib/docker/linkgraph.db</span>
+<span class="go">0       /var/lib/docker/overlay</span>
+<span class="go">4.0K    /var/lib/docker/repositories-overlay</span>
+<span class="go">0       /var/lib/docker/tmp</span>
+<span class="go">0       /var/lib/docker/trust</span>
+<span class="go">0       /var/lib/docker/volumes</span>
+</pre></div>
+<p>开始导入之前备份的各个镜像：</p>
+<div class="highlight"><pre><span class="gp">$</span> docker load -i /media/Storage/dockers/centos.tar
+
+<span class="gp">$</span> docker info
+<span class="go">Containers: 0</span>
+<span class="go">Images: 43</span>
+<span class="go">Storage Driver: overlay</span>
+<span class="go">Execution Driver: native-0.2</span>
+<span class="go">Kernel Version: 3.18.1-1-ARCH</span>
+<span class="go">Operating System: Arch Linux</span>
+<span class="go">CPUs: 4</span>
+<span class="go">Total Memory: 3.753 GiB</span>
+<span class="go">Name: ksh-zen</span>
+<span class="go">ID: C56B:VEMA:MS6I:ZUGG:J3MO:53U6:IU7B:4HO2:PRRB:O3O2:HZVM:EEZ4</span>
+<span class="gp">$</span> df -h
+<span class="go">Filesystem                   Size  Used Avail Use% Mounted on</span>
+<span class="go">/dev/mapper/vgroot-lvarch    7.8G  4.7G  2.8G  63% /</span>
+<span class="go">dev                          1.9G     0  1.9G   0% /dev</span>
+<span class="go">run                          1.9G  628K  1.9G   1% /run</span>
+<span class="go">tmpfs                        1.9G     0  1.9G   0% /dev/shm</span>
+<span class="go">tmpfs                        1.9G     0  1.9G   0% /sys/fs/cgroup</span>
+<span class="go">tmpfs                        1.9G  8.0K  1.9G   1% /tmp</span>
+<span class="go">/dev/mapper/vgroot-lvvar     2.0G  432M  1.4G  24% /var</span>
+<span class="go">/dev/mapper/vgroot-lvboot    976M   47M  862M   6% /boot</span>
+<span class="go">/dev/mapper/vgroot-lvdocker   20G  1.6G   19G   8% /var/lib/docker</span>
+<span class="go">/dev/mapper/vgroot-lvhome     80G   76G  4.4G  95% /home</span>
+<span class="go">tmpfs                        385M  4.0K  385M   1% /run/user/1000</span>
+<span class="go">/dev/sdb1                    161G  137G   24G  86% /media/Storage</span>
+
+<span class="gp">#</span> du -sh /var/lib/docker/*
+<span class="go">0       /var/lib/docker/containers</span>
+<span class="go">0       /var/lib/docker/execdriver</span>
+<span class="go">348K    /var/lib/docker/graph</span>
+<span class="go">7.3M    /var/lib/docker/init</span>
+<span class="go">8.0K    /var/lib/docker/linkgraph.db</span>
+<span class="go">1.5G    /var/lib/docker/overlay</span>
+<span class="go">4.0K    /var/lib/docker/repositories-overlay</span>
+<span class="go">0       /var/lib/docker/tmp</span>
+<span class="go">0       /var/lib/docker/trust</span>
+<span class="go">0       /var/lib/docker/volumes</span>
+
+<span class="gp">$</span> docker run -it centos:centos6 /bin/bash
+<span class="go">[root@147c15762dfa /]#</span>
+</pre></div>
+<div class="highlight"><pre><span class="gp">#</span> <span class="nb">cd</span> /var/lib/docker/overlay
+<span class="gp">#</span> du -sh 147c15762dfa5f5a09ca08b8738ad16e48cd9f9bc6490bdf2fa373bd2a925580
+<span class="go">230M    147c15762dfa5f5a09ca08b8738ad16e48cd9f9bc6490bdf2fa373bd2a925580</span>
+</pre></div>
+<p>容器内部：</p>
+<div class="highlight"><pre><span class="go">[root@147c15762dfa /]# df -h</span>
+<span class="go">Filesystem            Size  Used Avail Use% Mounted on</span>
+<span class="go">rootfs                 20G  1.6G   19G   8% /</span>
+<span class="go">overlay                20G  1.6G   19G   8% /</span>
+<span class="go">tmpfs                 1.9G     0  1.9G   0% /dev</span>
+<span class="go">shm                    64M     0   64M   0% /dev/shm</span>
+<span class="go">/dev/mapper/vgroot-lvdocker</span>
+<span class="go">                       20G  1.6G   19G   8% /etc/resolv.conf</span>
+<span class="go">/dev/mapper/vgroot-lvdocker</span>
+<span class="go">                       20G  1.6G   19G   8% /etc/hostname</span>
+<span class="go">/dev/mapper/vgroot-lvdocker</span>
+<span class="go">                       20G  1.6G   19G   8% /etc/hosts</span>
+<span class="go">tmpfs                 1.9G     0  1.9G   0% /proc/kcore</span>
+
+<span class="gp">#</span> df -h
+<span class="go">Filesystem                   Size  Used Avail Use% Mounted on</span>
+<span class="go">/dev/mapper/vgroot-lvarch    7.8G  4.7G  2.8G  63% /</span>
+<span class="go">dev                          1.9G     0  1.9G   0% /dev</span>
+<span class="go">run                          1.9G  680K  1.9G   1% /run</span>
+<span class="go">tmpfs                        1.9G     0  1.9G   0% /dev/shm</span>
+<span class="go">tmpfs                        1.9G     0  1.9G   0% /sys/fs/cgroup</span>
+<span class="go">tmpfs                        1.9G  8.0K  1.9G   1% /tmp</span>
+<span class="go">/dev/mapper/vgroot-lvvar     2.0G  432M  1.4G  24% /var</span>
+<span class="go">/dev/mapper/vgroot-lvboot    976M   47M  862M   6% /boot</span>
+<span class="go">/dev/mapper/vgroot-lvdocker   20G  1.6G   19G   8% /var/lib/docker</span>
+<span class="go">/dev/mapper/vgroot-lvhome     80G   76G  4.4G  95% /home</span>
+<span class="go">tmpfs                        385M  4.0K  385M   1% /run/user/1000</span>
+<span class="go">/dev/sdb1                    161G  137G   24G  86% /media/Storage</span>
+<span class="go">overlay                       20G  1.6G   19G   8% /var/lib/docker/overlay/147c15762dfa5f5a09ca08b8738ad16e48cd9f9bc6490bdf2fa373bd2a925580/merged</span>
+
+
+<span class="gp">#</span> du -sh 147c15762dfa5f5a09ca08b8738ad16e48cd9f9bc6490bdf2fa373bd2a925580
+<span class="go">8.0K    147c15762dfa5f5a09ca08b8738ad16e48cd9f9bc6490bdf2fa373bd2a925580</span>
+
+<span class="gp">#</span> <span class="nb">cd </span>147c15762dfa5f5a09ca08b8738ad16e48cd9f9bc6490bdf2fa373bd2a925580
+<span class="gp">#</span> ls -l
+<span class="go">total 4</span>
+<span class="go">-rw-r--r-- 1 root root 64 Dec 22 12:37 lower-id</span>
+<span class="go">drwxr-xr-x 1 root root 72 Dec 22 12:40 merged</span>
+<span class="go">drwxr-xr-x 5 root root 72 Dec 22 12:40 upper</span>
+<span class="go">drwx------ 3 root root 17 Dec 22 12:40 work</span>
+
+
+<span class="gp">#</span> <span class="nb">cd </span>merged
+<span class="gp">#</span> du -sh *
+<span class="go">4.0K    lower-id</span>
+<span class="go">230M    merged</span>
+<span class="go">0       upper</span>
+<span class="go">0       work</span>
+
+<span class="gp">#</span> <span class="nb">cd</span> ../upper
+<span class="gp">#</span> ls *
+<span class="go">dev:</span>
+<span class="go">console</span>
+
+<span class="go">etc:</span>
+<span class="go">hostname  hosts  mtab  resolv.conf</span>
+
+<span class="go">root:</span>
+
+<span class="gp">#</span> <span class="nb">cd</span> ..
+<span class="gp">#</span> cat lower-id
+<span class="go">70441cac1ed570d6c84b35382c9914c327e208f93a9d2e5227f6ee6c1111cb81</span>
+
+
+
+
+
+<span class="gp">$</span> docker start 147c15762dfa5f5a09ca08b8738ad16e48cd9f9bc6490bdf2fa373bd2a925580
+<span class="go">Error response from daemon: Cannot start container 147c15762dfa5f5a09ca08b8738ad16e48cd9f9bc6490bdf2fa373bd2a925580: Unit docker-147c15762dfa5f5a09ca08b8738ad16e48cd9f9bc6490bdf2fa373bd2a925580.scope already exists.</span>
+<span class="go">FATA[0000] Error: failed to start one or more containers</span>
+</pre></div>
+<p>docker stop/kill 均解决不了</p>
+<div class="highlight"><pre><span class="gp">#</span> systemctl list-units|grep docker-
+<span class="go">docker-147c15762dfa5f5a09ca08b8738ad16e48cd9f9bc6490bdf2fa373bd2a925580.scope                              loaded active     running         docker container 147c15762dfa5f5a09ca08b8738ad16e48cd9f9bc6490bdf2fa373bd2a925580</span>
+
+
+<span class="gp">$</span> docker start 147c15762dfa5f5a09ca08b8738ad16e48cd9f9bc6490bdf2fa373bd2a925580
+
+<span class="go">147c15762dfa5f5a09ca08b8738ad16e48cd9f9bc6490bdf2fa373bd2a925580</span>
+
+
+
+<span class="go">[root@148c15762dfa home]# vi chk</span>
+<span class="go">1</span>
+<span class="go">2</span>
+<span class="go">3</span>
+<span class="go">4</span>
+<span class="go">5</span>
+</pre></div>
+<p>在upper/home里找到了这个文件</p>
+<p>再将这个容器提交为镜像</p>
+<div class="highlight"><pre><span class="gp">$</span> docker commit 147c15762dfa5f5a09ca08b8738ad16e48cd9f9bc6490bdf2fa373bd2a925580  test_overlay
+<span class="go">6d20e4d0578636f9bd22f6a36510a9369b343a74a9977dcbb543f872de1e4adf</span>
+<span class="gp">$</span> docker images
+<span class="go">REPOSITORY          TAG                 IMAGE ID            CREATED             VIRTUAL SIZE</span>
+<span class="go">test_overlay        latest              6d20e4d05786        36 seconds ago      215.8 MB</span>
+<span class="go">ora                 prepared            e50218f3bfab        2 weeks ago         309.7 MB</span>
+<span class="go">python              3                   474f82d465a5        3 weeks ago         814.9 MB</span>
+<span class="go">python              3.4                 474f82d465a5        3 weeks ago         814.9 MB</span>
+<span class="go">python              3.4.2               474f82d465a5        3 weeks ago         814.9 MB</span>
+<span class="go">python              latest              474f82d465a5        3 weeks ago         814.9 MB</span>
+<span class="go">postgres            latest              aaab661c1e3e        4 weeks ago         213.1 MB</span>
+<span class="go">postgres            9                   aaab661c1e3e        4 weeks ago         213.1 MB</span>
+<span class="go">postgres            9.3                 aaab661c1e3e        4 weeks ago         213.1 MB</span>
+<span class="go">postgres            9.3.5               aaab661c1e3e        4 weeks ago         213.1 MB</span>
+<span class="go">debian              latest              f6fab3b798be        6 weeks ago         85.1 MB</span>
+<span class="go">debian              wheezy              f6fab3b798be        6 weeks ago         85.1 MB</span>
+<span class="go">debian              7                   f6fab3b798be        6 weeks ago         85.1 MB</span>
+<span class="go">debian              7.7                 f6fab3b798be        6 weeks ago         85.1 MB</span>
+<span class="go">centos              centos6             70441cac1ed5        6 weeks ago         215.8 MB</span>
+<span class="go">docker run -it test_overlay /bin/bash</span>
+<span class="go">[root@d272c9f6f018 /]# cd /home</span>
+<span class="go">[root@d272c9f6f018 home]# vi chk</span>
+<span class="go">1</span>
+<span class="go">2</span>
+<span class="go">3</span>
+<span class="go">43</span>
+<span class="go">5</span>
+<span class="go">67</span>
+<span class="go">[root@d272c9f6f018 home]# exit</span>
+<span class="gp">$</span> docker ps
+<span class="go">CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES</span>
+
+
+
+
+<span class="gp">#</span> <span class="nb">cd</span> /var/lib/docker/overlay/d272c9f6f018dbf08fff980c36a1fb664cab994de270443bad3f5d62902ddbe1/upper/home
+<span class="gp">#</span> cat chk
+<span class="go">1</span>
+<span class="go">2</span>
+<span class="go">3</span>
+<span class="go">43</span>
+<span class="go">5</span>
+<span class="go">67</span>
+</pre></div>
+<p>记得开启docker的自动启动：</p>
+<div class="highlight"><pre><span class="gp">#</span> systemctl <span class="nb">enable </span>docker
+<span class="go">Created symlink from /etc/systemd/system/multi-user.target.wants/docker.service to /usr/lib/systemd/system/docker.service.</span>
+</pre></div>
+<p>将该文件完整的拷贝过来了。</p>
+<p>有关于docker stop不正常的相关问题研究：</p>
+<blockquote>
+# cd /run/systemd/system
+# ls -ld dock*
+-rw-r--r-- 1 root root  17 Dec 22 13:05 docker-d272c9f6f018dbf08fff980c36a1fb664cab994de270443bad3f5d62902ddbe1.scope
+drwxr-xr-x 2 root root 140 Dec 22 13:05 docker-d272c9f6f018dbf08fff980c36a1fb664cab994de270443bad3f5d62902ddbe1.scope.d
+# cat docker-d272c9f6f018dbf08fff980c36a1fb664cab994de270443bad3f5d62902ddbe1.scope
+[<a class="reference external" href="mailto:root&#64;ksh-zen">root&#64;ksh-zen</a> system]# cat docker-d272c9f6f018dbf08fff980c36a1fb664cab994de270443bad3f5d62902ddbe1.scope
+# Transient stub
+# cd docker-d272c9f6f018dbf08fff980c36a1fb664cab994de270443bad3f5d62902ddbe1.scope.d
+# ls -l
+total 20
+-rw-r--r-- 1 root root  30 Dec 22 13:05 50-BlockIOAccounting.conf
+-rw-r--r-- 1 root root  26 Dec 22 13:05 50-CPUAccounting.conf
+-rw-r--r-- 1 root root 101 Dec 22 13:05 50-Description.conf
+-rw-r--r-- 1 root root  29 Dec 22 13:05 50-MemoryAccounting.conf
+-rw-r--r-- 1 root root  27 Dec 22 13:05 50-Slice.conf
+# cat *
+[Scope]
+BlockIOAccounting=yes
+[Scope]
+CPUAccounting=yes
+[Unit]
+Description=docker container d272c9f6f018dbf08fff980c36a1fb664cab994de270443bad3f5d62902ddbe1
+[Scope]
+MemoryAccounting=yes
+[Scope]
+Slice=system.slice</blockquote>
+
+            </div>
+            <!-- /.entry-content -->
+    <hr />
+    <section class="comments" id="comments">
+        <h2>Comments</h2>
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+            /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+            var disqus_shortname = 'github'; // required: replace example with your forum shortname
+            var disqus_identifier = 'shi-yong-overlayfsqu-dong-de-dockerchu-ti-yan';
+            var disqus_url = 'https://zhangjoto.github.io/drafts/shi-yong-overlayfsqu-dong-de-dockerchu-ti-yan.html';
+            var disqus_config = function () {
+                this.language = "zh";
+            };
+
+            /* * * DON'T EDIT BELOW THIS LINE * * */
+            (function () {
+                var dsq = document.createElement('script');
+                dsq.type = 'text/javascript';
+                dsq.async = true;
+                dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+            })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by
+            Disqus.</a></noscript>
+        <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    </section>
+        </article>
+    </section>
+
+        </div>
+        <div class="col-sm-3 well well-sm" id="sidebar">
+
+<aside>
+    <section>
+        <ul class="list-group list-group-flush">
+
+
+
+                <li class="list-group-item"><a href="https://zhangjoto.github.io/"><h4><i class="fa fa-tags fa-lg"></i><span class="icon-label">Tags</span></h4></a>
+                    <ul class="list-group" id="tags">
+                        <li class="list-group-item tag-1">
+                            <a href="https://zhangjoto.github.io/tag/rong-qi-ji-zhu.html">
+                                容器技术
+                            </a>
+                        </li>
+                        <li class="list-group-item tag-1">
+                            <a href="https://zhangjoto.github.io/tag/docker.html">
+                                Docker
+                            </a>
+                        </li>
+                        <li class="list-group-item tag-4">
+                            <a href="https://zhangjoto.github.io/tag/oracle.html">
+                                Oracle
+                            </a>
+                        </li>
+                        <li class="list-group-item tag-4">
+                            <a href="https://zhangjoto.github.io/tag/tuxedo.html">
+                                Tuxedo
+                            </a>
+                        </li>
+                        <li class="list-group-item tag-4">
+                            <a href="https://zhangjoto.github.io/tag/strace.html">
+                                strace
+                            </a>
+                        </li>
+                        <li class="list-group-item tag-4">
+                            <a href="https://zhangjoto.github.io/tag/troubleshooting.html">
+                                troubleshooting
+                            </a>
+                        </li>
+                    </ul>
+                </li>    
+    <li class="list-group-item"><h4><i class="fa fa-external-link-square fa-lg"></i><span class="icon-label">Links</span></h4>
+      <ul class="list-group" id="links">
+        <li class="list-group-item">
+            <a href="http://getpelican.com/" target="_blank">
+                Pelican
+            </a>
+        </li>
+        <li class="list-group-item">
+            <a href="http://python.org/" target="_blank">
+                Python.org
+            </a>
+        </li>
+        <li class="list-group-item">
+            <a href="http://jinja.pocoo.org/" target="_blank">
+                Jinja2
+            </a>
+        </li>
+      </ul>
+    </li>
+
+        </ul>
+    </section>
+
+</aside>        </div>
+    </div>
+</div>
+<footer>
+   <div class="container">
+      <hr>
+      <div class="row">
+         <div class="col-xs-10">&copy; 2014 zhangjoto
+            &middot; Powered by <a href="https://github.com/DandyDev/pelican-bootstrap3" target="_blank">pelican-bootstrap3</a>,
+            <a href="http://docs.getpelican.com/" target="_blank">Pelican</a>,
+            <a href="http://getbootstrap.com" target="_blank">Bootstrap</a>         </div>
+         <div class="col-xs-2"><p class="pull-right"><i class="fa fa-arrow-up"></i> <a href="#">Back to top</a></p></div>
+      </div>
+   </div>
+</footer>
+<script src="//code.jquery.com/jquery.js"></script>
+
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="https://zhangjoto.github.io/theme/js/bootstrap.min.js"></script>
+
+<!-- Enable responsive features in IE8 with Respond.js (https://github.com/scottjehl/Respond) -->
+<script src="https://zhangjoto.github.io/theme/js/respond.min.js"></script>
+
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'github'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function () {
+            var s = document.createElement('script');
+            s.async = true;
+            s.type = 'text/javascript';
+            s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+            (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+        }());
+    </script>
+</body>
+</html>

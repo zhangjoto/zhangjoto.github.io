@@ -1,5 +1,153 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Keep Simple</title><link>https://zhangjoto.github.io/</link><description></description><atom:link href="https://zhangjoto.github.io/feeds/zhangjoto.rss.xml" rel="self"></atom:link><lastBuildDate>Thu, 13 Nov 2014 00:00:00 +0800</lastBuildDate><item><title>一次性能测试troubleshooting记录</title><link>https://zhangjoto.github.io/yi-ci-xing-neng-ce-shi-troubleshootingji-lu.html</link><description>&lt;div class="contents topic" id="contents"&gt;
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Keep Simple</title><link>https://zhangjoto.github.io/</link><description></description><atom:link href="https://zhangjoto.github.io/feeds/zhangjoto.rss.xml" rel="self"></atom:link><lastBuildDate>Mon, 22 Dec 2014 00:00:00 +0800</lastBuildDate><item><title>Docker使用中的问题小结</title><link>https://zhangjoto.github.io/dockershi-yong-zhong-de-wen-ti-xiao-jie.html</link><description>&lt;div class="contents topic" id="contents"&gt;
+&lt;p class="topic-title first"&gt;Contents&lt;/p&gt;
+&lt;ul class="simple"&gt;
+&lt;li&gt;&lt;a class="reference internal" href="#id1" id="id7"&gt;环境说明&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class="reference internal" href="#id2" id="id8"&gt;各种问题&lt;/a&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a class="reference internal" href="#id3" id="id9"&gt;部分命令的临时空间需求问题&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class="reference internal" href="#id4" id="id10"&gt;空间虚耗问题&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class="reference internal" href="#commit" id="id11"&gt;commit性能问题&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a class="reference internal" href="#id5" id="id12"&gt;小结&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;p&gt;话说上次利用Docker建立Oracle测试环境之后，环境创建和销毁都成了很轻松的事情，我似乎从此过上了幸福快乐的日子。无奈美梦从来最易醒，在这段时间的使用过程中，理想与现实的差距却逐步暴露了出来。其中一些问题甚至直接影响到Docker的可用性，让人实在不吐不快。&lt;/p&gt;
+&lt;div class="section" id="id1"&gt;
+&lt;h2&gt;&lt;a class="toc-backref" href="#id7"&gt;环境说明&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;吐槽之前得说明一下我对Docker的使用方式。先看一眼Docker的服务启动文件：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;#&lt;/span&gt; cat /lib/systemd/system/docker.service
+&lt;span class="go"&gt;[Unit]&lt;/span&gt;
+&lt;span class="go"&gt;Description=Docker Application Container Engine&lt;/span&gt;
+&lt;span class="go"&gt;Documentation=http://docs.docker.com&lt;/span&gt;
+&lt;span class="go"&gt;After=network.target docker.socket&lt;/span&gt;
+&lt;span class="go"&gt;Requires=docker.socket&lt;/span&gt;
+
+&lt;span class="go"&gt;[Service]&lt;/span&gt;
+&lt;span class="go"&gt;ExecStart=/usr/bin/docker -d -H fd:// --storage-opt dm.datadev=/dev/vgroot/lvdocker --storage-opt dm.metadatadev=/dev/vgroot/lvdockermeta&lt;/span&gt;
+&lt;span class="go"&gt;LimitNOFILE=1048576&lt;/span&gt;
+&lt;span class="go"&gt;LimitNPROC=1048576&lt;/span&gt;
+
+&lt;span class="go"&gt;[Install]&lt;/span&gt;
+&lt;span class="go"&gt;WantedBy=multi-user.target&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;可以看到我在docker启动命令行后面自己加了两个storage-opt参数，主要目的是为了让Docker使用原始物理设备（逻辑卷）做为数据和元数据的存储空间。根据红帽工程师的测试[#]，Arch下Docker默认的loop-lvm模型无论是IO性能还是资源消耗（主要是cache）都是几种模型中最差的。因此我根据测试结果采用了direct-lvm模型。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id2"&gt;
+&lt;h2&gt;&lt;a class="toc-backref" href="#id8"&gt;各种问题&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;我是使用128G的SSD做为笔记本的本地硬盘，这显然决定了我是一个空间敏感的用户。所以就从空间的使用开始说一说。&lt;/p&gt;
+&lt;div class="section" id="id3"&gt;
+&lt;h3&gt;&lt;a class="toc-backref" href="#id9"&gt;部分命令的临时空间需求问题&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;我创建了大小为20G的逻辑卷用做Docker的存储池（这几乎是我全部的剩余空间了），另外有几十M做为Docker的元数据存储空间。想一想常见的容器一般也就是300～400M上下，个人使用这样设置应该是不会有空间问题了吧？No。&lt;/p&gt;
+&lt;p&gt;我们来看一个例子。&lt;/p&gt;
+&lt;p&gt;首先打开两个终端，分别把它们叫做A终端和B终端。A终端准备运行docker命令，而B终端则要先su到root并执行两条命令：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; su -
+&lt;span class="gp"&gt;#&lt;/span&gt; &lt;span class="nb"&gt;cd&lt;/span&gt; /var/lib/docker
+&lt;span class="gp"&gt;#&lt;/span&gt; du -sh tmp
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;接下来从你已有的镜像中挑选一个大小合适的准备导出。大小合适的意思是要导出时间足够长，保证你来得及切换终端执行其它的命令；又不至于让时间长得让人失去耐心。我自己选取的是centos6的官方镜像，记得导出命令要在A终端执行：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker save -o /tmp/centos.tar centos:centos6
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;现在马上切换到B终端不断的执行一条命令直到A终端的docker save命令执行完毕：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;#&lt;/span&gt; du -sh tmp
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;你可以看到tmp的占用空间大小在导出过程中会逐渐增长，最大的时候与导出镜像的大小相近，导出完成的时候又变为0。&lt;/p&gt;
+&lt;p&gt;这个现象不仅在执行save命令时存在，load/build命令也是一样。程序运行中使用一些临时空间是正常的，但是这样设计至少面临几个问题：&lt;/p&gt;
+&lt;ol class="arabic simple"&gt;
+&lt;li&gt;在Linux的一般使用场景中，/var通常建议划分为单独的文件系统，而且使用者往往认为该文件系统下存放的主要是系统日志和软件更新包的缓存。这就决定了/var文件系统通常不会太大；&lt;/li&gt;
+&lt;li&gt;/var文件空间不足会使得docker save之类的操作报错&amp;quot;no space left on device&amp;quot;，但Docker使用者判断不出到底什么空间不足，因为存储池空间富裕，而docker info的输出完全看不到临时空间的状况；&lt;/li&gt;
+&lt;li&gt;空间不足导致docker save失败之后，临时文件是自动删除还是不自动删除都会有问题：如果删除，Docker使用者更难判断问题所在；如果不删除，Docker使用者（开发者）就需要寻求系统管理员的帮助，而且系统日志还可能会丢失信息；&lt;/li&gt;
+&lt;li&gt;如果/var文件系统空间不足是唯一的问题，要么就得删除文件系统内的其他数据，要么就要进行文件系统扩容。前者可能会妨碍系统管理员的工作，甚至是违反某种合规性；后者的代价可能是服务器停机，毕竟不是所有文件系统都支持在线扩容，何况底层还可能不是lvm而是分区；&lt;/li&gt;
+&lt;li&gt;Docker的设计是一个server可以同时多个client的请求，这意味着在大型团队里这个临时空间问题还会随着团队规模而更加放大（也许Docker开发团队认为这些都是很少有人使用的命令）；&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;总的来说，我个人认为临时空间放在/var/lib/docker/tmp目录下问题较多：&lt;/p&gt;
+&lt;ul class="simple"&gt;
+&lt;li&gt;临时空间与存储池空间不共用需要系统安装时做更详细的规划和计算，且错误一旦出现就需要开发者有较强的技术能力来做判断；&lt;/li&gt;
+&lt;li&gt;占用（习惯上的）系统日志和缓存空间会导致系统管理员和开发者互相干涉；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;至今我还没有看到Docker有相关的最佳实践介绍，但如果有的话，我一定会建议加上一句：&lt;strong&gt;为/var/lib/docker创建单独的文件系统。&lt;/strong&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id4"&gt;
+&lt;h3&gt;&lt;a class="toc-backref" href="#id10"&gt;空间虚耗问题&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;所谓空间虚耗，顾名思义就是有些空间不知道被用到哪去了。还是来看一看例子。&lt;/p&gt;
+&lt;p&gt;下面是我的机器目前所有的镜像：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker images
+&lt;span class="go"&gt;REPOSITORY          TAG                 IMAGE ID            CREATED             VIRTUAL SIZE&lt;/span&gt;
+&lt;span class="go"&gt;ora                 prepared            e50218f3bfab        2 weeks ago         309.7 MB&lt;/span&gt;
+&lt;span class="go"&gt;python              3                   474f82d465a5        3 weeks ago         814.9 MB&lt;/span&gt;
+&lt;span class="go"&gt;python              3.4                 474f82d465a5        3 weeks ago         814.9 MB&lt;/span&gt;
+&lt;span class="go"&gt;python              3.4.2               474f82d465a5        3 weeks ago         814.9 MB&lt;/span&gt;
+&lt;span class="go"&gt;python              latest              474f82d465a5        3 weeks ago         814.9 MB&lt;/span&gt;
+&lt;span class="go"&gt;postgres            9                   aaab661c1e3e        4 weeks ago         213.1 MB&lt;/span&gt;
+&lt;span class="go"&gt;postgres            9.3                 aaab661c1e3e        4 weeks ago         213.1 MB&lt;/span&gt;
+&lt;span class="go"&gt;postgres            9.3.5               aaab661c1e3e        4 weeks ago         213.1 MB&lt;/span&gt;
+&lt;span class="go"&gt;postgres            latest              aaab661c1e3e        4 weeks ago         213.1 MB&lt;/span&gt;
+&lt;span class="go"&gt;debian              latest              f6fab3b798be        6 weeks ago         85.1 MB&lt;/span&gt;
+&lt;span class="go"&gt;debian              wheezy              f6fab3b798be        6 weeks ago         85.1 MB&lt;/span&gt;
+&lt;span class="go"&gt;debian              7                   f6fab3b798be        6 weeks ago         85.1 MB&lt;/span&gt;
+&lt;span class="go"&gt;debian              7.7                 f6fab3b798be        6 weeks ago         85.1 MB&lt;/span&gt;
+&lt;span class="go"&gt;centos              centos6             70441cac1ed5        6 weeks ago         215.8 MB&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;看着虽然不少，但数数IMAGE ID可以看到实际上只有ora/python/postgres/debian/centos这五个不重复的镜像。就算完全不考虑镜像间共享数据的可能，这五个镜像加起来也就是占用1.7G不到的样子。而它们在存储池里的实际使用的空间是这样的：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker info
+&lt;span class="go"&gt;Containers: 0&lt;/span&gt;
+&lt;span class="go"&gt;Images: 43&lt;/span&gt;
+&lt;span class="go"&gt;Storage Driver: devicemapper&lt;/span&gt;
+&lt;span class="go"&gt; Pool Name: docker-254:1-1279-pool&lt;/span&gt;
+&lt;span class="go"&gt; Pool Blocksize: 65.54 kB&lt;/span&gt;
+&lt;span class="go"&gt; Data file: /dev/vgroot/lvdocker&lt;/span&gt;
+&lt;span class="go"&gt; Metadata file: /dev/vgroot/lvdockermeta&lt;/span&gt;
+&lt;span class="go"&gt; Data Space Used: 8.291 GB&lt;/span&gt;
+&lt;span class="go"&gt; Data Space Total: 17.18 GB&lt;/span&gt;
+&lt;span class="go"&gt; Metadata Space Used: 6.197 MB&lt;/span&gt;
+&lt;span class="go"&gt; Metadata Space Total: 16.78 MB&lt;/span&gt;
+&lt;span class="go"&gt; Library Version: 1.02.92 (2014-11-28)&lt;/span&gt;
+&lt;span class="go"&gt;Execution Driver: native-0.2&lt;/span&gt;
+&lt;span class="go"&gt;Kernel Version: 3.18.1-1-ARCH&lt;/span&gt;
+&lt;span class="go"&gt;Operating System: Arch Linux&lt;/span&gt;
+&lt;span class="go"&gt;CPUs: 4&lt;/span&gt;
+&lt;span class="go"&gt;Total Memory: 3.753 GiB&lt;/span&gt;
+&lt;span class="go"&gt;Name: ksh-zen&lt;/span&gt;
+&lt;span class="go"&gt;ID: C56B:VEMA:MS6I:ZUGG:J3MO:53U6:IU7B:4HO2:PRRB:O3O2:HZVM:EEZ4&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;1.7G对8.291G，空间的有效利用率大概只有20%多一点点。注意，这是我删除了所有其它容器的结果。&lt;/p&gt;
+&lt;p&gt;而创建容器的结果又是如何呢？我之前有一个安装了Oracle 11.2.0.4的软件并创建了数据库的镜像（参见我之前的&lt;a class="reference external" href="https://zhangjoto.github.io/li-yong-dockerjian-li-oracle-11gshi-yan-huan-jing.html"&gt;blog文章&lt;/a&gt;），我观察到的现象是利用这个镜像创建一个容器，启动数据库并执行几个查询，再关闭数据库和容器之后，存储池的空间占用增加了100多M。而此时容器内部的变化只是多产生了一些数据库日志文件，加起来还不到1M。&lt;/p&gt;
+&lt;p&gt;其实对于这个空间利用率低的问题，从原理分析是可以有很好的解释的：&lt;/p&gt;
+&lt;ul class="simple"&gt;
+&lt;li&gt;Docker的devicemapper驱动是利用lvm的snapshot的机制来实现对镜像的复用的；&lt;/li&gt;
+&lt;li&gt;lvm的snapshot机制实现的是对块的变化跟踪，目前lvm的块（PE）默认值是4M；&lt;/li&gt;
+&lt;li&gt;也就是说，就算只有一个文件的一个字节发生了变化，按snapshot的机制也起码要复制4M的数据；&lt;/li&gt;
+&lt;li&gt;多个文件发生改变时，复制的数据量既不取决于变化的数据量，也不取决于这些文件的总数据量，而是取决于这些文件存储时落在多少个数据块上；&lt;/li&gt;
+&lt;li&gt;不幸的是，一般镜像里都是大量的小文件，而且linux下的软件包通常都是usr/var/etc/lib等目录各放一部分文件，这意味着文件的布局也是零散的；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;所以在docker没有也不可能对文件布局进行控制的情况下，空间利用率低到20%也不是什么奇怪的事情。&lt;/p&gt;
+&lt;p&gt;但是解释归解释，20%的存储效率是换谁都难以接受的，更何况继续使用下去还有可能更低。这种完全无法预测的空间需求，让系统管理员如何是好呢？&lt;/p&gt;
+&lt;p&gt;多说一句，实际上我就多次因为存储池空间爆掉而被迫清理镜像。&lt;/p&gt;
+&lt;p&gt;所以我很怀疑是否真有在实际使用环境采用devicemapper驱动的案例。红帽工程师虽然对各种存储驱动做了全面的性能对比测试，但也许他们开发devicemapper驱动的初衷只是为了让广大发行版用户不用编译内核就能试用Docker而已。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="commit"&gt;
+&lt;h3&gt;&lt;a class="toc-backref" href="#id11"&gt;commit性能问题&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;这个问题简单来说，就是当容器大一点的情况下，将其提交为镜像的操作耗时很长。而且同时top观察系统的iowait也达到了40%乃至更高（别忘了我的硬盘是SSD），即便是容器相对于基础镜像改变很小的情况也是如此。&lt;/p&gt;
+&lt;p&gt;我怀疑这个问题与空间虚耗存在相关性。我个人的猜测是lvm的snapshot机制与Docker的镜像分层粒度不一致，因此在commit的时候Docker需要扫描所有的数据块，将容器中改变的实际文件全部找出来才能生成新的镜像层（fs layer）。&lt;/p&gt;
+&lt;p&gt;不过对于这个猜测我还没有想到什么进一步验证的办法，所以就不展开讲了。&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id5"&gt;
+&lt;h2&gt;&lt;a class="toc-backref" href="#id12"&gt;小结&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;基于上面的种种经验教训，如果要我对打算尝试Docker的同学说两句，我会说Docker很美好，但记得两件事：&lt;/p&gt;
+&lt;ul class="simple"&gt;
+&lt;li&gt;只要保证系统不整垮，那就尽一切可能上unionfs如aufs等，而不是采用devicemapper存储驱动；&lt;/li&gt;
+&lt;li&gt;单独创建一个文件系统挂载到/var/lib/docker，这会为你减少很多麻烦。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;最后说一句，overlayfs并入3.18的内核主线了，我很期待。&lt;/p&gt;
+&lt;table class="docutils footnote" frame="void" id="id6" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;[1]&lt;/td&gt;&lt;td&gt;&lt;a class="reference external" href="http://developerblog.redhat.com/2014/09/30/overview-storage-scalability-docker/"&gt;Comprehensive Overview of Storage Scalability in Docker&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">zhangjoto</dc:creator><pubDate>Mon, 22 Dec 2014 00:00:00 +0800</pubDate><guid>tag:zhangjoto.github.io,2014-12-22:dockershi-yong-zhong-de-wen-ti-xiao-jie.html</guid><category>Docker</category><category>容器技术</category></item><item><title>一次性能测试troubleshooting记录</title><link>https://zhangjoto.github.io/yi-ci-xing-neng-ce-shi-troubleshootingji-lu.html</link><description>&lt;div class="contents topic" id="contents"&gt;
 &lt;p class="topic-title first"&gt;Contents&lt;/p&gt;
 &lt;ul class="simple"&gt;
 &lt;li&gt;&lt;a class="reference internal" href="#id1" id="id8"&gt;背景&lt;/a&gt;&lt;ul&gt;
@@ -770,7 +918,6 @@ CMD /bin/bash
 &lt;span class="go"&gt;System altered.&lt;/span&gt;
 
 &lt;span class="go"&gt;SQL&amp;gt; shutdown immediate;&lt;/span&gt;
-&lt;span class="go"&gt;SQL&amp;gt; shutdown immediate;&lt;/span&gt;
 &lt;span class="go"&gt;Database closed.&lt;/span&gt;
 &lt;span class="go"&gt;Database dismounted.&lt;/span&gt;
 &lt;span class="go"&gt;ORACLE instance shut down.&lt;/span&gt;
@@ -867,4 +1014,4 @@ CMD /bin/bash
 &lt;/table&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">zhangjoto</dc:creator><pubDate>Mon, 20 Oct 2014 00:00:00 +0800</pubDate><guid>tag:zhangjoto.github.io,2014-10-20:li-yong-dockerjian-li-oracle-11gshi-yan-huan-jing.html</guid><category>Docker</category><category>Oracle</category></item></channel></rss>
+</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">zhangjoto</dc:creator><pubDate>Mon, 20 Oct 2014 00:00:00 +0800</pubDate><guid>tag:zhangjoto.github.io,2014-10-20:li-yong-dockerjian-li-oracle-11gshi-yan-huan-jing.html</guid><category>Docker</category><category>Oracle</category><category>容器技术</category></item></channel></rss>
