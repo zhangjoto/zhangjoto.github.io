@@ -386,7 +386,7 @@ ExecStart=/usr/bin/docker -d -H fd:// -s overlay
 &lt;span class="go"&gt;ID: C56B:VEMA:MS6I:ZUGG:J3MO:53U6:IU7B:4HO2:PRRB:O3O2:HZVM:EEZ4&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;1.7G对8.291G，空间的有效利用率大概只有20%多一点点。注意，这是我删除了所有其它容器的结果。&lt;/p&gt;
-&lt;p&gt;而创建容器的结果又是如何呢？我之前有一个安装了Oracle 11.2.0.4的软件并创建了数据库的镜像（参见我之前的&lt;a class="reference external" href="https://zhangjoto.github.io/li-yong-dockerjian-li-oracle-11gshi-yan-huan-jing.html"&gt;blog文章&lt;/a&gt;），我观察到的现象是利用这个镜像创建一个容器，启动数据库并执行几个查询，再关闭数据库和容器之后，存储池的空间占用增加了100多M。而此时容器内部的变化只是多产生了一些数据库日志文件，加起来还不到1M。&lt;/p&gt;
+&lt;p&gt;而创建容器的结果又是如何呢？我之前有一个安装了Oracle 11.2.0.4的软件并创建了数据库的镜像（参见我之前的&lt;a class="reference external" href="./li-yong-dockerjian-li-oracle-11gshi-yan-huan-jing.html"&gt;blog文章&lt;/a&gt;），我观察到的现象是利用这个镜像创建一个容器，启动数据库并执行几个查询，再关闭数据库和容器之后，存储池的空间占用增加了100多M。而此时容器内部的变化只是多产生了一些数据库日志文件，加起来还不到1M。&lt;/p&gt;
 &lt;p&gt;其实对于这个空间利用率低的问题，从原理分析是可以有很好的解释的：&lt;/p&gt;
 &lt;ul class="simple"&gt;
 &lt;li&gt;Docker的devicemapper驱动是利用lvm的snapshot的机制来实现对镜像的复用的；&lt;/li&gt;
@@ -399,7 +399,7 @@ ExecStart=/usr/bin/docker -d -H fd:// -s overlay
 &lt;p&gt;但是解释归解释，20%的存储效率是换谁都难以接受的，更何况继续使用下去还有可能更低。这种完全无法预测的空间需求，让系统管理员如何是好呢？&lt;/p&gt;
 &lt;p&gt;多说一句，实际上我就多次因为存储池空间爆掉而被迫清理镜像。&lt;/p&gt;
 &lt;p&gt;所以我很怀疑是否真有在实际使用环境采用devicemapper驱动的案例。红帽工程师虽然对各种存储驱动做了全面的性能对比测试，但也许他们开发devicemapper驱动的初衷只是为了让广大发行版用户不用编译内核就能试用Docker而已。&lt;/p&gt;
-&lt;p&gt;12月28日更新：我在另一台机器安装的CentOS 7环境上做了同样的测试，使用devicemappr驱动+loop-lvm的情况下，空间占用约为1.9G左右。所以可能这个问题仅在使用devicemapper驱动+direct-lvm的场景下会出现。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;12月28日更新：&lt;/strong&gt;我在另一台机器安装的CentOS 7环境上做了同样的测试，使用devicemappr驱动+loop-lvm的情况下，空间占用约为1.9G左右。所以可能这个问题仅在使用devicemapper驱动+direct-lvm的场景下会出现，或是有这么严重。&lt;/p&gt;
 &lt;/div&gt;
 &lt;div class="section" id="commit"&gt;
 &lt;h3&gt;&lt;a class="toc-backref" href="#id11"&gt;commit性能问题&lt;/a&gt;&lt;/h3&gt;
