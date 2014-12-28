@@ -1,5 +1,286 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>Keep Simple</title><link href="https://zhangjoto.github.io/" rel="alternate"></link><link href="https://zhangjoto.github.io/feeds/zhangjoto.atom.xml" rel="self"></link><id>https://zhangjoto.github.io/</id><updated>2014-12-22T00:00:00+08:00</updated><entry><title>Docker使用中的问题小结</title><link href="https://zhangjoto.github.io/dockershi-yong-zhong-de-wen-ti-xiao-jie.html" rel="alternate"></link><updated>2014-12-22T00:00:00+08:00</updated><author><name>zhangjoto</name></author><id>tag:zhangjoto.github.io,2014-12-22:dockershi-yong-zhong-de-wen-ti-xiao-jie.html</id><summary type="html">&lt;div class="contents topic" id="contents"&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Keep Simple</title><link href="https://zhangjoto.github.io/" rel="alternate"></link><link href="https://zhangjoto.github.io/feeds/zhangjoto.atom.xml" rel="self"></link><id>https://zhangjoto.github.io/</id><updated>2014-12-28T00:00:00+08:00</updated><entry><title>为Docker 1.4.0启用overlay存储驱动</title><link href="https://zhangjoto.github.io/wei-docker-140qi-yong-overlaycun-chu-qu-dong.html" rel="alternate"></link><updated>2014-12-28T00:00:00+08:00</updated><author><name>zhangjoto</name></author><id>tag:zhangjoto.github.io,2014-12-28:wei-docker-140qi-yong-overlaycun-chu-qu-dong.html</id><summary type="html">&lt;div class="contents topic" id="contents"&gt;
+&lt;p class="topic-title first"&gt;Contents&lt;/p&gt;
+&lt;ul class="simple"&gt;
+&lt;li&gt;&lt;a class="reference internal" href="#id1" id="id8"&gt;镜像备份&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class="reference internal" href="#id2" id="id9"&gt;更新软件包&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class="reference internal" href="#id3" id="id10"&gt;环境重建&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class="reference internal" href="#id4" id="id11"&gt;环境确认&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class="reference internal" href="#id5" id="id12"&gt;恢复备份&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class="reference internal" href="#id6" id="id13"&gt;最终效果&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;p&gt;自Docker诞生之初，就采用了aufs做为唯一的存储驱动。但因为aufs一直没有进入内核主线，所以各大发行版只有Ubuntu默认包含了aufs支持，这让Docker某种程度上成了专用于Ubuntu的容器技术。&lt;/p&gt;
+&lt;p&gt;直到后来红帽工程师为其实现了devicemapper存储驱动，其它发行版上使用Docker的技术门槛才低了许多。但是受内核的devicemapper机制的限制，Docker的devicemapper驱动在性能和资源消耗上相比aufs驱动都仍有差距。&lt;/p&gt;
+&lt;p&gt;直到内核版本3.18，另一个unionfs文件系统实现overlayfs并入了内核主线。而Docker（自1.4.0版本开始）在很短的时间内就提供了对overlayfs存储驱动的试验性支持。从此在各大发行版上使用unionfs做为Docker的存储驱动才成为了可能。&lt;/p&gt;
+&lt;p&gt;而我本人由于Docker+devicemapper驱动在使用中的种种问题[#]，当然是盼望着尽快试用Docker的overlayfs驱动。&lt;/p&gt;
+&lt;div class="section" id="id1"&gt;
+&lt;h2&gt;&lt;a class="toc-backref" href="#id8"&gt;镜像备份&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;国内下载官方镜像太过费劲，因此在环境更新前要首先将已有的镜像导出。导出使用save命令：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker save -o /media/Storage/dockers/centos.tar centos:centos6
+&lt;span class="gp"&gt;$&lt;/span&gt; docker save -o /media/Storage/dockers/debian.tar debian
+&lt;span class="go"&gt;......&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;用同样的命令将所有的镜像全部导出备份。而容器则全部删除，这里不多说。&lt;/p&gt;
+&lt;p&gt;以下是我docker info命令的完整输出，可以看到我的Docker数据及元数据分别存放在两个逻辑卷上，数据占用空间是8.291GB，共有43个镜像。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker info
+&lt;span class="go"&gt;Containers: 0&lt;/span&gt;
+&lt;span class="go"&gt;Images: 43&lt;/span&gt;
+&lt;span class="go"&gt;Storage Driver: devicemapper&lt;/span&gt;
+&lt;span class="go"&gt; Pool Name: docker-254:1-1279-pool&lt;/span&gt;
+&lt;span class="go"&gt; Pool Blocksize: 65.54 kB&lt;/span&gt;
+&lt;span class="go"&gt; Data file: /dev/vgroot/lvdocker&lt;/span&gt;
+&lt;span class="go"&gt; Metadata file: /dev/vgroot/lvdockermeta&lt;/span&gt;
+&lt;span class="go"&gt; Data Space Used: 8.291 GB&lt;/span&gt;
+&lt;span class="go"&gt; Data Space Total: 17.18 GB&lt;/span&gt;
+&lt;span class="go"&gt; Metadata Space Used: 6.197 MB&lt;/span&gt;
+&lt;span class="go"&gt; Metadata Space Total: 16.78 MB&lt;/span&gt;
+&lt;span class="go"&gt; Library Version: 1.02.92 (2014-11-28)&lt;/span&gt;
+&lt;span class="go"&gt;Execution Driver: native-0.2&lt;/span&gt;
+&lt;span class="go"&gt;Kernel Version: 3.18.1-1-ARCH&lt;/span&gt;
+&lt;span class="go"&gt;Operating System: Arch Linux&lt;/span&gt;
+&lt;span class="go"&gt;CPUs: 4&lt;/span&gt;
+&lt;span class="go"&gt;Total Memory: 3.753 GiB&lt;/span&gt;
+&lt;span class="go"&gt;Name: ksh-zen&lt;/span&gt;
+&lt;span class="go"&gt;ID: C56B:VEMA:MS6I:ZUGG:J3MO:53U6:IU7B:4HO2:PRRB:O3O2:HZVM:EEZ4&lt;/span&gt;
+
+&lt;span class="gp"&gt;$&lt;/span&gt; docker images
+&lt;span class="go"&gt;REPOSITORY          TAG                 IMAGE ID            CREATED             VIRTUAL SIZE&lt;/span&gt;
+&lt;span class="go"&gt;ora                 prepared            e50218f3bfab        2 weeks ago         309.7 MB&lt;/span&gt;
+&lt;span class="go"&gt;python              3                   474f82d465a5        3 weeks ago         814.9 MB&lt;/span&gt;
+&lt;span class="go"&gt;python              3.4                 474f82d465a5        3 weeks ago         814.9 MB&lt;/span&gt;
+&lt;span class="go"&gt;python              4.4.2               474f82d465a5        3 weeks ago         814.9 MB&lt;/span&gt;
+&lt;span class="go"&gt;python              latest              474f82d465a5        3 weeks ago         814.9 MB&lt;/span&gt;
+&lt;span class="go"&gt;postgres            9                   aaab661c1e3e        4 weeks ago         213.1 MB&lt;/span&gt;
+&lt;span class="go"&gt;postgres            9.3                 aaab661c1e3e        4 weeks ago         213.1 MB&lt;/span&gt;
+&lt;span class="go"&gt;postgres            9.3.5               aaab661c1e3e        4 weeks ago         213.1 MB&lt;/span&gt;
+&lt;span class="go"&gt;postgres            latest              aaab661c1e3e        4 weeks ago         213.1 MB&lt;/span&gt;
+&lt;span class="go"&gt;debian              latest              f6fab3b798be        6 weeks ago         85.1 MB&lt;/span&gt;
+&lt;span class="go"&gt;debian              wheezy              f6fab3b798be        6 weeks ago         85.1 MB&lt;/span&gt;
+&lt;span class="go"&gt;debian              7                   f6fab3b798be        6 weeks ago         85.1 MB&lt;/span&gt;
+&lt;span class="go"&gt;debian              7.7                 f6fab3b798be        6 weeks ago         85.1 MB&lt;/span&gt;
+&lt;span class="go"&gt;centos              centos6             70441cac1ed5        6 weeks ago         215.8 MB&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;确认所有镜像全部成功导出后停止docker。由于有更新内核并重做文件系统的需求，我还要禁止Docker开机自动启动：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; sudo systemctl stop docker
+&lt;span class="gp"&gt;$&lt;/span&gt; sudo systemctl disable docker
+&lt;span class="go"&gt;Removed symlink /etc/systemd/system/multi-user.target.wants/docker.service.&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id2"&gt;
+&lt;h2&gt;&lt;a class="toc-backref" href="#id9"&gt;更新软件包&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Docker 1.4.0发布后Arch Linux很快就同步到了最新版本，所以我只要直接更新就好：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; yaourt -Sy docker
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;而3.18的内核虽然很快就进了testing仓库，但却迟迟没有进入core仓库，所以我要临时启用testing仓库：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; su -
+&lt;span class="gp"&gt;#&lt;/span&gt; vi /etc/pacman.conf
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;将如下两行的注释去掉：&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+#[testing]
+#Include = /etc/pacman.d/mirrorlist
+&lt;/pre&gt;
+&lt;p&gt;然后再更新内核才能看到我们想要的3.18。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; yaourt -Sy linux
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;内核更新完成之后记得要将/etc/pacman.conf里修改的内容复原。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id3"&gt;
+&lt;h2&gt;&lt;a class="toc-backref" href="#id10"&gt;环境重建&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;销毁Docker使用的两个逻辑卷及/var/lib/docker目录下所有文件：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; su -
+&lt;span class="gp"&gt;#&lt;/span&gt; lvremove -f /dev/vgroot/lvdocker
+&lt;span class="go"&gt;  Logical volume &amp;quot;lvdocker&amp;quot; successfully removed&lt;/span&gt;
+&lt;span class="gp"&gt;#&lt;/span&gt; lvremove -f /dev/vgroot/lvdockermeta
+&lt;span class="go"&gt;  Logical volume &amp;quot;lvdockermeta&amp;quot; successfully removed&lt;/span&gt;
+&lt;span class="gp"&gt;#&lt;/span&gt; rm -rf /var/lib/docker
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;接着重建逻辑卷，创建文件系统并将其挂载，我个人比较偏好使用xfs文件系统，你自己也可以选择ext4：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;#&lt;/span&gt; lvcreate -L 20G -n lvdocker vgroot
+&lt;span class="go"&gt;WARNING: ext4 signature detected on /dev/vgroot/lvdocker at offset 1080. Wipe it? [y/n]: y&lt;/span&gt;
+&lt;span class="go"&gt;  Wiping ext4 signature on /dev/vgroot/lvdocker.&lt;/span&gt;
+&lt;span class="go"&gt;  Logical volume &amp;quot;lvdocker&amp;quot; created.&lt;/span&gt;
+&lt;span class="gp"&gt;#&lt;/span&gt; mkfs -t xfs /dev/vgroot/lvdocker
+&lt;span class="go"&gt;meta-data=/dev/vgroot/lvdocker   isize=256    agcount=4, agsize=1310720 blks&lt;/span&gt;
+&lt;span class="go"&gt;         =                       sectsz=512   attr=2, projid32bit=1&lt;/span&gt;
+&lt;span class="go"&gt;         =                       crc=0        finobt=0&lt;/span&gt;
+&lt;span class="go"&gt;data     =                       bsize=4096   blocks=5242880, imaxpct=25&lt;/span&gt;
+&lt;span class="go"&gt;         =                       sunit=0      swidth=0 blks&lt;/span&gt;
+&lt;span class="go"&gt;naming   =version 2              bsize=4096   ascii-ci=0 ftype=0&lt;/span&gt;
+&lt;span class="go"&gt;log      =internal log           bsize=4096   blocks=2560, version=2&lt;/span&gt;
+&lt;span class="go"&gt;         =                       sectsz=512   sunit=0 blks, lazy-count=1&lt;/span&gt;
+&lt;span class="go"&gt;realtime =none                   extsz=4096   blocks=0, rtextents=0&lt;/span&gt;
+&lt;span class="gp"&gt;#&lt;/span&gt; mkdir /var/lib/docker
+&lt;span class="gp"&gt;#&lt;/span&gt; mount /dev/vgroot/lvdocker /var/lib/docker
+&lt;span class="gp"&gt;#&lt;/span&gt; df
+&lt;span class="go"&gt;Filesystem                  1K-blocks      Used Available Use% Mounted on&lt;/span&gt;
+&lt;span class="go"&gt;/dev/mapper/vgroot-lvarch     8125880   4833020   2857048  63% /&lt;/span&gt;
+&lt;span class="go"&gt;dev                           1962456         0   1962456   0% /dev&lt;/span&gt;
+&lt;span class="go"&gt;run                           1967700       620   1967080   1% /run&lt;/span&gt;
+&lt;span class="go"&gt;tmpfs                         1967700         0   1967700   0% /dev/shm&lt;/span&gt;
+&lt;span class="go"&gt;tmpfs                         1967700         0   1967700   0% /sys/fs/cgroup&lt;/span&gt;
+&lt;span class="go"&gt;tmpfs                         1967700         8   1967692   1% /tmp&lt;/span&gt;
+&lt;span class="go"&gt;/dev/mapper/vgroot-lvboot      999320     47880    882628   6% /boot&lt;/span&gt;
+&lt;span class="go"&gt;/dev/mapper/vgroot-lvvar      1998672    441904   1435528  24% /var&lt;/span&gt;
+&lt;span class="go"&gt;/dev/mapper/vgroot-lvhome    83845120  79331008   4514112  95% /home&lt;/span&gt;
+&lt;span class="go"&gt;tmpfs                          393544         4    393540   1% /run/user/1000&lt;/span&gt;
+&lt;span class="go"&gt;/dev/sdb1                   167774792 143071912  24702880  86% /media/Storage&lt;/span&gt;
+&lt;span class="go"&gt;/dev/mapper/vgroot-lvdocker  20961280     32928  20928352   1% /var/lib/docker&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;为了让新文件系统能自动挂载。要以root身份编辑/etc/fstab，加入如下一行内容：&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+/dev/mapper/vgroot-lvdocker     /var/lib/docker xfs             rw,relatime,attr2,inode64       0 2
+&lt;/pre&gt;
+&lt;p&gt;然后就可以将机器重启了。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id4"&gt;
+&lt;h2&gt;&lt;a class="toc-backref" href="#id11"&gt;环境确认&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;重启后/var/lib/docker文件系统应该已经自动挂载，再确认一下新的内核是否包含了overlayfs支持。注意，它对应的内核模块模块实际上叫overlay：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; modinfo
+&lt;span class="go"&gt;filename:       /lib/modules/3.18.1-1-ARCH/kernel/fs/overlayfs/overlay.ko.gz&lt;/span&gt;
+&lt;span class="go"&gt;alias:          fs-overlay&lt;/span&gt;
+&lt;span class="go"&gt;license:        GPL&lt;/span&gt;
+&lt;span class="go"&gt;description:    Overlay filesystem&lt;/span&gt;
+&lt;span class="go"&gt;author:         Miklos Szeredi &amp;lt;miklos@szeredi.hu&amp;gt;&lt;/span&gt;
+&lt;span class="go"&gt;depends:&lt;/span&gt;
+&lt;span class="go"&gt;intree:         Y&lt;/span&gt;
+&lt;span class="go"&gt;vermagic:       3.18.1-1-ARCH SMP preempt mod_unload modversions&lt;/span&gt;
+&lt;span class="gp"&gt;$&lt;/span&gt; cat /proc/filesystems
+&lt;span class="go"&gt;nodev   sysfs&lt;/span&gt;
+&lt;span class="go"&gt;nodev   rootfs&lt;/span&gt;
+&lt;span class="go"&gt;nodev   ramfs&lt;/span&gt;
+&lt;span class="go"&gt;nodev   bdev&lt;/span&gt;
+&lt;span class="go"&gt;nodev   proc&lt;/span&gt;
+&lt;span class="go"&gt;nodev   cgroup&lt;/span&gt;
+&lt;span class="go"&gt;nodev   cpuset&lt;/span&gt;
+&lt;span class="go"&gt;nodev   tmpfs&lt;/span&gt;
+&lt;span class="go"&gt;nodev   devtmpfs&lt;/span&gt;
+&lt;span class="go"&gt;nodev   binfmt_misc&lt;/span&gt;
+&lt;span class="go"&gt;nodev   debugfs&lt;/span&gt;
+&lt;span class="go"&gt;nodev   securityfs&lt;/span&gt;
+&lt;span class="go"&gt;nodev   sockfs&lt;/span&gt;
+&lt;span class="go"&gt;nodev   pipefs&lt;/span&gt;
+&lt;span class="go"&gt;nodev   configfs&lt;/span&gt;
+&lt;span class="go"&gt;nodev   devpts&lt;/span&gt;
+&lt;span class="go"&gt;nodev   hugetlbfs&lt;/span&gt;
+&lt;span class="go"&gt;nodev   autofs&lt;/span&gt;
+&lt;span class="go"&gt;nodev   pstore&lt;/span&gt;
+&lt;span class="go"&gt;nodev   efivarfs&lt;/span&gt;
+&lt;span class="go"&gt;nodev   mqueue&lt;/span&gt;
+&lt;span class="go"&gt;        ext3&lt;/span&gt;
+&lt;span class="go"&gt;        ext2&lt;/span&gt;
+&lt;span class="go"&gt;        ext4&lt;/span&gt;
+&lt;span class="go"&gt;nodev   rpc_pipefs&lt;/span&gt;
+&lt;span class="go"&gt;nodev   nfs&lt;/span&gt;
+&lt;span class="go"&gt;nodev   nfs4&lt;/span&gt;
+&lt;span class="go"&gt;        xfs&lt;/span&gt;
+&lt;span class="go"&gt;        iso9660&lt;/span&gt;
+&lt;span class="go"&gt;        vfat&lt;/span&gt;
+&lt;span class="go"&gt;        fuseblk&lt;/span&gt;
+&lt;span class="go"&gt;nodev   fuse&lt;/span&gt;
+&lt;span class="go"&gt;nodev   fusectl&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;这说明新的内核包含了overlayfs支持，但默认没有将对应模块载入。没有关系，只要我们正确的为Docker配置了overlay驱动，Docker服务启动时内核应该就会自动载入overlay模块了。&lt;/p&gt;
+&lt;p&gt;因为overlayfs仍是实验特性，因此即便内核升级到了3.18版本，在Arch上Docker也仍然默认采用devicemapper驱动。必须指明参数迫使docker启用overlayfs。因为Arch Linux已经用systemd取代了SysV init脚本，所以我们应该去修改Docker的service文件。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; su -
+&lt;span class="gp"&gt;#&lt;/span&gt; vi /lib/systemd/system/docker.service
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;可以看到文件内容有以ExecStart开头的一行：&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+ExecStart=/usr/bin/docker -d -H fd://
+&lt;/pre&gt;
+&lt;p&gt;加入指定存储驱动的参数-s并存盘退出，修改后应该是这个样子：&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+ExecStart=/usr/bin/docker -d -H fd:// -s overlay
+&lt;/pre&gt;
+&lt;p&gt;修改了service文件以后，需要让systemd刷新一下再启动服务：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;#&lt;/span&gt; systemctl daemon-reload
+&lt;span class="gp"&gt;#&lt;/span&gt; systemctl start docker
+&lt;span class="gp"&gt;#&lt;/span&gt; &lt;span class="nb"&gt;exit&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;检查一下添加的参数是否生效了：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker info
+&lt;span class="go"&gt;Containers: 0&lt;/span&gt;
+&lt;span class="go"&gt;Images: 0&lt;/span&gt;
+&lt;span class="go"&gt;Storage Driver: overlay&lt;/span&gt;
+&lt;span class="go"&gt;Execution Driver: native-0.2&lt;/span&gt;
+&lt;span class="go"&gt;Kernel Version: 3.18.1-1-ARCH&lt;/span&gt;
+&lt;span class="go"&gt;Operating System: Arch Linux&lt;/span&gt;
+&lt;span class="go"&gt;CPUs: 4&lt;/span&gt;
+&lt;span class="go"&gt;Total Memory: 3.753 GiB&lt;/span&gt;
+&lt;span class="go"&gt;Name: ksh-zen&lt;/span&gt;
+&lt;span class="go"&gt;ID: C56B:VEMA:MS6I:ZUGG:J3MO:53U6:IU7B:4HO2:PRRB:O3O2:HZVM:EEZ4&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;可以看到&amp;quot;Storage Driver&amp;quot;后面是overlay，设定的参数起作用了。&lt;/p&gt;
+&lt;p&gt;看看/var/lib/docker文件系统下是什么情况：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;#&lt;/span&gt; ls /var/lib/docker
+&lt;span class="go"&gt;containers  execdriver  graph  init  linkgraph.db  overlay  repositories-overlay  tmp  trust  volumes&lt;/span&gt;
+&lt;span class="gp"&gt;#&lt;/span&gt; du -sh /var/lib/docker/*
+&lt;span class="go"&gt;0       /var/lib/docker/containers&lt;/span&gt;
+&lt;span class="go"&gt;0       /var/lib/docker/execdriver&lt;/span&gt;
+&lt;span class="go"&gt;0       /var/lib/docker/graph&lt;/span&gt;
+&lt;span class="go"&gt;7.3M    /var/lib/docker/init&lt;/span&gt;
+&lt;span class="go"&gt;8.0K    /var/lib/docker/linkgraph.db&lt;/span&gt;
+&lt;span class="go"&gt;0       /var/lib/docker/overlay&lt;/span&gt;
+&lt;span class="go"&gt;4.0K    /var/lib/docker/repositories-overlay&lt;/span&gt;
+&lt;span class="go"&gt;0       /var/lib/docker/tmp&lt;/span&gt;
+&lt;span class="go"&gt;0       /var/lib/docker/trust&lt;/span&gt;
+&lt;span class="go"&gt;0       /var/lib/docker/volumes&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;目录下面的子目录等自动创建，且大部分目录都是空的。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id5"&gt;
+&lt;h2&gt;&lt;a class="toc-backref" href="#id12"&gt;恢复备份&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;将之前备份的所有镜像全部重新导入：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker load -i /media/Storage/dockers/centos.tar
+&lt;span class="gp"&gt;$&lt;/span&gt; docker load -i /media/Storage/dockers/debian.tar
+&lt;span class="go"&gt;......&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;导入完成之后还要确认一下镜像是可用的：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker run -it centos:centos6 /bin/bash
+&lt;span class="go"&gt;[root@147c15762dfa /]#&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id6"&gt;
+&lt;h2&gt;&lt;a class="toc-backref" href="#id13"&gt;最终效果&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;至此为Docker 1.4.0启用overlay驱动的操作算是全部完成，数据也全部安全迁移到了新的Docker环境下。看一看这么一番折腾是否解决了我的问题：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker info
+&lt;span class="go"&gt;Containers: 0&lt;/span&gt;
+&lt;span class="go"&gt;Images: 43&lt;/span&gt;
+&lt;span class="go"&gt;Storage Driver: overlay&lt;/span&gt;
+&lt;span class="go"&gt;Execution Driver: native-0.2&lt;/span&gt;
+&lt;span class="go"&gt;Kernel Version: 3.18.1-1-ARCH&lt;/span&gt;
+&lt;span class="go"&gt;Operating System: Arch Linux&lt;/span&gt;
+&lt;span class="go"&gt;CPUs: 4&lt;/span&gt;
+&lt;span class="go"&gt;Total Memory: 3.753 GiB&lt;/span&gt;
+&lt;span class="go"&gt;Name: ksh-zen&lt;/span&gt;
+&lt;span class="go"&gt;ID: C56B:VEMA:MS6I:ZUGG:J3MO:53U6:IU7B:4HO2:PRRB:O3O2:HZVM:EEZ4&lt;/span&gt;
+&lt;span class="gp"&gt;$&lt;/span&gt; df -h
+&lt;span class="go"&gt;Filesystem                   Size  Used Avail Use% Mounted on&lt;/span&gt;
+&lt;span class="go"&gt;/dev/mapper/vgroot-lvarch    7.8G  4.7G  2.8G  63% /&lt;/span&gt;
+&lt;span class="go"&gt;dev                          1.9G     0  1.9G   0% /dev&lt;/span&gt;
+&lt;span class="go"&gt;run                          1.9G  628K  1.9G   1% /run&lt;/span&gt;
+&lt;span class="go"&gt;tmpfs                        1.9G     0  1.9G   0% /dev/shm&lt;/span&gt;
+&lt;span class="go"&gt;tmpfs                        1.9G     0  1.9G   0% /sys/fs/cgroup&lt;/span&gt;
+&lt;span class="go"&gt;tmpfs                        1.9G  8.0K  1.9G   1% /tmp&lt;/span&gt;
+&lt;span class="go"&gt;/dev/mapper/vgroot-lvvar     2.0G  432M  1.4G  24% /var&lt;/span&gt;
+&lt;span class="go"&gt;/dev/mapper/vgroot-lvboot    976M   47M  862M   6% /boot&lt;/span&gt;
+&lt;span class="go"&gt;/dev/mapper/vgroot-lvdocker   20G  1.6G   19G   8% /var/lib/docker&lt;/span&gt;
+&lt;span class="go"&gt;/dev/mapper/vgroot-lvhome     80G   76G  4.4G  95% /home&lt;/span&gt;
+&lt;span class="go"&gt;tmpfs                        385M  4.0K  385M   1% /run/user/1000&lt;/span&gt;
+&lt;span class="go"&gt;/dev/sdb1                    161G  137G   24G  86% /media/Storage&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;同样是43个镜像，空间占用由8.291GB变成了1.6GB，效果明显。&lt;/p&gt;
+&lt;p&gt;下篇文章我打算对overlay的内部机制和它可能带来的好处做一个简单的分析，希望能讲清楚。&lt;/p&gt;
+&lt;table class="docutils footnote" frame="void" id="id7" rules="none"&gt;
+&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td class="label"&gt;[1]&lt;/td&gt;&lt;td&gt;&lt;a class="reference external" href="https://zhangjoto.github.io/dockershi-yong-zhong-de-wen-ti-xiao-jie.html"&gt;Docker使用中的问题小结&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+</summary><category term="docker"></category><category term="容器技术"></category><category term="overlayfs"></category></entry><entry><title>Docker使用中的问题小结</title><link href="https://zhangjoto.github.io/dockershi-yong-zhong-de-wen-ti-xiao-jie.html" rel="alternate"></link><updated>2014-12-22T00:00:00+08:00</updated><author><name>zhangjoto</name></author><id>tag:zhangjoto.github.io,2014-12-22:dockershi-yong-zhong-de-wen-ti-xiao-jie.html</id><summary type="html">&lt;div class="contents topic" id="contents"&gt;
 &lt;p class="topic-title first"&gt;Contents&lt;/p&gt;
 &lt;ul class="simple"&gt;
 &lt;li&gt;&lt;a class="reference internal" href="#id1" id="id7"&gt;环境说明&lt;/a&gt;&lt;/li&gt;
@@ -124,6 +405,7 @@
 &lt;p&gt;但是解释归解释，20%的存储效率是换谁都难以接受的，更何况继续使用下去还有可能更低。这种完全无法预测的空间需求，让系统管理员如何是好呢？&lt;/p&gt;
 &lt;p&gt;多说一句，实际上我就多次因为存储池空间爆掉而被迫清理镜像。&lt;/p&gt;
 &lt;p&gt;所以我很怀疑是否真有在实际使用环境采用devicemapper驱动的案例。红帽工程师虽然对各种存储驱动做了全面的性能对比测试，但也许他们开发devicemapper驱动的初衷只是为了让广大发行版用户不用编译内核就能试用Docker而已。&lt;/p&gt;
+&lt;p&gt;12月28日更新：我在另一台机器安装的CentOS 7环境上做了同样的测试，使用devicemappr驱动+loop-lvm的情况下，空间占用约为1.9G左右。所以可能这个问题仅在使用devicemapper驱动+direct-lvm的场景下会出现。&lt;/p&gt;
 &lt;/div&gt;
 &lt;div class="section" id="commit"&gt;
 &lt;h3&gt;&lt;a class="toc-backref" href="#id11"&gt;commit性能问题&lt;/a&gt;&lt;/h3&gt;
