@@ -2,19 +2,19 @@
 <feed xmlns="http://www.w3.org/2005/Atom"><title>Keep Simple</title><link href="https://zhangjoto.github.io/" rel="alternate"></link><link href="https://zhangjoto.github.io/feeds/zhangjoto.atom.xml" rel="self"></link><id>https://zhangjoto.github.io/</id><updated>2014-12-28T00:00:00+08:00</updated><entry><title>为Docker 1.4.0启用overlay存储驱动</title><link href="https://zhangjoto.github.io/wei-docker-140qi-yong-overlaycun-chu-qu-dong.html" rel="alternate"></link><updated>2014-12-28T00:00:00+08:00</updated><author><name>zhangjoto</name></author><id>tag:zhangjoto.github.io,2014-12-28:wei-docker-140qi-yong-overlaycun-chu-qu-dong.html</id><summary type="html">&lt;div class="contents topic" id="contents"&gt;
 &lt;p class="topic-title first"&gt;Contents&lt;/p&gt;
 &lt;ul class="simple"&gt;
-&lt;li&gt;&lt;a class="reference internal" href="#id1" id="id8"&gt;镜像备份&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a class="reference internal" href="#id2" id="id9"&gt;更新软件包&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a class="reference internal" href="#id3" id="id10"&gt;环境重建&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a class="reference internal" href="#id4" id="id11"&gt;环境确认&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a class="reference internal" href="#id5" id="id12"&gt;恢复备份&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a class="reference internal" href="#id6" id="id13"&gt;最终效果&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class="reference internal" href="#id2" id="id8"&gt;镜像备份&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class="reference internal" href="#id3" id="id9"&gt;更新软件包&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class="reference internal" href="#id4" id="id10"&gt;环境重建&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class="reference internal" href="#id5" id="id11"&gt;环境确认&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class="reference internal" href="#id6" id="id12"&gt;恢复备份&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class="reference internal" href="#id7" id="id13"&gt;最终效果&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;
 &lt;p&gt;自Docker诞生之初，就采用了aufs做为唯一的存储驱动。但因为aufs一直没有进入内核主线，所以各大发行版只有Ubuntu默认包含了aufs支持，这让Docker某种程度上成了专用于Ubuntu的容器技术。&lt;/p&gt;
 &lt;p&gt;直到后来红帽工程师为其实现了devicemapper存储驱动，其它发行版上使用Docker的技术门槛才低了许多。但是受内核的devicemapper机制的限制，Docker的devicemapper驱动在性能和资源消耗上相比aufs驱动都仍有差距。&lt;/p&gt;
 &lt;p&gt;直到内核版本3.18，另一个unionfs文件系统实现overlayfs并入了内核主线。而Docker（自1.4.0版本开始）在很短的时间内就提供了对overlayfs存储驱动的试验性支持。从此在各大发行版上使用unionfs做为Docker的存储驱动才成为了可能。&lt;/p&gt;
-&lt;p&gt;而我本人由于Docker+devicemapper驱动在使用中的种种问题[#]，当然是盼望着尽快试用Docker的overlayfs驱动。&lt;/p&gt;
-&lt;div class="section" id="id1"&gt;
+&lt;p&gt;而我本人由于Docker+devicemapper驱动在使用中的&lt;a class="reference external" href="./dockershi-yong-zhong-de-wen-ti-xiao-jie.html"&gt;种种问题&lt;/a&gt;，当然是盼望着尽快试用Docker的overlayfs驱动。&lt;/p&gt;
+&lt;div class="section" id="id2"&gt;
 &lt;h2&gt;&lt;a class="toc-backref" href="#id8"&gt;镜像备份&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;国内下载官方镜像太过费劲，因此在环境更新前要首先将已有的镜像导出。导出使用save命令：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker save -o /media/Storage/dockers/centos.tar centos:centos6
@@ -67,7 +67,7 @@
 &lt;span class="go"&gt;Removed symlink /etc/systemd/system/multi-user.target.wants/docker.service.&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 &lt;/div&gt;
-&lt;div class="section" id="id2"&gt;
+&lt;div class="section" id="id3"&gt;
 &lt;h2&gt;&lt;a class="toc-backref" href="#id9"&gt;更新软件包&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;Docker 1.4.0发布后Arch Linux很快就同步到了最新版本，所以我只要直接更新就好：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; yaourt -Sy docker
@@ -86,7 +86,7 @@
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;内核更新完成之后记得要将/etc/pacman.conf里修改的内容复原。&lt;/p&gt;
 &lt;/div&gt;
-&lt;div class="section" id="id3"&gt;
+&lt;div class="section" id="id4"&gt;
 &lt;h2&gt;&lt;a class="toc-backref" href="#id10"&gt;环境重建&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;销毁Docker使用的两个逻辑卷及/var/lib/docker目录下所有文件：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; su -
@@ -134,7 +134,7 @@
 &lt;/pre&gt;
 &lt;p&gt;然后就可以将机器重启了。&lt;/p&gt;
 &lt;/div&gt;
-&lt;div class="section" id="id4"&gt;
+&lt;div class="section" id="id5"&gt;
 &lt;h2&gt;&lt;a class="toc-backref" href="#id11"&gt;环境确认&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;重启后/var/lib/docker文件系统应该已经自动挂载，再确认一下新的内核是否包含了overlayfs支持。注意，它对应的内核模块模块实际上叫overlay：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; modinfo
@@ -230,7 +230,7 @@ ExecStart=/usr/bin/docker -d -H fd:// -s overlay
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;目录下面的子目录等自动创建，且大部分目录都是空的。&lt;/p&gt;
 &lt;/div&gt;
-&lt;div class="section" id="id5"&gt;
+&lt;div class="section" id="id6"&gt;
 &lt;h2&gt;&lt;a class="toc-backref" href="#id12"&gt;恢复备份&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;将之前备份的所有镜像全部重新导入：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker load -i /media/Storage/dockers/centos.tar
@@ -242,7 +242,7 @@ ExecStart=/usr/bin/docker -d -H fd:// -s overlay
 &lt;span class="go"&gt;[root@147c15762dfa /]#&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 &lt;/div&gt;
-&lt;div class="section" id="id6"&gt;
+&lt;div class="section" id="id7"&gt;
 &lt;h2&gt;&lt;a class="toc-backref" href="#id13"&gt;最终效果&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;至此为Docker 1.4.0启用overlay驱动的操作算是全部完成，数据也全部安全迁移到了新的Docker环境下。看一看这么一番折腾是否解决了我的问题：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker info
@@ -272,13 +272,7 @@ ExecStart=/usr/bin/docker -d -H fd:// -s overlay
 &lt;span class="go"&gt;/dev/sdb1                    161G  137G   24G  86% /media/Storage&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;同样是43个镜像，空间占用由8.291GB变成了1.6GB，效果明显。&lt;/p&gt;
-&lt;p&gt;下篇文章我打算对overlay的内部机制和它可能带来的好处做一个简单的分析，希望能讲清楚。&lt;/p&gt;
-&lt;table class="docutils footnote" frame="void" id="id7" rules="none"&gt;
-&lt;colgroup&gt;&lt;col class="label" /&gt;&lt;col /&gt;&lt;/colgroup&gt;
-&lt;tbody valign="top"&gt;
-&lt;tr&gt;&lt;td class="label"&gt;[1]&lt;/td&gt;&lt;td&gt;&lt;a class="reference external" href="https://zhangjoto.github.io/dockershi-yong-zhong-de-wen-ti-xiao-jie.html"&gt;Docker使用中的问题小结&lt;/a&gt;&lt;/td&gt;&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
+&lt;p&gt;接下来我打算用一两篇文章对overlay的内部机制和它可能带来的好处做一个简单的分析，希望能讲清楚。&lt;/p&gt;
 &lt;/div&gt;
 </summary><category term="docker"></category><category term="容器技术"></category><category term="overlayfs"></category></entry><entry><title>Docker使用中的问题小结</title><link href="https://zhangjoto.github.io/dockershi-yong-zhong-de-wen-ti-xiao-jie.html" rel="alternate"></link><updated>2014-12-22T00:00:00+08:00</updated><author><name>zhangjoto</name></author><id>tag:zhangjoto.github.io,2014-12-22:dockershi-yong-zhong-de-wen-ti-xiao-jie.html</id><summary type="html">&lt;div class="contents topic" id="contents"&gt;
 &lt;p class="topic-title first"&gt;Contents&lt;/p&gt;

@@ -14,7 +14,7 @@
             <meta property="og:type" content="article"/>
             <meta property="og:title" content="为Docker 1.4.0启用overlay存储驱动"/>
             <meta property="og:url" content="https://zhangjoto.github.io/wei-docker-140qi-yong-overlaycun-chu-qu-dong.html"/>
-            <meta property="og:description" content="Contents 镜像备份 更新软件包 环境重建 环境确认 恢复备份 最终效果 自Docker诞生之初，就采用了aufs做为唯一的存储驱动。但因为aufs一直没有进入内核主线，所以各大发行版只有Ubuntu默认包含了aufs支持，这让Docker某种程度上成了专用于Ubuntu的容器技术。 直到后来红帽工程师为其实现了devicemapper存储驱动，其它发行版上使用Docker的技术门槛才低了许多。但是受内核的devicemapper机制的限制，Docker的devicemapper驱动在性能和资源消耗上相比aufs驱动都仍有差距。 直到内核版本3.18，另一个unionfs文件系统实现overlayfs并入了内核主线。而Docker（自1.4.0版本开始）在很短的时间内就提供了对overlayfs存储驱动的试验性支持。从此在各大发行版上使用unionfs做为Docker的存储驱动才成为了可能。 而我本人由于Docker+devicemapper驱动在使用中的种种问题[#]，当然是盼望着尽快试用Docker的overlayfs驱动。 镜像备份 国内下载官方镜像太过费劲，因此在环境更新前要首先将已有的镜像导出。导出使用save命令： $ docker save -o /media/Storage/dockers/centos.tar centos:centos6 $ docker save -o /media/Storage/dockers/debian.tar ..."/>
+            <meta property="og:description" content="Contents 镜像备份 更新软件包 环境重建 环境确认 恢复备份 最终效果 自Docker诞生之初，就采用了aufs做为唯一的存储驱动。但因为aufs一直没有进入内核主线，所以各大发行版只有Ubuntu默认包含了aufs支持，这让Docker某种程度上成了专用于Ubuntu的容器技术。 直到后来红帽工程师为其实现了devicemapper存储驱动，其它发行版上使用Docker的技术门槛才低了许多。但是受内核的devicemapper机制的限制，Docker的devicemapper驱动在性能和资源消耗上相比aufs驱动都仍有差距。 直到内核版本3.18，另一个unionfs文件系统实现overlayfs并入了内核主线。而Docker（自1.4.0版本开始）在很短的时间内就提供了对overlayfs存储驱动的试验性支持。从此在各大发行版上使用unionfs做为Docker的存储驱动才成为了可能。 而我本人由于Docker+devicemapper驱动在使用中的种种问题，当然是盼望着尽快试用Docker的overlayfs驱动。 镜像备份 国内下载官方镜像太过费劲，因此在环境更新前要首先将已有的镜像导出。导出使用save命令： $ docker save -o /media/Storage/dockers/centos.tar centos:centos6 $ docker save -o /media/Storage/dockers/debian ..."/>
 
     <!-- Bootstrap -->
         <link rel="stylesheet" href="https://zhangjoto.github.io/theme/css/bootstrap.min.css" type="text/css"/>
@@ -94,19 +94,19 @@ Keep Simple            </a>
                 <div class="contents topic" id="contents">
 <p class="topic-title first">Contents</p>
 <ul class="simple">
-<li><a class="reference internal" href="#id1" id="id8">镜像备份</a></li>
-<li><a class="reference internal" href="#id2" id="id9">更新软件包</a></li>
-<li><a class="reference internal" href="#id3" id="id10">环境重建</a></li>
-<li><a class="reference internal" href="#id4" id="id11">环境确认</a></li>
-<li><a class="reference internal" href="#id5" id="id12">恢复备份</a></li>
-<li><a class="reference internal" href="#id6" id="id13">最终效果</a></li>
+<li><a class="reference internal" href="#id2" id="id8">镜像备份</a></li>
+<li><a class="reference internal" href="#id3" id="id9">更新软件包</a></li>
+<li><a class="reference internal" href="#id4" id="id10">环境重建</a></li>
+<li><a class="reference internal" href="#id5" id="id11">环境确认</a></li>
+<li><a class="reference internal" href="#id6" id="id12">恢复备份</a></li>
+<li><a class="reference internal" href="#id7" id="id13">最终效果</a></li>
 </ul>
 </div>
 <p>自Docker诞生之初，就采用了aufs做为唯一的存储驱动。但因为aufs一直没有进入内核主线，所以各大发行版只有Ubuntu默认包含了aufs支持，这让Docker某种程度上成了专用于Ubuntu的容器技术。</p>
 <p>直到后来红帽工程师为其实现了devicemapper存储驱动，其它发行版上使用Docker的技术门槛才低了许多。但是受内核的devicemapper机制的限制，Docker的devicemapper驱动在性能和资源消耗上相比aufs驱动都仍有差距。</p>
 <p>直到内核版本3.18，另一个unionfs文件系统实现overlayfs并入了内核主线。而Docker（自1.4.0版本开始）在很短的时间内就提供了对overlayfs存储驱动的试验性支持。从此在各大发行版上使用unionfs做为Docker的存储驱动才成为了可能。</p>
-<p>而我本人由于Docker+devicemapper驱动在使用中的种种问题[#]，当然是盼望着尽快试用Docker的overlayfs驱动。</p>
-<div class="section" id="id1">
+<p>而我本人由于Docker+devicemapper驱动在使用中的<a class="reference external" href="./dockershi-yong-zhong-de-wen-ti-xiao-jie.html">种种问题</a>，当然是盼望着尽快试用Docker的overlayfs驱动。</p>
+<div class="section" id="id2">
 <h2><a class="toc-backref" href="#id8">镜像备份</a></h2>
 <p>国内下载官方镜像太过费劲，因此在环境更新前要首先将已有的镜像导出。导出使用save命令：</p>
 <div class="highlight"><pre><span class="gp">$</span> docker save -o /media/Storage/dockers/centos.tar centos:centos6
@@ -159,7 +159,7 @@ Keep Simple            </a>
 <span class="go">Removed symlink /etc/systemd/system/multi-user.target.wants/docker.service.</span>
 </pre></div>
 </div>
-<div class="section" id="id2">
+<div class="section" id="id3">
 <h2><a class="toc-backref" href="#id9">更新软件包</a></h2>
 <p>Docker 1.4.0发布后Arch Linux很快就同步到了最新版本，所以我只要直接更新就好：</p>
 <div class="highlight"><pre><span class="gp">$</span> yaourt -Sy docker
@@ -178,7 +178,7 @@ Keep Simple            </a>
 </pre></div>
 <p>内核更新完成之后记得要将/etc/pacman.conf里修改的内容复原。</p>
 </div>
-<div class="section" id="id3">
+<div class="section" id="id4">
 <h2><a class="toc-backref" href="#id10">环境重建</a></h2>
 <p>销毁Docker使用的两个逻辑卷及/var/lib/docker目录下所有文件：</p>
 <div class="highlight"><pre><span class="gp">$</span> su -
@@ -226,7 +226,7 @@ Keep Simple            </a>
 </pre>
 <p>然后就可以将机器重启了。</p>
 </div>
-<div class="section" id="id4">
+<div class="section" id="id5">
 <h2><a class="toc-backref" href="#id11">环境确认</a></h2>
 <p>重启后/var/lib/docker文件系统应该已经自动挂载，再确认一下新的内核是否包含了overlayfs支持。注意，它对应的内核模块模块实际上叫overlay：</p>
 <div class="highlight"><pre><span class="gp">$</span> modinfo
@@ -322,7 +322,7 @@ ExecStart=/usr/bin/docker -d -H fd:// -s overlay
 </pre></div>
 <p>目录下面的子目录等自动创建，且大部分目录都是空的。</p>
 </div>
-<div class="section" id="id5">
+<div class="section" id="id6">
 <h2><a class="toc-backref" href="#id12">恢复备份</a></h2>
 <p>将之前备份的所有镜像全部重新导入：</p>
 <div class="highlight"><pre><span class="gp">$</span> docker load -i /media/Storage/dockers/centos.tar
@@ -334,7 +334,7 @@ ExecStart=/usr/bin/docker -d -H fd:// -s overlay
 <span class="go">[root@147c15762dfa /]#</span>
 </pre></div>
 </div>
-<div class="section" id="id6">
+<div class="section" id="id7">
 <h2><a class="toc-backref" href="#id13">最终效果</a></h2>
 <p>至此为Docker 1.4.0启用overlay驱动的操作算是全部完成，数据也全部安全迁移到了新的Docker环境下。看一看这么一番折腾是否解决了我的问题：</p>
 <div class="highlight"><pre><span class="gp">$</span> docker info
@@ -364,13 +364,7 @@ ExecStart=/usr/bin/docker -d -H fd:// -s overlay
 <span class="go">/dev/sdb1                    161G  137G   24G  86% /media/Storage</span>
 </pre></div>
 <p>同样是43个镜像，空间占用由8.291GB变成了1.6GB，效果明显。</p>
-<p>下篇文章我打算对overlay的内部机制和它可能带来的好处做一个简单的分析，希望能讲清楚。</p>
-<table class="docutils footnote" frame="void" id="id7" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label">[1]</td><td><a class="reference external" href="https://zhangjoto.github.io/dockershi-yong-zhong-de-wen-ti-xiao-jie.html">Docker使用中的问题小结</a></td></tr>
-</tbody>
-</table>
+<p>接下来我打算用一两篇文章对overlay的内部机制和它可能带来的好处做一个简单的分析，希望能讲清楚。</p>
 </div>
 
             </div>
@@ -427,13 +421,13 @@ ExecStart=/usr/bin/docker -d -H fd:// -s overlay
                             </a>
                         </li>
                         <li class="list-group-item tag-4">
-                            <a href="https://zhangjoto.github.io/tag/overlayfs.html">
-                                overlayfs
+                            <a href="https://zhangjoto.github.io/tag/strace.html">
+                                strace
                             </a>
                         </li>
                         <li class="list-group-item tag-4">
-                            <a href="https://zhangjoto.github.io/tag/strace.html">
-                                strace
+                            <a href="https://zhangjoto.github.io/tag/tuxedo.html">
+                                Tuxedo
                             </a>
                         </li>
                         <li class="list-group-item tag-4">
@@ -442,8 +436,8 @@ ExecStart=/usr/bin/docker -d -H fd:// -s overlay
                             </a>
                         </li>
                         <li class="list-group-item tag-4">
-                            <a href="https://zhangjoto.github.io/tag/tuxedo.html">
-                                Tuxedo
+                            <a href="https://zhangjoto.github.io/tag/overlayfs.html">
+                                overlayfs
                             </a>
                         </li>
                         <li class="list-group-item tag-4">
