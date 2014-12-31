@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Keep Simple</title><link href="https://zhangjoto.github.io/" rel="alternate"></link><link href="https://zhangjoto.github.io/feeds/troubleshooting.atom.xml" rel="self"></link><id>https://zhangjoto.github.io/</id><updated>2014-11-13T00:00:00+08:00</updated><entry><title>一次性能测试troubleshooting记录</title><link href="https://zhangjoto.github.io/yi-ci-xing-neng-ce-shi-troubleshootingji-lu.html" rel="alternate"></link><updated>2014-11-13T00:00:00+08:00</updated><author><name>zhangjoto</name></author><id>tag:zhangjoto.github.io,2014-11-13:yi-ci-xing-neng-ce-shi-troubleshootingji-lu.html</id><summary type="html">&lt;div class="contents topic" id="contents"&gt;
+&lt;p class="topic-title first"&gt;Contents&lt;/p&gt;
+&lt;ul class="simple"&gt;
+&lt;li&gt;&lt;a class="reference internal" href="#id1" id="id8"&gt;背景&lt;/a&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a class="reference internal" href="#id2" id="id9"&gt;系统基本情况&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a class="reference internal" href="#id3" id="id10"&gt;现场诊断&lt;/a&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a class="reference internal" href="#id4" id="id11"&gt;分析外部依赖&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class="reference internal" href="#id5" id="id12"&gt;重现问题现象&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class="reference internal" href="#id6" id="id13"&gt;时间消耗分析&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a class="reference internal" href="#id7" id="id14"&gt;最终结果&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id1"&gt;
+&lt;h2&gt;&lt;a class="toc-backref" href="#id8"&gt;背景&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;前一阵子，有个朋友在某客户现场的性能测试中指标一直压不上去，所以找我去从应用和中间件角度做了一次诊断。最近消息传来，他们经过不断的排查后，最终找到了罪魁祸首，正与我判断的方向相符。这次案例的最终结果和中间的诊断过程都有一定的特点，值得说道一下。&lt;/p&gt;
+&lt;p&gt;首先得介绍一下整件事情的背景和性能测试整体的环境。&lt;/p&gt;
+&lt;p&gt;事情的起因是我那位朋友（为了方便，我在下面把前面提到的那位朋友就简称为L），L供职的H公司有个客户正在规划将一套OLTP系统从大型机迁移到开放平台来的方案。于是该客户挑了几支核心业务交易，找来了中外好几家公司来分头做迁移并进行性能测试，客户根据测试的结果决定跟谁合作以及最终的迁移方案。跟大型机有关的事情从来不是小单，H公司为此调来了在欧洲专做COBOL代码迁移的小组，这个小组使用工具将应用代码迁移到了Linux平台，中间件则采用了Tuxedo，客户端与Tuxedo的通信是采用阻塞方式的tpcall。&lt;/p&gt;
+&lt;div class="section" id="id2"&gt;
+&lt;h3&gt;&lt;a class="toc-backref" href="#id9"&gt;系统基本情况&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;必须要说明的一点是由于只能使用该客户指定的机器接入测试网络，唯一能将信息存入个人设备的方式就是给屏幕拍照。因此下面的描述主要是根据我的记忆整理，所有命令输入我能写出来，但输出就无法复制了。这种条件下细节与事实难免会有些出入，但我会尽力保证整体的描述的准确性。&lt;/p&gt;
+&lt;p&gt;迁移后的系统部署上采用的是银行业常用的三层架构：客户端、应用服务器、数据库服务器。其软件环境大致如下：&lt;/p&gt;
+&lt;table border="1" class="docutils"&gt;
+&lt;caption&gt;软件环境&lt;/caption&gt;
+&lt;colgroup&gt;
+&lt;col width="40%" /&gt;
+&lt;col width="60%" /&gt;
+&lt;/colgroup&gt;
+&lt;thead valign="bottom"&gt;
+&lt;tr&gt;&lt;th class="head"&gt;层&lt;/th&gt;
+&lt;th class="head"&gt;基础软件&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody valign="top"&gt;
+&lt;tr&gt;&lt;td&gt;客户端&lt;/td&gt;
+&lt;td&gt;Windows/LoadRunner，基于私有云&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;应用服务器&lt;/td&gt;
+&lt;td&gt;RHEL 5/Tuxedo 12c，基于私有云&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;数据库服务器&lt;/td&gt;
+&lt;td&gt;HP-UX/NonStop数据库&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;另外据L的描述，这套应用利用LDAP来进行配置信息的统一存储、更新和同步。这个信息以及Windows/Linux基于云构建的特殊性为问题诊断带来了一些干扰，具体细节在后面的诊断过程中会提到。&lt;/p&gt;
+&lt;p&gt;而性能测试中这套系统的表现大概可以用几句话概括：&lt;/p&gt;
+&lt;ul class="simple"&gt;
+&lt;li&gt;在一次压一支交易的场景下，对每支特定的业务交易，都能找到一个确定的TPS值N；&lt;/li&gt;
+&lt;li&gt;一旦性能测试的结果达到N，无论是增加应用Server数量，还是增加LoadRunner的并发客户端数量，都不能带来性能指标的提升；&lt;/li&gt;
+&lt;li&gt;与此同时，应用服务器/数据库服务器的CPU消耗与测试得到的TPS值正相关，最高（TPS达到N后）维持在30~40%不变；&lt;/li&gt;
+&lt;li&gt;Tuxedo队列无堵塞，客户端机器无响应慢的情况；&lt;/li&gt;
+&lt;li&gt;据L的同事检查，数据库无明显的等待事件出现；&lt;/li&gt;
+&lt;li&gt;这些交易都是查询交易，对数据库只有读，没有写操作；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;好了，这些就是我在到达现场以前得到的全部信息。&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id3"&gt;
+&lt;h2&gt;&lt;a class="toc-backref" href="#id10"&gt;现场诊断&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;周日L带着我到达客户现场之后，我先帮他把Tuxedo的配置检查了一遍，没发现有什么问题，尤其是没有使用XA之类带全局锁的特性；应用服务器操作系统是RHEL 5.5，很常用的版本；各台服务器在静止状态下看起来也一切正常。随后跟L交流了一下，想看看他们团队分析这些天下来有什么想法。&lt;/p&gt;
+&lt;p&gt;L告诉我，在H公司调集各路专家来看过以后，各自提出了自己的见解：&lt;/p&gt;
+&lt;ul class="simple"&gt;
+&lt;li&gt;虚拟化环境可能有些资源配置或控制策略不太对；&lt;/li&gt;
+&lt;li&gt;网络大概是瓶颈；&lt;/li&gt;
+&lt;li&gt;LDAP不能支撑这个规模的吞吐量，或在这个吞吐量时有性能问题；&lt;/li&gt;
+&lt;li&gt;说不定是Tuxedo配置不对导致的；&lt;/li&gt;
+&lt;li&gt;COBOL移植代码因为是工具做的，会不会是该系统的源代码写法比较特别，移植过来的代码就有性能问题；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;但问题是谁也没有拿出进一步的证据来支持自己的论点，见解止于猜测。&lt;/p&gt;
+&lt;p&gt;好吧，想法太多就等于没有想法。我决定按自己的思路从头开始分析。&lt;/p&gt;
+&lt;div class="section" id="id4"&gt;
+&lt;h3&gt;&lt;a class="toc-backref" href="#id11"&gt;分析外部依赖&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;鉴于这套应用的移植是由欧洲工程师完成，H公司的中国工程师只负责性能测试相关工作，我觉得首先分析下应用特点是个靠谱的选择。一方面我得确认目前掌握的信息是否有误，另一方面也需要根据应用特点确定下一步分析的方向和手段。&lt;/p&gt;
+&lt;p&gt;先挑几个应用进程看一下打开的文件描述符：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; lsof -p &amp;lt;pid&amp;gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;输出里可以看到每个进程打开了两个tcp连接，L告诉我远端端口号为30002的是与LDAP服务的连接，另一个就是与数据库服务器的连接了。除此以外的一堆输出不是标准输出标准错误就是.so动态库文件之类，没有什么可疑。&lt;/p&gt;
+&lt;p&gt;于是请L启动LoadRunner，我对进程做一下跟踪，看看它会跟哪些外部资源进行交互：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; strace -F -T -ttt -o /tmp/tt.trc -p &amp;lt;pid&amp;gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;结果发现每个应用Server都有两个线程，主线程执行Tuxedo的应用处理流程，中间会与数据库服务器发生交互；另外一个线程则专门负责与LDAP服务交互。我又请L把性能测试停一下，在应用&amp;quot;静止&amp;quot;状态下又做了一次strace，发现负责与LDAP服务交互的线程仍会定期醒来与LDAP服务通信。而且两次strace的结果中都没有发现与锁同步以及信号量相关的系统调用，也就是说至少在这个性能测试的环境下，两个线程是各自独立运行的。&lt;/p&gt;
+&lt;p&gt;除此之外，这个进程与外部资源的交互也就是打开、关闭和写日志文件。日志文件的问题，只要看看iowait的值就直接排除了，我在后面就不再提。&lt;/p&gt;
+&lt;p&gt;至此基本可以确定:&lt;/p&gt;
+&lt;ul class="simple"&gt;
+&lt;li&gt;这套应用除了LDAP以及数据库之外，没有其他的外部依赖；&lt;/li&gt;
+&lt;li&gt;性能测试不会增大LDAP服务的压力，而且主线程的执行并不等待与LDAP服务交互的结果，所以LDAP影响性能的可能性可以排除；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;所以接下来只要做好对客户端、应用服务器以及数据库服务器三个点的分析，相信问题一定会水落石出。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id5"&gt;
+&lt;h3&gt;&lt;a class="toc-backref" href="#id12"&gt;重现问题现象&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;既然排除了外部依赖的影响，我就请L为我演示一下性能测试的效果。果然，在性能测试的开始阶段，TPS值基本是随着客户端并发数线性增长，但当TPS值达到780以后，客户端并发数怎么增长都不会带来TPS值的变化。而且与此同时，LoadRunner统计的平均响应时间也从20多毫秒变为了200多毫秒（此时200并发），而且粗看起来平均响应时间的变化与客户端并发数呈倒数关系。再逐步减小客户端并发数的话，平均响应时间会在原来的响应时间水平上保持几秒，然后很快降到一个新的稳定值。&lt;/p&gt;
+&lt;p&gt;从这些现象来看，很象是某个系统资源出现了瓶颈，导致并发的请求在排队，因此增大并发数就等比例的增大了响应时间，而减小并发数也要先消化完堆积的请求才能等比例的减小响应时间。而且LoadRunner显示的响应时间方差值很小，似乎排队之后得到处理的机会也是按照请求的先来后到次序分配的。&lt;/p&gt;
+&lt;p&gt;L告诉我，现在看到的现象与他们测试的结果是一致的。我在测试过程中登录应用服务器上进入tmadmin敲pq检查Tuxedo队列的情况，也确实没有发现队列堵塞。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; tmadmin
+&lt;span class="gp"&gt;&amp;gt;&lt;/span&gt; pq
+&lt;span class="gp"&gt;&amp;gt;&lt;/span&gt; quit
+&lt;span class="gp"&gt;$&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;不过在我用过所有Tuxedo 11g及以下的版本中，pq命令的输出应该类似这个样子：&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+Prog Name      Queue Name  # Serve Wk Queued  # Queued  Ave. Len    Machine
+---------      ------------------- ---------  --------  --------    -------
+simpserv       00002.01000       1         0         0       0.0     simple
+WSL            00001.00001       1         0         0       0.0     simple
+BBL            123456            1         0         0       0.0     simple
+&lt;/pre&gt;
+&lt;p&gt;其中Queued列是当前堵塞在队列里的请求个数，&amp;quot;Ave. Len&amp;quot;列则是这个Server的平均响应时间。但在他们这套环境上，&amp;quot;Ave. Len&amp;quot;列则全部是一个减号。&lt;/p&gt;
+&lt;p&gt;这让我有点困惑，不会是Tuxedo 12c里这个命令不好使了吧，难道虽然它的输出为0，但请求实际上是在排队的？想了想，我决定还是别的方向再验证一下。&lt;/p&gt;
+&lt;p&gt;第一个当然是看一下操作系统的消息队列：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; ipcs -q
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;看到的结果是所有的队列中消息数基本都是0，偶尔有一个队列里有一个消息，也马上就被取走了。再看一下活跃中的Tuxedo Server数量：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; tmadmin &amp;lt;&amp;lt;-! | grep -v IDLE | wc -l
+&lt;span class="gp"&gt;&amp;gt;&lt;/span&gt; psr
+&lt;span class="gp"&gt;&amp;gt;&lt;/span&gt; quit
+&lt;span class="gp"&gt;&amp;gt;&lt;/span&gt; !
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;得到的数字也基本与LoadRunner客户端并发数相等，偶尔会差一两个。三个命令互相佐证，看来Tuxedo没有出现堵塞的情况应该是可以确定了。&lt;/p&gt;
+&lt;p&gt;再考虑到LoadRunner与应用通信时是tpcall，也就是说一个请求发出去以后，必须要等到对应的应答收回来才能发起第二个请求。我结合到现在为止看到的现象做出了几个推论：&lt;/p&gt;
+&lt;ul class="simple"&gt;
+&lt;li&gt;每个请求到达Tuxedo之后，马上就有Server将请求收下来进行处理；&lt;/li&gt;
+&lt;li&gt;每个LoadRunner客户端在发出请求后，该请求很快就到达了Tuxedo，Tuxedo处理完毕返回应答后，应答也很快返回了LoadRunner；&lt;/li&gt;
+&lt;li&gt;在平均响应时间增长了十倍的情况下，还只能偶尔看到活动Server数与LoadRunner客户端数不相等，说明LoadRunner与Tuxedo之间的通讯耗时绝对不是主要矛盾；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;后面两个推论可能来得有点突然，我在这里解释一下：&lt;/p&gt;
+&lt;ol class="arabic simple"&gt;
+&lt;li&gt;LoadRunner测量得到的响应时间（T），实际上主要由三部分组成：&lt;ul&gt;
+&lt;li&gt;由客户端发送请求到Tuxedo的耗时（N1）；&lt;/li&gt;
+&lt;li&gt;Tuxedo处理请求耗时（S），含与数据库交互需要的时间；&lt;/li&gt;
+&lt;li&gt;Tuxedo发送应答到客户端耗时（N2）三部分组成；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;除此以外还有Tuxedo通信进程以及Tuxedo Server读写消息队列的耗时，但这些操作需要的时间通常都在微秒乃至纳秒级，因此我先忽略不计；&lt;/li&gt;
+&lt;li&gt;既然T = N1 + S + N2，那么在时间T内，一个客户端在时间S内有一个Tuxedo Server在处理它发起的请求，时间N1 + N2内则没有；&lt;/li&gt;
+&lt;li&gt;如果我观察的次数足够多的话，(活跃的Tuxedo Server数量的均值 / LoadRunner客户端并发数)会无限趋近于 (S / T)；&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;既然在客户端并发数为200的情况下，我还只是能偶尔看到活跃Server数少一两个，那S / T的值显然是非常接近1的。我现在只需要解决主要矛盾，那N1和N2的值到底是多少暂时也不用深究了。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id6"&gt;
+&lt;h3&gt;&lt;a class="toc-backref" href="#id13"&gt;时间消耗分析&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;既然现在明确时间是消耗在业务处理上了，自然就要想办法分析时间到底消耗在什么操作上了。最简单的方式就是直接去找耗时最长的系统调用，于是我又在LoadRunner平均响应时间200毫秒的情况下对Tuxedo Server做了一段时间的strace，然后尝试找出耗时达到超出50ms的系统调用。&lt;/p&gt;
+&lt;p&gt;没想到不仅是没找到超过50ms的系统调用，而且连达到20～30ms的系统调用也很少。看起来这一次跟其它性能问题的典型症状不太一样，我还是先确认一下系统调用的耗时有没有问题比较安全。先看一下系统调用的统计信息：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; strace -F -c -p &amp;lt;pid&amp;gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;这个命令得到的输出会是类似这样（不要误会，我的例子实际上是回家以后strace -c ls得到的）：&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+  0.00    0.000000           0        19           read
+  0.00    0.000000           0         4           write
+  0.00    0.000000           0        38        31 open
+  0.00    0.000000           0        10           close
+  0.00    0.000000           0         8         6 stat
+  0.00    0.000000           0         8           fstat
+  0.00    0.000000           0        18           mmap
+  0.00    0.000000           0         9           mprotect
+  0.00    0.000000           0         3           munmap
+  0.00    0.000000           0         4           brk
+  0.00    0.000000           0         2           ioctl
+  0.00    0.000000           0         1         1 access
+  0.00    0.000000           0         1           execve
+  0.00    0.000000           0         2           getdents
+  0.00    0.000000           0         1           arch_prctl
+  0.00    0.000000           0         1           openat
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.000000                   129        38 total
+&lt;/pre&gt;
+&lt;p&gt;里面usecs/call列就是我关心的平均每次调用耗时。&lt;/p&gt;
+&lt;p&gt;我用上面这个命令对平均响应时间为20ms和200ms的情况分别做了跟踪，得到的结果是输出中有大量的read/write调用，另外还有少量的stat/mmap等调用，而且两次跟踪的read平均耗时有好几倍的差距。&lt;/p&gt;
+&lt;p&gt;既然有差距就好办了。只要有时间差距，那不是个别操作耗时太长，就是多个操作的耗时同时都变长了。再次对20ms和200ms的情况分别进行跟踪采样：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; strace -F -T -ttt -o /tmp/time.trc -p &amp;lt;pid&amp;gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;两次得到的trc文件名分别为time1.trc和time2.trc。接下来的任务就是要从两个trc文件中分别选取一次完整的交易处理过程进行对比。&lt;/p&gt;
+&lt;p&gt;熟悉Tuxedo的朋友可能会知道，Tuxedo Server其实是一个死循环，静止状态时阻塞在msgrcv上，收到请求消息则开始进行业务处理，最后以msgsnd送回应答消息结束。因此我只要选取trc文件中以msgrcv开始，以msgsnd结束的一段记录就是我要的内容。&lt;/p&gt;
+&lt;p&gt;对比的过程不再赘述，总之结果是两段记录中每一行的系统调用、传入参数、返回值都一模一样，但是每当对文件描述符5执行read操作时，两者之间就差了十几倍。将耗时长的那段记录里对文件描述符5的read耗时加起来一看，已经占了170ms以上。&lt;/p&gt;
+&lt;p&gt;再用lsof看一下文件描述符5，就是与数据库服务器之间的tcp连接。&lt;/p&gt;
+&lt;p&gt;我们知道，应用程序操作数据库时调用的底层操作实际上就是首先write将指令发送到数据库服务器，然后马上调用read等待接受操作结果。其中：&lt;/p&gt;
+&lt;ul class="simple"&gt;
+&lt;li&gt;write耗时是将报文copy到内核buffer的耗时；&lt;/li&gt;
+&lt;li&gt;read实际上是报文传输到数据库服务器、数据库服务器进行处理并将应答报文回送到应用服务器三者的时间总和；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;因此read的耗时变长要么就是应用服务器与数据库服务器的通信不畅，要么就是数据库服务器本身处理性能出了问题。&lt;/p&gt;
+&lt;p&gt;于是我问L能不能看看数据库那边是什么情况，结果L说这个NonStop整个公司也只有几个人会玩，要查只能等周一了。&lt;/p&gt;
+&lt;p&gt;于是我跟L说了一下接下来的排查方向：最好是先在数据库查一下处理耗时，如果正常的话就要一级一级的去查网络通信用到的设备。然后就撤了。&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id7"&gt;
+&lt;h2&gt;&lt;a class="toc-backref" href="#id14"&gt;最终结果&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;几天前我跟L联系的时候问起排查的结果，他说病根找到了，问题出在网络上。但不是什么网络设备的问题，而是应用服务器虚拟机环境与数据库服务器的网络通信是分配了一颗CPU来处理网卡通信。结果这颗CPU有些问题，流量一大就直接跑到100%了，因此应用服务器与数据库服务器的通信都在虚拟机以外的这颗CPU上排队，性能测试自然效果不好了。&lt;/p&gt;
+&lt;p&gt;回顾整个排查过程中，我只用到了top/lsof/strace等几个很常用的工具，只是对每一步得到的结果结合业务场景对里面的数字做了定量的分析而已。这个问题虽然相对比较复杂，但是方法得当的话，真的不用花两三周的时间。&lt;/p&gt;
+&lt;p&gt;其实很多时候，解决问题所需要的信息已经都摆在面前了，只看我们能不能找到合理的角度去分析解读，并找出其背后含义罢了。&lt;/p&gt;
+&lt;/div&gt;
+</summary><category term="troubleshooting"></category><category term="strace"></category><category term="Tuxedo"></category></entry></feed>
