@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="zh"
+>
+<head>
+    <title>DOT语言（译） - Keep Simple</title>
+    <!-- Using the latest rendering mode for IE -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+
+<link rel="canonical" href="https://zhangjoto.github.io/dotyu-yan-yi.html">
+
+        <meta name="author" content="graphviz" />
+        <meta name="keywords" content="graphviz,documents,翻译" />
+        <meta name="description" content="Contents 译者插播 概述 Subgraphs和Clusters 词法和语义注解 编码 译者插播 最近正在琢磨解决做图太费劲的问题，因此开始玩起了graphviz。但是偏偏这些天graphviz的官网动不动就打不开，没法看在线文档，耽误了不少事。所以一气之下就把这篇类似总纲的文档翻译了过来放在自己的地盘上。总体感觉看懂这篇文档再参考网上现有的中文教程已经可以解决90%以上的graphviz做图问题了，所缺失的只是支持的属性及其取值列表（将来有需要或有时间也许会译）而已。 原文中粗体字显示的词（作为keyword）都保留为英文，另外edge的含义因为与中文的&#34;边&#34;相差甚大也全部保留为英文单词。此外由于水平所限，有些不理解或吃不准的内容保留未译或附上了原文，以供核对。 这篇翻译基于版本为2.38.0的官方文档（原文在 这里 ），并参考了另一篇 老的翻译文 ，请看官根据版本自行取用。 概述 下面是DOT语言的抽象语法定义。Terminals（译者：分界词？）显示为粗体，nonterminals显示为斜体。字面上的字符包含在单引号中，圆括号 ( 及 ) 表示分组。方括号 [ 和 ] 包围可选的元素。管道符 ..." />
+
+        <meta property="og:site_name" content="Keep Simple" />
+        <meta property="og:type" content="article"/>
+        <meta property="og:title" content="DOT语言（译）"/>
+        <meta property="og:url" content="https://zhangjoto.github.io/dotyu-yan-yi.html"/>
+        <meta property="og:description" content="Contents 译者插播 概述 Subgraphs和Clusters 词法和语义注解 编码 译者插播 最近正在琢磨解决做图太费劲的问题，因此开始玩起了graphviz。但是偏偏这些天graphviz的官网动不动就打不开，没法看在线文档，耽误了不少事。所以一气之下就把这篇类似总纲的文档翻译了过来放在自己的地盘上。总体感觉看懂这篇文档再参考网上现有的中文教程已经可以解决90%以上的graphviz做图问题了，所缺失的只是支持的属性及其取值列表（将来有需要或有时间也许会译）而已。 原文中粗体字显示的词（作为keyword）都保留为英文，另外edge的含义因为与中文的&#34;边&#34;相差甚大也全部保留为英文单词。此外由于水平所限，有些不理解或吃不准的内容保留未译或附上了原文，以供核对。 这篇翻译基于版本为2.38.0的官方文档（原文在 这里 ），并参考了另一篇 老的翻译文 ，请看官根据版本自行取用。 概述 下面是DOT语言的抽象语法定义。Terminals（译者：分界词？）显示为粗体，nonterminals显示为斜体。字面上的字符包含在单引号中，圆括号 ( 及 ) 表示分组。方括号 [ 和 ] 包围可选的元素。管道符 ..."/>
+        <meta property="article:published_time" content="2016-02-25" />
+            <meta property="article:section" content="documents" />
+            <meta property="article:tag" content="graphviz" />
+            <meta property="article:tag" content="documents" />
+            <meta property="article:tag" content="翻译" />
+            <meta property="article:author" content="graphviz" />
+
+
+    <!-- Bootstrap -->
+        <link rel="stylesheet" href="https://zhangjoto.github.io/theme/css/bootstrap.min.css" type="text/css"/>
+    <link href="https://zhangjoto.github.io/theme/css/font-awesome.min.css" rel="stylesheet">
+
+    <link href="https://zhangjoto.github.io/theme/css/pygments/native.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://zhangjoto.github.io/theme/css/style.css" type="text/css"/>
+
+        <link href="https://zhangjoto.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate"
+              title="Keep Simple ATOM Feed"/>
+
+</head>
+<body>
+
+<div class="navbar navbar-default navbar-fixed-top" role="navigation">
+	<div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a href="https://zhangjoto.github.io/" class="navbar-brand">
+Keep Simple            </a>
+        </div>
+        <div class="collapse navbar-collapse navbar-ex1-collapse">
+            <ul class="nav navbar-nav">
+                        <li >
+                            <a href="https://zhangjoto.github.io/category/docker.html">Docker</a>
+                        </li>
+                        <li class="active">
+                            <a href="https://zhangjoto.github.io/category/documents.html">Documents</a>
+                        </li>
+                        <li >
+                            <a href="https://zhangjoto.github.io/category/troubleshooting.html">Troubleshooting</a>
+                        </li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+              <li><a href="https://zhangjoto.github.io/archives.html"><i class="fa fa-th-list"></i><span class="icon-label">Archives</span></a></li>
+            </ul>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+</div> <!-- /.navbar -->
+<!-- Banner -->
+<!-- End Banner -->
+<div class="container">
+    <div class="row">
+        <div class="col-sm-9">
+
+    <section id="content">
+        <article>
+            <header class="page-header">
+                <h1>
+                    <a href="https://zhangjoto.github.io/dotyu-yan-yi.html"
+                       rel="bookmark"
+                       title="Permalink to DOT语言（译）">
+                        DOT语言（译）
+                    </a>
+                </h1>
+            </header>
+            <div class="entry-content">
+                <div class="panel">
+                    <div class="panel-body">
+<footer class="post-info">
+    <span class="label label-default">Date</span>
+    <span class="published">
+        <i class="fa fa-calendar"></i><time datetime="2016-02-25T00:00:00+08:00"> 四 25 二月 2016</time>
+    </span>
+
+
+
+<span class="label label-default">Tags</span>
+	<a href="https://zhangjoto.github.io/tag/graphviz.html">graphviz</a>
+        /
+	<a href="https://zhangjoto.github.io/tag/documents.html">documents</a>
+        /
+	<a href="https://zhangjoto.github.io/tag/fan-yi.html">翻译</a>
+    
+</footer><!-- /.post-info -->                    </div>
+                </div>
+                <div class="contents topic" id="contents">
+<p class="topic-title first">Contents</p>
+<ul class="simple">
+<li><a class="reference internal" href="#id1" id="id8">译者插播</a></li>
+<li><a class="reference internal" href="#id4" id="id9">概述</a></li>
+<li><a class="reference internal" href="#subgraphsclusters" id="id10">Subgraphs和Clusters</a></li>
+<li><a class="reference internal" href="#id5" id="id11">词法和语义注解</a></li>
+<li><a class="reference internal" href="#id6" id="id12">编码</a></li>
+</ul>
+</div>
+<div class="section" id="id1">
+<h2><a class="toc-backref" href="#id8">译者插播</a></h2>
+<p>最近正在琢磨解决做图太费劲的问题，因此开始玩起了graphviz。但是偏偏这些天graphviz的官网动不动就打不开，没法看在线文档，耽误了不少事。所以一气之下就把这篇类似总纲的文档翻译了过来放在自己的地盘上。总体感觉看懂这篇文档再参考网上现有的中文教程已经可以解决90%以上的graphviz做图问题了，所缺失的只是支持的属性及其取值列表（将来有需要或有时间也许会译）而已。</p>
+<p>原文中粗体字显示的词（作为keyword）都保留为英文，另外edge的含义因为与中文的&quot;边&quot;相差甚大也全部保留为英文单词。此外由于水平所限，有些不理解或吃不准的内容保留未译或附上了原文，以供核对。</p>
+<p>这篇翻译基于版本为2.38.0的官方文档（原文在 <a class="reference external" href="http://www.graphviz.org/content/dot-language">这里</a> ），并参考了另一篇 <a class="reference external" href="http://blog.csdn.net/xiajian2010/article/details/23746995">老的翻译文</a> ，请看官根据版本自行取用。</p>
+</div>
+<div class="section" id="id4">
+<h2><a class="toc-backref" href="#id9">概述</a></h2>
+<p>下面是DOT语言的抽象语法定义。Terminals（译者：分界词？）显示为粗体，nonterminals显示为斜体。字面上的字符包含在单引号中，圆括号 ( 及 ) 表示分组。方括号 [ 和 ] 包围可选的元素。管道符 | 分隔选择项。</p>
+<TABLE>
+<TR>
+  <TD ALIGN=RIGHT><I>graph</i></td>
+  <TD ALIGN=LEFT>:</td>
+  <TD ALIGN=LEFT>[ <B>strict</b> ] (<B>graph</b> | <B>digraph</b>) [ <I>ID</i> ] <B>'{'</b> <I>stmt_list</i> <B>'}'</b></td>
+</tr>
+<TR>
+  <TD ALIGN=RIGHT><I>stmt_list</i></td>
+  <TD ALIGN=LEFT>:</td>
+  <TD ALIGN=LEFT>[ <I>stmt</i> [ <B>';'</b> ] <I>stmt_list</i> ]</td>
+</tr>
+<TR>
+  <TD ALIGN=RIGHT><I>stmt</i></td>
+  <TD ALIGN=LEFT>:</td>
+  <TD ALIGN=LEFT><I>node_stmt</i></td>
+</tr>
+<TR>
+  <TD ALIGN=RIGHT></td>
+  <TD ALIGN=LEFT>|</td>
+  <TD ALIGN=LEFT><I>edge_stmt</i></td>
+</tr>
+<TR>
+  <TD ALIGN=RIGHT></td>
+  <TD ALIGN=LEFT>|</td>
+  <TD ALIGN=LEFT><I>attr_stmt</i></td>
+</tr>
+<TR>
+  <TD ALIGN=RIGHT></td>
+  <TD ALIGN=LEFT>|</td>
+  <TD ALIGN=LEFT><I>ID</i> <B>'='</b> <I>ID</i></td>
+</tr>
+<TR>
+  <TD ALIGN=RIGHT></td>
+  <TD ALIGN=LEFT>|</td>
+  <TD ALIGN=LEFT><I>subgraph</i></td>
+</tr>
+<TR>
+  <TD ALIGN=RIGHT><I>attr_stmt</i></td>
+  <TD ALIGN=LEFT>:</td>
+  <TD ALIGN=LEFT>(<B>graph</b> | <B>node</b> | <B>edge</b>) <I>attr_list</i></td>
+</tr>
+<TR>
+  <TD ALIGN=RIGHT><I>attr_list</i></td>
+  <TD ALIGN=LEFT>:</td>
+  <TD ALIGN=LEFT><B>'['</b> [ <I>a_list</i> ] <B>']'</b> [ <I>attr_list</i> ]</td>
+</tr>
+<TR>
+  <TD ALIGN=RIGHT><I>a_list</i></td>
+  <TD ALIGN=LEFT>:</td>
+  <TD ALIGN=LEFT><I>ID</i> <B>'='</b> <I>ID</i> [ (<B>';'</b> | <B>','</b>) ] [ <I>a_list</i> ]</td>
+</tr>
+<TR>
+  <TD ALIGN=RIGHT><I>edge_stmt</i></td>
+  <TD ALIGN=LEFT>:</td>
+  <TD ALIGN=LEFT>(<I>node_id</i> | <I>subgraph</i>) <I>edgeRHS</i> [ <I>attr_list</i> ]</td>
+</tr>
+<TR>
+  <TD ALIGN=RIGHT><I>edgeRHS</i></td>
+  <TD ALIGN=LEFT>:</td>
+  <TD ALIGN=LEFT><I>edgeop</i> (<I>node_id</i> | <I>subgraph</i>) [ <I>edgeRHS</i> ]</td>
+</tr>
+<TR>
+  <TD ALIGN=RIGHT><I>node_stmt</i></td>
+  <TD ALIGN=LEFT>:</td>
+  <TD ALIGN=LEFT><I>node_id</i> [ <I>attr_list</i> ]</td>
+</tr>
+<TR>
+  <TD ALIGN=RIGHT><I>node_id</i></td>
+  <TD ALIGN=LEFT>:</td>
+  <TD ALIGN=LEFT><I>ID</i> [ <I>port</i> ]</td>
+</tr>
+<TR>
+  <TD ALIGN=RIGHT><I>port</i></td>
+  <TD ALIGN=LEFT>:</td>
+  <TD ALIGN=LEFT><B>':'</b> <I>ID</i> [ <B>':'</b> <I>compass_pt</i> ]</td>
+</tr>
+<TR>
+  <TD ALIGN=RIGHT></td>
+  <TD ALIGN=LEFT>|</td>
+  <TD ALIGN=LEFT><B>':'</b> <I>compass_pt</i></td>
+</tr>
+<TR>
+  <TD ALIGN=RIGHT><I>subgraph</i></td>
+  <TD ALIGN=LEFT>:</td>
+  <TD ALIGN=LEFT>[ <B>subgraph</b> [ <I>ID</i> ] ] <B>'{'</b> <I>stmt_list</i> <B>'}'</b></td>
+</tr>
+<TR>
+  <TD ALIGN=RIGHT><I>compass_pt</i></td>
+  <TD ALIGN=LEFT>:</td>
+  <TD ALIGN=LEFT>(<B>n</b> | <B>ne</b> | <B>e</b> | <B>se</b> | <B>s</b> | <B>sw</b> | <B>w</b> | <B>nw</b> | <B>c</b> | <B>_</b>)</td>
+</tr>
+</table><p>关键字node, edge, graph, digraph, subgraph和strict是大小写无关的。Note also that the allowed compass point values are not keywords, so these strings can be used elsewhere as ordinary identifiers and, conversely, the parser will actually accept any identifier.</p>
+<p>ID可以是以下的任意一种：</p>
+<ul class="simple">
+<li>任意字母（[a-zA-Z200-377]），下划线或数字字符组成的字符串，且不以数字开头；</li>
+<li>一个数字（[-]?(.[0-9]+|[0-9]+(.[0-9]*)?）；</li>
+<li>任意双引号包围的字符串（&quot;...&quot;），可以包含转义的引号（&quot;）；</li>
+<li>一个HTML字符串（&lt;...&gt;）；</li>
+</ul>
+<p>ID其实就是一个字符串，上面第一第二种形式不使用引号仅仅是为了简单。在 abc_2 和 &quot;abc_2&quot; 之间，2.34 和 &quot;2.34&quot; 之间并没有语义差异。显然，使用关键字做为ID时必须使用引号。记住，在HTML中的字符串，尖括号必须成对出现，并允许换行和其他格式的空白。此外内容必须是合法的XML，因此特定的XML转义序列 &quot;, &amp;, &lt;, &gt; 可能是必要的，以便在属性值或原始文本中嵌入这些字符。作为ID，HTML字符串可以是任何合法的XML字符串，然而若是作为一个label属性，it is interpreted specially and must follow the syntax for HTML-like labels.</p>
+<p>引号字符串和HTML字符串都被视为一个单元，所以任何嵌入其中的注释将被当作字符串的一部分。</p>
+<p>edgeop为 -&gt; 表示有向图，-- 表示无向图。</p>
+<p>DOT语言支持C++风格的注释：&quot;/* */&quot;和&quot;//&quot;。此外一个以 # 开始的行会被视为C预处理器的输出而忽略。</p>
+<p>分号和逗号有助于提高可读性，但不是必须的；同样，也可以在terminal间插入任意数量的空白。</p>
+<p>另一个增强可读性的设定是，DOT语言允许双引号字符串使用标准C约定的反斜杠紧接换行来跨越多个物理行。此外，双引号字符串可以用 + 操作符来拼接。而HTML字符串因为可以包含换行，所以不支持连接。</p>
+</div>
+<div class="section" id="subgraphsclusters">
+<h2><a class="toc-backref" href="#id10">Subgraphs和Clusters</a></h2>
+<p>子图（subgrap）在Graphviz中扮演三个角色。首先，子图可以用于指明图（译者：graph，不是视觉意义上的图形）的结构，比如某些节点（node）和edge应该视为一组。这是子图最常见的角色，用于指明关于图的组件的语义信息。它还为edge提供了一个速记法，一个edge语句允许直接连接两个子图，此时左侧子图中的每个节点到右侧子图的每个节点都会有一条edge。例如：:</p>
+<pre class="literal-block">
+A -&gt; {B C}
+</pre>
+<p>就等于：:</p>
+<pre class="literal-block">
+A -&gt; B
+A -&gt; C
+</pre>
+<p>其次，子图可以提供设置属性的上下文。例如，子图可以指定它内部定义的所有节点默认为蓝色。这方面一个更有趣的例子是：:</p>
+<pre class="literal-block">
+subgraph {
+rank = same; A; B; C;
+}
+</pre>
+<p>这个（匿名）子图指定dot绘制的节点A，B和C应该放在同一等级。</p>
+<p>最后，子图直接涉及图形将如何被某些布局引擎布局。如果子图的名字以cluster开始，Graphviz就将其视为一种特殊的集群子图（cluster subgraph）。如果布局引擎支持的话，就会将属于该集群的节点绘制在一起并全部包含在在一个矩形边框中。注意 <em>集群子图并不是DOT语言的一部分，只是某些布局引擎的语法约定。</em></p>
+</div>
+<div class="section" id="id5">
+<h2><a class="toc-backref" href="#id11">词法和语义注解</a></h2>
+<p>图必须被指明为digraph或graph。语义上，这指明了相连的两个节点是否有固有的从一个节点到另一个节点的方向性；词法上，有向图的edge要用 -&gt; 指定，无向图则必须用 -- ；操作上，这用于定义渲染时默认属性的区别。比如，有向图的edge默认带有指向头节点（head node）的箭头，无向图的edge则默认不带箭头。</p>
+<p>图还可以被描述为strict。这会禁止创建多条（相同的）edge，也就是说，在一对给定的尾节点（tail node）和头节点间最多能有一条edge。对于无向图，两个节点最多能有一条edge相连，多余的edge语句会被标识为之前已定义的那一条，并应用最后的edge语句的全部属性。例如：:</p>
+<pre class="literal-block">
+strict graph {
+    a -- b
+    a -- b
+    b -- a [color=blue]
+}
+</pre>
+<p>在节点a和b之间只有一条edge，颜色则是蓝色。</p>
+<p>如果在node, edge 或graph语句中，或未附加到任何节点或边上的属性赋值定义了默认属性，其后任何适当类型的对象都将继承这个属性值，直到默认属性被设为新的值，然后新值又会被更之后的对象继承。对默认属性设置前定义的对象，该属性值为一个空字符串，直到出现默认属性设置（译者：从原文will have an empty string value <strong>attached to</strong> the attribute once the default attribute definition is made来看，似乎之前对象的空字符串属性会变为新值？）。</p>
+<p>特别要注意一点，子图在其定义时会接收父图的属性设置。这是很有用的，比如你可以在根图中指定字体，于是所有的子图都会使用同样的字体。然而对于某些属性这是不可取的：如果附加一个标签到根图，也许并不是所有的子图都希望使用这个标签。因此，与其在图的顶部列出所有属性并在子图中根据需要重设这些属性，还不如简单的将这些属性的定义移到适当的子图定义完之后。</p>
+<p>如果edge属于一个集群，它的端点也属于这个集群。因此，由于集群有时会递归布局，你将edge放在哪里也会影响布局。</p>
+<p>对于子图和集群存在一些限制。首先，目前图的名称和它的子图共享一个名字空间（namespace），因此每个子图都必须有唯一的名字；第二，虽然节点可以属于任意数量的子图，但当集群被视为节点和edge的子集时，仍会假设集群有严格的层次结构（译者：猜测是说支持cluster语法约定的布局引擎允许集群有包含关系，但不允许部分重叠的关系）。</p>
+</div>
+<div class="section" id="id6">
+<h2><a class="toc-backref" href="#id12">编码</a></h2>
+<p>The DOT language assumes at least the ascii character set.带引号的字符串（包含普通的和类似HTML的）可能包含非ASCII字符。大多数情况下这些字符串不会被解释：它们仅仅是当作唯一标识符或值来传递。但标签是需要显示的，这需要软件能计算文件的大小并确定适当的字形。因此它需要知道使用的字符编码。</p>
+<p>DOT默认假定使用UTF-8编码，如果图中指明charset属性的话，它也支持Latin1（ISO-8859-1）编码。对于其他编码，通常可以用iconv之类的程序先做转码。</p>
+<p>另一个避免在标签中使用非ASCII字符的方法是为特定字符使用HTML实体。对标签计算求值时，这些实体被翻译成底层的字符。<a class="reference external" href="http://www.graphviz.org/doc/char.html">这张表</a> （译者：也可以参看 <a class="reference external" href="https://www.w3.org/TR/2011/WD-html5-20110113/named-character-references.html">W3C文档</a> ）列出了支持的实体，包含它们的Unicode值，典型的字形和HTML实体名称。因此，要在字符串中包含希腊文β，可以使用ASCII序列&quot;&amp;beta;&quot;。一般情况下，只应该使用输出字符集和字体（有对应字形）支持的实体。</p>
+</div>
+
+            </div>
+            <!-- /.entry-content -->
+    <hr/>
+    <section class="comments" id="comments">
+        <h2>Comments</h2>
+
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+            /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+            var disqus_shortname = 'github'; // required: replace example with your forum shortname
+
+                    var disqus_identifier = 'dotyu-yan-yi';
+                var disqus_url = 'https://zhangjoto.github.io/dotyu-yan-yi.html';
+
+            var disqus_config = function () {
+                this.language = "zh";
+            };
+
+            /* * * DON'T EDIT BELOW THIS LINE * * */
+            (function () {
+                var dsq = document.createElement('script');
+                dsq.type = 'text/javascript';
+                dsq.async = true;
+                dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+                (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+            })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by
+            Disqus.</a></noscript>
+        <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    </section>
+        </article>
+    </section>
+
+        </div>
+        <div class="col-sm-3" id="sidebar">
+            <aside>
+
+<section class="well well-sm">
+    <ul class="list-group list-group-flush">
+
+
+
+            <li class="list-group-item"><a href="https://zhangjoto.github.io/"><h4><i class="fa fa-tags fa-lg"></i><span class="icon-label">Tags</span></h4></a>
+                <ul class="list-group " id="tags">
+                </ul>
+            </li>
+    <li class="list-group-item"><h4><i class="fa fa-external-link-square fa-lg"></i><span class="icon-label">Links</span></h4>
+      <ul class="list-group" id="links">
+        <li class="list-group-item">
+            <a href="http://getpelican.com/" target="_blank">
+                Pelican
+            </a>
+        </li>
+        <li class="list-group-item">
+            <a href="http://python.org/" target="_blank">
+                Python.org
+            </a>
+        </li>
+        <li class="list-group-item">
+            <a href="http://jinja.pocoo.org/" target="_blank">
+                Jinja2
+            </a>
+        </li>
+      </ul>
+    </li>
+    </ul>
+</section>
+            </aside>
+        </div>
+    </div>
+</div>
+<footer>
+   <div class="container">
+      <hr>
+      <div class="row">
+         <div class="col-xs-10">&copy; 2016 zhangjoto
+            &middot; Powered by <a href="https://github.com/DandyDev/pelican-bootstrap3" target="_blank">pelican-bootstrap3</a>,
+            <a href="http://docs.getpelican.com/" target="_blank">Pelican</a>,
+            <a href="http://getbootstrap.com" target="_blank">Bootstrap</a>         </div>
+         <div class="col-xs-2"><p class="pull-right"><i class="fa fa-arrow-up"></i> <a href="#">Back to top</a></p></div>
+      </div>
+   </div>
+</footer>
+<script src="https://zhangjoto.github.io/theme/js/jquery.min.js"></script>
+
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="https://zhangjoto.github.io/theme/js/bootstrap.min.js"></script>
+
+<!-- Enable responsive features in IE8 with Respond.js (https://github.com/scottjehl/Respond) -->
+<script src="https://zhangjoto.github.io/theme/js/respond.min.js"></script>
+
+    <!-- Disqus -->
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'github'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function () {
+            var s = document.createElement('script');
+            s.async = true;
+            s.type = 'text/javascript';
+            s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+            (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+        }());
+    </script>
+    <!-- End Disqus Code -->
+
+</body>
+</html>

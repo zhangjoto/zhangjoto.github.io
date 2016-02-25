@@ -1,20 +1,33 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:og="http://ogp.me/ns#"
-      xmlns:fb="https://www.facebook.com/2008/fbml">
+<html lang="zh"
+>
 <head>
     <title>利用Docker建立Oracle 11g实验环境 - Keep Simple</title>
     <!-- Using the latest rendering mode for IE -->
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
 
-    <!-- Open Graph tags -->
-            <meta property="og:type" content="article"/>
-            <meta property="og:title" content="利用Docker建立Oracle 11g实验环境"/>
-            <meta property="og:url" content="https://zhangjoto.github.io/li-yong-dockerjian-li-oracle-11gshi-yan-huan-jing.html"/>
-            <meta property="og:description" content="Contents 基本信息 宿主机调整 空间问题解决 直接从kvm虚拟机迁移 虚拟机硬盘挂载 文件系统导入 Docker环境下重新安装 基础镜像准备 获取官方Base Image Oracle安装准备 图形化方式安装 静默安装 Dockerfile方式静默安装 环境清理并创建Image 最近一直在研究Docker，尝试拿它做一些小型的开发试验环境，确实是相当好用。 某日突发奇想，打算将我的Oracle实验环境迁到Docker中来。虽然最终得到的镜像有点头重脚轻，不太符合Docker推荐的使用方式，但相比虚拟机好歹也节省了些开销。 实验过程中各种方式折腾了好几轮，感觉都不太完美。先将过程做个记录，期望将来能找到更好的办法。 基本信息 我的笔记本本地硬盘是128G的SSD，所以实验过程中使用了外置硬盘做存储，好在是USB3.0连接。另外，基本的软件版本信息如下： OS: Arch Linux (内核3.16.4-1)64位 Docker: 1:1.3.0-1 容器OS: CentOS 6 ..."/>
+
+
+<link rel="canonical" href="https://zhangjoto.github.io/li-yong-dockerjian-li-oracle-11gshi-yan-huan-jing.html">
+
+        <meta name="author" content="zhangjoto" />
+        <meta name="keywords" content="Docker,Oracle,容器技术" />
+        <meta name="description" content="Contents 基本信息 宿主机调整 空间问题解决 直接从kvm虚拟机迁移 虚拟机硬盘挂载 文件系统导入 Docker环境下重新安装 基础镜像准备 获取官方Base Image Oracle安装准备 图形化方式安装 静默安装 Dockerfile方式静默安装 环境清理并创建Image 最近一直在研究Docker，尝试拿它做一些小型的开发试验环境，确实是相当好用。 某日突发奇想，打算将我的Oracle实验环境迁到Docker中来。虽然最终得到的镜像有点头重脚轻，不太符合Docker推荐的使用方式，但相比虚拟机好歹也节省了些开销。 实验过程中各种方式折腾了好几轮，感觉都不太完美。先将过程做个记录，期望将来能找到更好的办法。 基本信息 我的笔记本本地硬盘是128G的SSD，所以实验过程中使用了外置硬盘做存储，好在是USB3.0连接。另外，基本的软件版本信息如下： OS: Arch Linux (内核3.16.4-1)64位 Docker: 1:1.3.0-1 容器OS: CentOS 6 ..." />
+
+        <meta property="og:site_name" content="Keep Simple" />
+        <meta property="og:type" content="article"/>
+        <meta property="og:title" content="利用Docker建立Oracle 11g实验环境"/>
+        <meta property="og:url" content="https://zhangjoto.github.io/li-yong-dockerjian-li-oracle-11gshi-yan-huan-jing.html"/>
+        <meta property="og:description" content="Contents 基本信息 宿主机调整 空间问题解决 直接从kvm虚拟机迁移 虚拟机硬盘挂载 文件系统导入 Docker环境下重新安装 基础镜像准备 获取官方Base Image Oracle安装准备 图形化方式安装 静默安装 Dockerfile方式静默安装 环境清理并创建Image 最近一直在研究Docker，尝试拿它做一些小型的开发试验环境，确实是相当好用。 某日突发奇想，打算将我的Oracle实验环境迁到Docker中来。虽然最终得到的镜像有点头重脚轻，不太符合Docker推荐的使用方式，但相比虚拟机好歹也节省了些开销。 实验过程中各种方式折腾了好几轮，感觉都不太完美。先将过程做个记录，期望将来能找到更好的办法。 基本信息 我的笔记本本地硬盘是128G的SSD，所以实验过程中使用了外置硬盘做存储，好在是USB3.0连接。另外，基本的软件版本信息如下： OS: Arch Linux (内核3.16.4-1)64位 Docker: 1:1.3.0-1 容器OS: CentOS 6 ..."/>
+        <meta property="article:published_time" content="2014-10-20" />
+            <meta property="article:section" content="Docker" />
+            <meta property="article:tag" content="Docker" />
+            <meta property="article:tag" content="Oracle" />
+            <meta property="article:tag" content="容器技术" />
+            <meta property="article:author" content="zhangjoto" />
+
 
     <!-- Bootstrap -->
         <link rel="stylesheet" href="https://zhangjoto.github.io/theme/css/bootstrap.min.css" type="text/css"/>
@@ -30,7 +43,7 @@
 <body>
 
 <div class="navbar navbar-default navbar-fixed-top" role="navigation">
-    <div class="container">
+	<div class="container">
         <div class="navbar-header">
             <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
                 <span class="sr-only">Toggle navigation</span>
@@ -47,17 +60,21 @@ Keep Simple            </a>
                             <a href="https://zhangjoto.github.io/category/docker.html">Docker</a>
                         </li>
                         <li >
+                            <a href="https://zhangjoto.github.io/category/documents.html">Documents</a>
+                        </li>
+                        <li >
                             <a href="https://zhangjoto.github.io/category/troubleshooting.html">Troubleshooting</a>
                         </li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
-                <li><a href="https://zhangjoto.github.io/archives.html"><i class="fa fa-th-list"></i><span class="icon-label">Archives</span></a></li>
+              <li><a href="https://zhangjoto.github.io/archives.html"><i class="fa fa-th-list"></i><span class="icon-label">Archives</span></a></li>
             </ul>
         </div>
         <!-- /.navbar-collapse -->
     </div>
 </div> <!-- /.navbar -->
-
+<!-- Banner -->
+<!-- End Banner -->
 <div class="container">
     <div class="row">
         <div class="col-sm-9">
@@ -79,7 +96,7 @@ Keep Simple            </a>
 <footer class="post-info">
     <span class="label label-default">Date</span>
     <span class="published">
-        <i class="fa fa-calendar"></i><time datetime="2014-10-20T00:00:00"> Mon 20 October 2014</time>
+        <i class="fa fa-calendar"></i><time datetime="2014-10-20T00:00:00+08:00"> 一 20 十月 2014</time>
     </span>
 
 
@@ -134,7 +151,7 @@ Oracle: 11.2.0.4
 </pre>
 <p>为了便于区分容器内外进行的操作，我将容器内部进行操作时的命令提示符全部设为 myDocker$ 或 myDocker# ，容器外部的命令提示符则是 $ 或 #。</p>
 <p>此外，为了避免每次使用Docker命令都要sudo或者考虑权限的问题，我将当前用户（swen）加入了docker组：</p>
-<div class="highlight"><pre><span class="gp">#</span> gpasswd -a swen docker
+<div class="highlight"><pre><span></span><span class="gp">#</span> gpasswd -a swen docker
 </pre></div>
 <p>记得正在使用的当前用户要重新登录。</p>
 </div>
@@ -148,7 +165,7 @@ Oracle: 11.2.0.4
 <div class="section" id="id3">
 <h3><a class="toc-backref" href="#id26">空间问题解决</a></h3>
 <p>先查看一下当前环境的情况：</p>
-<div class="highlight"><pre><span class="gp">$</span> docker info
+<div class="highlight"><pre><span></span><span class="gp">$</span> docker info
 <span class="go">Containers: 0</span>
 <span class="go">Images: 0</span>
 <span class="go">Storage Driver: devicemapper</span>
@@ -169,7 +186,7 @@ Oracle: 11.2.0.4
 <blockquote>
 /var/lib/docker/devicemapper/devicemapper/data</blockquote>
 <p>很显然，我们可以利用软链接解决/var文件系统空间不足的问题。虽然出于性能方面的考虑我最终选择了逻辑卷存储为长期方案，不过实验的过程中空间需求不是个小问题，我决定暂时先利用外置硬盘上的空间。</p>
-<div class="highlight"><pre><span class="gp">$</span> su -
+<div class="highlight"><pre><span></span><span class="gp">$</span> su -
 <span class="gp">#</span> mount /dev/vgusb/lvfiles /media/storage
 <span class="gp">#</span> systemctl stop docker
 <span class="gp">#</span> <span class="nb">cd</span> /var/lib
@@ -181,7 +198,7 @@ Oracle: 11.2.0.4
 </pre></div>
 <p>为了建立一个完全干净的Docker环境，我的例子中是选择将整个docker目录删除。要注意<strong>这样做会丢失全部已有的镜像、容器以及元数据。</strong>如果想要仍然保留原有的所有数据，那就将docker移动到你想要的地方并创建软链接。</p>
 <p>再次查看docker的全局信息，可以看到docker已经检测到/var/lib/docker是一个软链接。并自动在/media/storage/docker6目录下执行初始化，重建了所有子目录以及文件：</p>
-<div class="highlight"><pre><span class="gp">$</span> docker info
+<div class="highlight"><pre><span></span><span class="gp">$</span> docker info
 <span class="go">Containers: 0</span>
 <span class="go">Images: 0</span>
 <span class="go">Storage Driver: devicemapper</span>
@@ -206,13 +223,13 @@ Oracle: 11.2.0.4
 <div class="section" id="id4">
 <h3><a class="toc-backref" href="#id28">虚拟机硬盘挂载</a></h3>
 <p>我的kvm虚拟机是指定一个名为/dev/vgroot/lvora的逻辑卷为本地硬盘，想生成tar文件首先要读取到其中的所有文件。而且为了保障数据一致性，在虚拟机关闭状态下读取其中的文件是最佳选择。利用loop设备配合几条基础的命令就可以做到这一点<a class="footnote-reference" href="#id16" id="id5">[1]</a>。</p>
-<div class="highlight"><pre><span class="gp">$</span> su -
+<div class="highlight"><pre><span></span><span class="gp">$</span> su -
 <span class="gp">#</span> losetup -f
 <span class="go">/dev/loop0</span>
 <span class="gp">#</span> losetup /dev/loop0 /dev/vgroot/lvora
 </pre></div>
 <p>首先找到系统中空闲的loop设备名，并将虚拟机硬盘安装为loop设备，就可以用fdisk命令查看它的分区表：</p>
-<div class="highlight"><pre><span class="gp">#</span> fdisk -l /dev/loop0
+<div class="highlight"><pre><span></span><span class="gp">#</span> fdisk -l /dev/loop0
 
 <span class="go">Disk /dev/loop0: 8 GiB, 8589934592 bytes, 16777216 sectors</span>
 <span class="go">Units: sectors of 1 * 512 = 512 bytes</span>
@@ -228,7 +245,7 @@ Oracle: 11.2.0.4
 <p>可以看到虚拟机硬盘分为了两个分区，/dev/loop0p1为虚拟机的/boot分区，/dev/loop0p2是一个lvm物理卷，虚拟机的根分区就在其中。</p>
 <p>遗憾的是fdisk并不会自动为每个分区创建相应的设备文件，所以你在/dev目录下是找不着loop0p1这样的文件的。所幸losetup还支持指定偏移量，把loop0的一部分再映射为另一个loop设备。</p>
 <p>因为/boot分区中的内核、引导器等在容器环境中是没有作用的，所以我直接跳过第一个分区，仅仅执行了物理卷的映射：</p>
-<div class="highlight"><pre><span class="gp">#</span> losetup /dev/loop1 /dev/vgroot/lvora -o 84934656  <span class="c"># 165888 * 512</span>
+<div class="highlight"><pre><span></span><span class="gp">#</span> losetup /dev/loop1 /dev/vgroot/lvora -o <span class="m">84934656</span>  <span class="c1"># 165888 * 512</span>
 <span class="gp">#</span> pvscan
 <span class="go">PV /dev/loop1   VG vgroot   lvm2 [7.92 GiB / 0    free]</span>
 <span class="go">PV /dev/sdb2    VG vgusb    lvm2 [305.76 GiB / 135.76 GiB free]</span>
@@ -236,7 +253,7 @@ Oracle: 11.2.0.4
 <span class="go">Total: 3 [428.16 GiB] / in use: 3 [428.16 GiB] / in no VG: 0 [0   ]</span>
 </pre></div>
 <p>pvscan找到的卷组中，/dev/loop1对应的卷组vgroot便是虚拟机硬盘上的根卷组。它与我的笔记本上的卷组重名（习惯问题），为了后续操作方便，要先获取到卷组的UUID，利用UUID将虚拟机中的卷组改名再mount文件系统。</p>
-<div class="highlight"><pre><span class="gp">#</span> vgs -v
+<div class="highlight"><pre><span></span><span class="gp">#</span> vgs -v
 <span class="go">    DEGRADED MODE. Incomplete RAID LVs will be processed.</span>
 <span class="go">    Finding all volume groups</span>
 <span class="go">    Finding volume group &quot;vgroot&quot;</span>
@@ -264,18 +281,18 @@ Oracle: 11.2.0.4
 <div class="section" id="id6">
 <h3><a class="toc-backref" href="#id29">文件系统导入</a></h3>
 <p>接下来将虚拟机中的所有文件导入为Docker的镜像。</p>
-<div class="highlight"><pre><span class="gp">#</span> tar --numeric-owner -c -C /media/ora . | docker import - debian:debian7
+<div class="highlight"><pre><span></span><span class="gp">#</span> tar --numeric-owner -c -C /media/ora . <span class="p">|</span> docker import - debian:debian7
 <span class="go">5b05b8d7a4645b1fc371f673f9f2c18c75769be83d4c3a3abf594f8340f60a7b</span>
 </pre></div>
 <p>然后就可以将虚拟机的文件系统和硬盘全部卸载，让它退休了：</p>
-<div class="highlight"><pre><span class="gp">#</span> umount /media/ora
+<div class="highlight"><pre><span></span><span class="gp">#</span> umount /media/ora
 <span class="gp">#</span> vgchange -a n vgora
 <span class="gp">#</span> losetup -d /dev/loop1
 <span class="gp">#</span> losetup -d /dev/loop0
 <span class="gp">#</span> <span class="nb">exit</span>
 </pre></div>
 <p>因为我的Oracle数据库是使用文件系统存储，所以只要文件导入完成，我的数据库就应该能直接使用了。下面测试一下：</p>
-<div class="highlight"><pre><span class="gp">$</span> docker images
+<div class="highlight"><pre><span></span><span class="gp">$</span> docker images
 <span class="go">REPOSITORY          TAG                 IMAGE ID            CREATED             VIRTUAL SIZE</span>
 <span class="go">ora11g              latest              5b05b8d7a464        2 minutes ago       6.474 GB</span>
 <span class="gp">$</span> docker run -it ora11g /bin/bash
@@ -334,7 +351,7 @@ Oracle: 11.2.0.4
 <li>利用openvz的模板<a class="footnote-reference" href="#id19" id="id10">[4]</a>导入；</li>
 </ul>
 <p>利用openvz模板的方法我测试过是可行的，不过体积比Docker官方镜像大了不小，所以一般还是建议用代理或者国内镜像好了，有特殊需求的朋友可以考虑openvz的模板。</p>
-<div class="highlight"><pre><span class="gp">$</span> docker pull centos:centos6
+<div class="highlight"><pre><span></span><span class="gp">$</span> docker pull centos:centos6
 <span class="go">centos:centos6: The image you are pulling has been verified</span>
 <span class="go">5b12ef8fd570: Pulling fs layer</span>
 <span class="go">5b12ef8fd570: Download complete</span>
@@ -366,7 +383,7 @@ Oracle: 11.2.0.4
 <div class="section" id="oracle">
 <h4><a class="toc-backref" href="#id33">Oracle安装准备</a></h4>
 <p>首先在Base Image的基础上安装缺失的软件包：</p>
-<div class="highlight"><pre><span class="gp">$</span> docker run -it centos:centos6 /bin/bash
+<div class="highlight"><pre><span></span><span class="gp">$</span> docker run -it centos:centos6 /bin/bash
 <span class="go">myDocker# yum install -y compat-libstdc++-33 elfutils-libelf-devel elfutils-libelf-devel-static ksh libaio libaio-devel libstdc++-devel make numactl-devel sysstat gcc-c++</span>
 <span class="go">myDocker# yum install -y libXext</span>
 </pre></div>
@@ -386,7 +403,7 @@ net.core.wmem_default = 262144
 net.core.wmem_max = 1048576
 </pre>
 <p>但实际上，Base Image中一些核心参数（目前主要是共享内存相关）默认值就已经比Oracle的建议值还要大了。经过比对，我去掉了两个shm相关的参数：</p>
-<div class="highlight"><pre><span class="go">myDocker# vi /etc/sysctl.conf             # 在文件最后加入以下内容并保存</span>
+<div class="highlight"><pre><span></span><span class="go">myDocker# vi /etc/sysctl.conf             # 在文件最后加入以下内容并保存</span>
 <span class="go">fs.aio-max-nr = 1048576</span>
 <span class="go">fs.file-max = 6815744</span>
 <span class="go">kernel.shmmni = 4096</span>
@@ -405,14 +422,14 @@ net.core.wmem_max = 1048576
 <span class="go">oracle              soft    stack   10240</span>
 </pre></div>
 <p>这些调整完成以后就可以创建数据库相关的操作系统用户和组了：</p>
-<div class="highlight"><pre><span class="go">myDocker# groupadd -g 601 dba</span>
+<div class="highlight"><pre><span></span><span class="go">myDocker# groupadd -g 601 dba</span>
 <span class="go">myDocker# groupadd -g 602 oinstall</span>
 
 <span class="go">myDocker# useradd -u 601 -m -g oinstall -G dba oracle</span>
 <span class="go">myDocker# echo &quot;oracle:oracle&quot; | chpasswd</span>
 </pre></div>
 <p>下面我要做一件官方文档上不可能提到的事情，首先用编辑器打开容器中的fstab：</p>
-<div class="highlight"><pre><span class="go">myDocker# vi /etc/fstab</span>
+<div class="highlight"><pre><span></span><span class="go">myDocker# vi /etc/fstab</span>
 </pre></div>
 <p>可以看到如下所示的内容：</p>
 <pre class="literal-block">
@@ -448,7 +465,7 @@ PL/SQL: Statement ignored
 </pre>
 <p>这个问题经我测试在Oracle for linux 64位的11.2.0.3/11.2.0.4版本都存在，11.2.0.2未测试，11.2.0.1版本倒是不受影响。所以你要根据Oracle软件版本自行决定。</p>
 <p>最后我再偷个懒，提前把oracle用户建库时候要用的环境变量也全部设置好，工作量能省一点是一点：</p>
-<div class="highlight"><pre><span class="go">myDocker# su - oracle</span>
+<div class="highlight"><pre><span></span><span class="go">myDocker# su - oracle</span>
 <span class="go">myDocker$ vi .bash_profile                # 在文件最后加入以下行并保存</span>
 <span class="go">ORACLE_SID=sand</span>
 <span class="go">ORACLE_BASE=$HOME/server</span>
@@ -459,64 +476,64 @@ PL/SQL: Statement ignored
 </pre></div>
 <p>环境变量中的软件安装路径和数据库名我都按照自己的喜好修改过，你可以按自己的习惯自行调整，也可以遵循Oracle提供的默认设置。</p>
 <p>至此基础镜像的准备已经全部就绪，现在把这个容器清理一下，再提交为镜像。因为现在我还只有一个容器，所以命令行中Container ID只需输入头几位，让Docker知道我指的是哪一个容器就行了：</p>
-<div class="highlight"><pre><span class="go">myDocker$ exit</span>
+<div class="highlight"><pre><span></span><span class="go">myDocker$ exit</span>
 <span class="go">myDocker# yum clean all</span>
 <span class="go">myDocker# exit</span>
 <span class="gp">$</span> docker ps -a
 <span class="go">CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS                     PORTS               NAMES</span>
 <span class="go">0042412b5d55        centos:centos6      &quot;/bin/bash&quot;         9 minutes ago       Exited (0) 3 seconds ago                       jovial_kowalevski</span>
-<span class="gp">$</span> docker commit -m <span class="s1">&#39;prepared for oracle install&#39;</span> 0042 ora11g:prepared
+<span class="gp">$</span> docker commit -m <span class="s1">&#39;prepared for oracle install&#39;</span> <span class="m">0042</span> ora11g:prepared
 <span class="go">0042412b5d55348e8868349cf8435123614bc0926674e22dc7382e477d048586</span>
 </pre></div>
 <p>再检查一下提交是否成功：</p>
-<div class="highlight"><pre><span class="gp">$</span> docker images
+<div class="highlight"><pre><span></span><span class="gp">$</span> docker images
 <span class="go">REPOSITORY                      TAG                 IMAGE ID            CREATED             VIRTUAL SIZE</span>
 <span class="go">ora11g                          prepared            aa5e34846c4e        20 seconds ago      368.6 MB</span>
 <span class="go">centos                          centos6             68edf809afe7        3 weeks ago         212.7 MB</span>
 </pre></div>
 <p>其实还有更简单一点的方式创建基础镜像，就是利用docker build。现友情赠送创建基础镜像的Dockerfile：</p>
-<div class="highlight"><pre>FROM centos:centos6
-MAINTAINER zhangjoto@gmail.com
-RUN yum install -y compat-libstdc++-33 \
-    elfutils-libelf-devel \
-    elfutils-libelf-devel-static \
-    ksh \
-    libaio \
-    libaio-devel \
-    libstdc++-devel \
-    make \
-    numactl-devel \
-    sysstat \
-    gcc-c++ \
-    &amp;&amp; yum install -y libXext \
-    &amp;&amp; yum clean all
-RUN groupadd -g 601 dba \
-    &amp;&amp; groupadd -g 602 oinstall \
-    &amp;&amp; useradd -u 601 -g 602 -G 601 -m oracle \
-    &amp;&amp; chmod 750 /home/oracle \
-    &amp;&amp; echo &quot;oracle:oracle&quot; | chpasswd
-RUN echo    &quot;fs.aio-max-nr = 1048576&quot; &gt;&gt;/etc/sysctl.conf \
-    &amp;&amp; echo &quot;fs.file-max = 6815744&quot; &gt;&gt;/etc/sysctl.conf \
-    &amp;&amp; echo &quot;kernel.shmmni = 4096&quot; &gt;&gt;/etc/sysctl.conf \
-    &amp;&amp; echo &quot;kernel.sem = 250 32000 100 128&quot; &gt;&gt;/etc/sysctl.conf \
-    &amp;&amp; echo &quot;net.ipv4.ip_local_port_range = 9000 65500&quot; &gt;&gt;/etc/sysctl.conf \
-    &amp;&amp; echo &quot;net.core.rmem_default = 262144&quot; &gt;&gt;/etc/sysctl.conf \
-    &amp;&amp; echo &quot;net.core.rmem_max = 4194304&quot; &gt;&gt;/etc/sysctl.conf \
-    &amp;&amp; echo &quot;net.core.wmem_default = 262144&quot; &gt;&gt;/etc/sysctl.conf \
-    &amp;&amp; echo &quot;net.core.wmem_max = 1048576&quot; &gt;&gt;/etc/sysctl.conf
-RUN echo    &quot;oracle              soft    nproc   2047&quot; &gt;&gt;/etc/security/limits.conf \
-    &amp;&amp; echo &quot;oracle              hard    nproc   16384&quot; &gt;&gt;/etc/security/limits.conf \
-    &amp;&amp; echo &quot;oracle              soft    nofile  1024&quot; &gt;&gt;/etc/security/limits.conf \
-    &amp;&amp; echo &quot;oracle              hard    nofile  65536&quot; &gt;&gt;/etc/security/limits.conf \
-    &amp;&amp; echo &quot;oracle              soft    stack   10240&quot; &gt;&gt; /etc/security/limits.conf
-RUN echo    &#39;ORACLE_SID=sand&#39; &gt;&gt;/home/oracle/.bash_profile \
-    &amp;&amp; echo &#39;ORACLE_BASE=$HOME/server&#39; &gt;&gt;/home/oracle/.bash_profile \
-    &amp;&amp; echo &#39;ORACLE_HOME=$ORACLE_BASE/product/11.2/db&#39; &gt;&gt;/home/oracle/.bash_profile \
-    &amp;&amp; echo &#39;PATH=$ORACLE_HOME/bin:$PATH&#39; &gt;&gt;/home/oracle/.bash_profile \
-    &amp;&amp; echo &#39;LD_LIBRARY_PATH=$ORACLE_HOME/lib:$LD_LIBRARY_PATH&#39; &gt;&gt;/home/oracle/.bash_profile \
-    &amp;&amp; echo &#39;export ORACLE_SID ORACLE_BASE ORACLE_HOME PATH LD_LIBRARY_PATH&#39; &gt;&gt;/home/oracle/.bash_profile
-RUN sed -i &#39;/\/dev\/shm/s/defaults/defaults,size=1g/&#39; /etc/fstab
-CMD /bin/bash
+<div class="highlight"><pre><span></span><span class="k">FROM</span><span class="s"> centos:centos6</span>
+<span class="k">MAINTAINER</span><span class="s"> zhangjoto@gmail.com</span>
+<span class="k">RUN</span> yum install -y compat-libstdc++-33 <span class="se">\</span>
+    elfutils-libelf-devel <span class="se">\</span>
+    elfutils-libelf-devel-static <span class="se">\</span>
+    ksh <span class="se">\</span>
+    libaio <span class="se">\</span>
+    libaio-devel <span class="se">\</span>
+    libstdc++-devel <span class="se">\</span>
+    make <span class="se">\</span>
+    numactl-devel <span class="se">\</span>
+    sysstat <span class="se">\</span>
+    gcc-c++ <span class="se">\</span>
+    <span class="o">&amp;&amp;</span> yum install -y libXext <span class="se">\</span>
+    <span class="o">&amp;&amp;</span> yum clean all
+<span class="k">RUN</span> groupadd -g <span class="m">601</span> dba <span class="se">\</span>
+    <span class="o">&amp;&amp;</span> groupadd -g <span class="m">602</span> oinstall <span class="se">\</span>
+    <span class="o">&amp;&amp;</span> useradd -u <span class="m">601</span> -g <span class="m">602</span> -G <span class="m">601</span> -m oracle <span class="se">\</span>
+    <span class="o">&amp;&amp;</span> chmod <span class="m">750</span> /home/oracle <span class="se">\</span>
+    <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="s2">&quot;oracle:oracle&quot;</span> <span class="p">|</span> chpasswd
+<span class="k">RUN</span> <span class="nb">echo</span>    <span class="s2">&quot;fs.aio-max-nr = 1048576&quot;</span> &gt;&gt;/etc/sysctl.conf <span class="se">\</span>
+    <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="s2">&quot;fs.file-max = 6815744&quot;</span> &gt;&gt;/etc/sysctl.conf <span class="se">\</span>
+    <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="s2">&quot;kernel.shmmni = 4096&quot;</span> &gt;&gt;/etc/sysctl.conf <span class="se">\</span>
+    <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="s2">&quot;kernel.sem = 250 32000 100 128&quot;</span> &gt;&gt;/etc/sysctl.conf <span class="se">\</span>
+    <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="s2">&quot;net.ipv4.ip_local_port_range = 9000 65500&quot;</span> &gt;&gt;/etc/sysctl.conf <span class="se">\</span>
+    <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="s2">&quot;net.core.rmem_default = 262144&quot;</span> &gt;&gt;/etc/sysctl.conf <span class="se">\</span>
+    <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="s2">&quot;net.core.rmem_max = 4194304&quot;</span> &gt;&gt;/etc/sysctl.conf <span class="se">\</span>
+    <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="s2">&quot;net.core.wmem_default = 262144&quot;</span> &gt;&gt;/etc/sysctl.conf <span class="se">\</span>
+    <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="s2">&quot;net.core.wmem_max = 1048576&quot;</span> &gt;&gt;/etc/sysctl.conf
+<span class="k">RUN</span> <span class="nb">echo</span>    <span class="s2">&quot;oracle              soft    nproc   2047&quot;</span> &gt;&gt;/etc/security/limits.conf <span class="se">\</span>
+    <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="s2">&quot;oracle              hard    nproc   16384&quot;</span> &gt;&gt;/etc/security/limits.conf <span class="se">\</span>
+    <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="s2">&quot;oracle              soft    nofile  1024&quot;</span> &gt;&gt;/etc/security/limits.conf <span class="se">\</span>
+    <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="s2">&quot;oracle              hard    nofile  65536&quot;</span> &gt;&gt;/etc/security/limits.conf <span class="se">\</span>
+    <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="s2">&quot;oracle              soft    stack   10240&quot;</span> &gt;&gt; /etc/security/limits.conf
+<span class="k">RUN</span> <span class="nb">echo</span>    <span class="s1">&#39;ORACLE_SID=sand&#39;</span> &gt;&gt;/home/oracle/.bash_profile <span class="se">\</span>
+    <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="s1">&#39;ORACLE_BASE=$HOME/server&#39;</span> &gt;&gt;/home/oracle/.bash_profile <span class="se">\</span>
+    <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="s1">&#39;ORACLE_HOME=$ORACLE_BASE/product/11.2/db&#39;</span> &gt;&gt;/home/oracle/.bash_profile <span class="se">\</span>
+    <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="s1">&#39;PATH=$ORACLE_HOME/bin:$PATH&#39;</span> &gt;&gt;/home/oracle/.bash_profile <span class="se">\</span>
+    <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="s1">&#39;LD_LIBRARY_PATH=$ORACLE_HOME/lib:$LD_LIBRARY_PATH&#39;</span> &gt;&gt;/home/oracle/.bash_profile <span class="se">\</span>
+    <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="s1">&#39;export ORACLE_SID ORACLE_BASE ORACLE_HOME PATH LD_LIBRARY_PATH&#39;</span> &gt;&gt;/home/oracle/.bash_profile
+<span class="k">RUN</span> sed -i <span class="s1">&#39;/\/dev\/shm/s/defaults/defaults,size=1g/&#39;</span> /etc/fstab
+<span class="k">CMD</span><span class="s"> /bin/bash</span>
 </pre></div>
 <p>因为Dockerfile对多行字符串的支持不太好，所以我用了很多个echo一行一行的向文件追加内容。如果你知道更好的方式（除了预先编辑文件COPY到容器内之外），还请记得留言告诉我。</p>
 </div>
@@ -526,7 +543,7 @@ CMD /bin/bash
 <p>容器是没有自己的图形界面的，想实现图形化安装就得将容器内部的图形程序转发到容器外部来显示。</p>
 <p>通常实现这个目的最简单的方式利用sshd的X11转发功能，但Docker官方并不建议在容器中运行sshd，<a class="footnote-reference" href="#id21" id="id12">[5]</a>我也不希望多装软件包。实际上如果不考虑安全性的问题，完全可以通过将X11的socket文件映射到容器内部达到目的。国外已经有人用这种方式运行容器内的Firefox和其它程序<a class="footnote-reference" href="#id22" id="id13">[6]</a>。不过随着Docker新版本安全性的增强，原文的办法已不再完全适用，我需要做一点小小的调整（参见原文下面的讨论）。</p>
 <p>首先从准备好的基础镜像创建准备用来安装Oracle数据库的容器，为了方便，我要将它命名为ora。</p>
-<div class="highlight"><pre><span class="gp">$</span> docker run -it --name ora -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -v <span class="nv">$HOME</span>/.Xauthority:/root/.Xauthority -v <span class="nv">$HOME</span>/ora:/mnt --net<span class="o">=</span>host --privileged ora11g:prepared /bin/bash
+<div class="highlight"><pre><span></span><span class="gp">$</span> docker run -it --name ora -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -v $HOME/.Xauthority:/root/.Xauthority -v $HOME/ora:/mnt --net<span class="o">=</span>host --privileged ora11g:prepared /bin/bash
 </pre></div>
 <p>我先解释一下这行命令中各个参数的含义：</p>
 <ul class="simple">
@@ -542,7 +559,7 @@ CMD /bin/bash
 <li>--privileged 为容器申请特权。要在容器内改变/dev/shm的大小及设置核心参数都必须指定这个参数；</li>
 </ul>
 <p>因为容器没有自己的init进程，因此Docker用户自定义的初始化任务都只能手工执行。比如根据fstab挂载文件系统和设置核心参数：</p>
-<div class="highlight"><pre><span class="go">myDocker# mount -o remount /dev/shm</span>
+<div class="highlight"><pre><span></span><span class="go">myDocker# mount -o remount /dev/shm</span>
 <span class="go">myDocker# df -h</span>
 <span class="go">Filesystem            Size  Used Avail Use% Mounted on</span>
 <span class="go">rootfs                9.8G  388M  8.9G   5% /</span>
@@ -588,12 +605,12 @@ CMD /bin/bash
 </pre></div>
 <p>可以看到对/dev/shm的修改生效了，而设置核心参数有很多error。不过不用担心，报错的这些参数只有在繁忙的数据库环境下才真的有必要调整。至于个人使用的实验环境，我们直接跳过不去管它就好了。</p>
 <p>接下来为了启用图形化界面还要做点小小的处理：</p>
-<div class="highlight"><pre><span class="go">myDocker# cp ~/.Xauthority ~oracle/</span>
+<div class="highlight"><pre><span></span><span class="go">myDocker# cp ~/.Xauthority ~oracle/</span>
 <span class="go">myDocker# chown oracle:oinstall ~oracle/.Xauthority</span>
 </pre></div>
 <p>因为这个.Xauthority文件是从Host映射进来的，我不想让容器对外部环境造成干扰，因此为oracle用户单独复制了一份。如果你不想这么做，那就将容器内的oracle用户的uid和gid设为与Host内用户完全一样的值，并在前面启动容器的命令行里将该文件映射为/home/oracle/.Xauthority即可。</p>
 <p>现在设置好Oracle安装介质所在目录的权限就可以开始运行安装程序：</p>
-<div class="highlight"><pre><span class="go">myDocker# chown -R oracle:oinstall /mnt</span>
+<div class="highlight"><pre><span></span><span class="go">myDocker# chown -R oracle:oinstall /mnt</span>
 <span class="go">myDocker# su - oracle</span>
 <span class="go">myDocker$ cd /mnt/database</span>
 <span class="go">myDocker$ ./runInstaller</span>
@@ -607,17 +624,17 @@ CMD /bin/bash
 <ul class="simple">
 <li>启动容器的命令行更简略，由于是静默安装，所以图形转发相关的参数全都可以去掉：</li>
 </ul>
-<div class="highlight"><pre><span class="gp">$</span> docker run -it --name ora -v <span class="nv">$HOME</span>/ora:/mnt --privileged ora11g:prepared /bin/bash
+<div class="highlight"><pre><span></span><span class="gp">$</span> docker run -it --name ora -v $HOME/ora:/mnt --privileged ora11g:prepared /bin/bash
 </pre></div>
 <ul class="simple">
 <li>运行安装程序的参数要为静默方式指定响应文件并忽略系统需求检查。响应文件在图形化安装时录制或使用安装介质response目录下提供的模板修改均可。</li>
 </ul>
-<div class="highlight"><pre><span class="go">myDocker$ ./runInstaller -silent -responseFile /mnt/db.rsp -ignorePrereq</span>
+<div class="highlight"><pre><span></span><span class="go">myDocker$ ./runInstaller -silent -responseFile /mnt/db.rsp -ignorePrereq</span>
 </pre></div>
 <ul class="simple">
 <li>运行dbca程序也要指定大量参数：</li>
 </ul>
-<div class="highlight"><pre><span class="go">myDocker$ dbca -silent -createDatabase -templateName /mnt/sand.dbc \</span>
+<div class="highlight"><pre><span></span><span class="go">myDocker$ dbca -silent -createDatabase -templateName /mnt/sand.dbc \</span>
 <span class="go">    -gdbname sand -sid sand -sysPassword sys -systemPassword sys \</span>
 <span class="go">    -characterSet ZHS16GBK -nationalCharacterSet AL16UTF16</span>
 </pre></div>
@@ -629,26 +646,26 @@ $ORACLE_HOME/assistants/dbca/templates
 <div class="section" id="dockerfile">
 <h3><a class="toc-backref" href="#id36">Dockerfile方式静默安装</a></h3>
 <p>废话不多说，先贴上Dockerfile的内容。其中runInstaller多了一个参数&quot;-waitforcompletion&quot;，这是为了等待产品安装过程全部完成：</p>
-<div class="highlight"><pre>FROM ora11g:prepared
-MAINTAINER zhangjoto@gmail.com
+<div class="highlight"><pre><span></span><span class="k">FROM</span><span class="s"> ora11g:prepared</span>
+<span class="k">MAINTAINER</span><span class="s"> zhangjoto@gmail.com</span>
 COPY database /mnt/database
 COPY db.rsp /mnt/
 COPY sand.dbc /mnt/
-RUN sysctl -p &amp;&amp; mount -o remount /dev/shm
-RUN chown -R oracle:oinstall /mnt &amp;&amp; chown -R oracle:oinstall /home/oracle
-RUN su - oracle -c &quot;/mnt/database/runInstaller -silent -responseFile /mnt/db.rsp -ignorePrereq -waitforcompletion&quot;
-RUN /home/oracle/oraInventory/orainstRoot.sh \
-    &amp;&amp; /home/oracle/server/product/11.2/db/root.sh
+<span class="k">RUN</span> sysctl -p <span class="o">&amp;&amp;</span> mount -o remount /dev/shm
+<span class="k">RUN</span> chown -R oracle:oinstall /mnt <span class="o">&amp;&amp;</span> chown -R oracle:oinstall /home/oracle
+<span class="k">RUN</span> su - oracle -c <span class="s2">&quot;/mnt/database/runInstaller -silent -responseFile /mnt/db.rsp -ignorePrereq -waitforcompletion&quot;</span>
+<span class="k">RUN</span> /home/oracle/oraInventory/orainstRoot.sh <span class="se">\</span>
+    <span class="o">&amp;&amp;</span> /home/oracle/server/product/11.2/db/root.sh
 USER oracle
-RUN . ~/.bash_profile \
-    &amp;&amp; dbca -silent -createDatabase -templateName /mnt/sand.dbc \
-        -gdbname sand -sid sand -sysPassword sys -systemPassword sys \
+<span class="k">RUN</span> . ~/.bash_profile <span class="se">\</span>
+    <span class="o">&amp;&amp;</span> dbca -silent -createDatabase -templateName /mnt/sand.dbc <span class="se">\</span>
+        -gdbname sand -sid sand -sysPassword sys -systemPassword sys <span class="se">\</span>
         -characterSet ZHS16GBK -nationalCharacterSet AL16UTF16
 
-CMD /bin/bash
+<span class="k">CMD</span><span class="s"> /bin/bash</span>
 </pre></div>
 <p>但我要很遗憾的说，把这个Dockerfile应用于我前面指定的软件版本的话是要失败的。问题出在这一行代码上：</p>
-<div class="highlight"><pre>RUN sysctl -p &amp;&amp; mount -o remount /dev/shm
+<div class="highlight"><pre><span></span><span class="k">RUN</span> sysctl -p <span class="o">&amp;&amp;</span> mount -o remount /dev/shm
 </pre></div>
 <p>还记得我前面说过的话么？执行这两个命令必须用--privileged参数为容器指定特权，而Dockerfile现在是不支持使用特权的。有些用户在Docker项目主页提交了issue，希望提供RUNP命令或让build支持--privileged参数，但不知官方最终会作何反应。<a class="footnote-reference" href="#id23" id="id15">[7]</a></p>
 <p>如果将来官方对此需求提供了支持，我会回头来修改这一部分的内容。但在此之前，你只能用这个Dockerfile来安装Oracle 11.2.0.1及更低版本的数据库环境，并且记得要删除报错的那一行代码。</p>
@@ -657,7 +674,7 @@ CMD /bin/bash
 <h3><a class="toc-backref" href="#id37">环境清理并创建Image</a></h3>
 <p>至此可用于个人使用的Oracle实验环境就搭建完成了。不过为了更适合于个人使用和作为镜像分发，我决定关闭数据库的审计并清理各种临时文件之后再生成镜像。</p>
 <p>下面的过程我不会做太详细的说明，需要研究的朋友应该很容易就能找到相关的详细资料。</p>
-<div class="highlight"><pre><span class="go">myDocker$ sqlplus &#39;/as sysdba&#39;</span>
+<div class="highlight"><pre><span></span><span class="go">myDocker$ sqlplus &#39;/as sysdba&#39;</span>
 <span class="go">SQL&gt; alter user scott account unlock;</span>
 
 <span class="go">User altered.</span>
@@ -695,7 +712,7 @@ CMD /bin/bash
 <span class="go">myDocker# exit</span>
 </pre></div>
 <p>现在可以生成一个比较干净的镜像了。</p>
-<div class="highlight"><pre><span class="gp">$</span> docker ps -a
+<div class="highlight"><pre><span></span><span class="gp">$</span> docker ps -a
 <span class="go">CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS                          PORTS               NAMES</span>
 <span class="go">375f693461a7        centos:centos6      &quot;/bin/bash&quot;         About an hour ago   Exited (0) About a minute ago                       ora</span>
 <span class="gp">$</span> docker commit -m <span class="s2">&quot;oracle 11.2.0.4 on centos6&quot;</span> ora ora11g:11.2.0.4
@@ -766,15 +783,18 @@ CMD /bin/bash
 
             </div>
             <!-- /.entry-content -->
-    <hr />
+    <hr/>
     <section class="comments" id="comments">
         <h2>Comments</h2>
+
         <div id="disqus_thread"></div>
         <script type="text/javascript">
             /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
             var disqus_shortname = 'github'; // required: replace example with your forum shortname
-            var disqus_identifier = 'li-yong-dockerjian-li-oracle-11gshi-yan-huan-jing';
-            var disqus_url = 'https://zhangjoto.github.io/li-yong-dockerjian-li-oracle-11gshi-yan-huan-jing.html';
+
+                    var disqus_identifier = 'li-yong-dockerjian-li-oracle-11gshi-yan-huan-jing';
+                var disqus_url = 'https://zhangjoto.github.io/li-yong-dockerjian-li-oracle-11gshi-yan-huan-jing.html';
+
             var disqus_config = function () {
                 this.language = "zh";
             };
@@ -784,7 +804,7 @@ CMD /bin/bash
                 var dsq = document.createElement('script');
                 dsq.type = 'text/javascript';
                 dsq.async = true;
-                dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
                 (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
             })();
         </script>
@@ -797,53 +817,18 @@ CMD /bin/bash
     </section>
 
         </div>
-        <div class="col-sm-3 well well-sm" id="sidebar">
+        <div class="col-sm-3" id="sidebar">
+            <aside>
 
-<aside>
-    <section>
-        <ul class="list-group list-group-flush">
+<section class="well well-sm">
+    <ul class="list-group list-group-flush">
 
 
 
-                <li class="list-group-item"><a href="https://zhangjoto.github.io/"><h4><i class="fa fa-tags fa-lg"></i><span class="icon-label">Tags</span></h4></a>
-                    <ul class="list-group" id="tags">
-                        <li class="list-group-item tag-1">
-                            <a href="https://zhangjoto.github.io/tag/rong-qi-ji-zhu.html">
-                                容器技术
-                            </a>
-                        </li>
-                        <li class="list-group-item tag-1">
-                            <a href="https://zhangjoto.github.io/tag/docker.html">
-                                docker
-                            </a>
-                        </li>
-                        <li class="list-group-item tag-4">
-                            <a href="https://zhangjoto.github.io/tag/overlayfs.html">
-                                overlayfs
-                            </a>
-                        </li>
-                        <li class="list-group-item tag-4">
-                            <a href="https://zhangjoto.github.io/tag/strace.html">
-                                strace
-                            </a>
-                        </li>
-                        <li class="list-group-item tag-4">
-                            <a href="https://zhangjoto.github.io/tag/tuxedo.html">
-                                Tuxedo
-                            </a>
-                        </li>
-                        <li class="list-group-item tag-4">
-                            <a href="https://zhangjoto.github.io/tag/troubleshooting.html">
-                                troubleshooting
-                            </a>
-                        </li>
-                        <li class="list-group-item tag-4">
-                            <a href="https://zhangjoto.github.io/tag/oracle.html">
-                                Oracle
-                            </a>
-                        </li>
-                    </ul>
-                </li>    
+            <li class="list-group-item"><a href="https://zhangjoto.github.io/"><h4><i class="fa fa-tags fa-lg"></i><span class="icon-label">Tags</span></h4></a>
+                <ul class="list-group " id="tags">
+                </ul>
+            </li>
     <li class="list-group-item"><h4><i class="fa fa-external-link-square fa-lg"></i><span class="icon-label">Links</span></h4>
       <ul class="list-group" id="links">
         <li class="list-group-item">
@@ -863,18 +848,17 @@ CMD /bin/bash
         </li>
       </ul>
     </li>
-
-        </ul>
-    </section>
-
-</aside>        </div>
+    </ul>
+</section>
+            </aside>
+        </div>
     </div>
 </div>
 <footer>
    <div class="container">
       <hr>
       <div class="row">
-         <div class="col-xs-10">&copy; 2014 zhangjoto
+         <div class="col-xs-10">&copy; 2016 zhangjoto
             &middot; Powered by <a href="https://github.com/DandyDev/pelican-bootstrap3" target="_blank">pelican-bootstrap3</a>,
             <a href="http://docs.getpelican.com/" target="_blank">Pelican</a>,
             <a href="http://getbootstrap.com" target="_blank">Bootstrap</a>         </div>
@@ -882,7 +866,7 @@ CMD /bin/bash
       </div>
    </div>
 </footer>
-<script src="//code.jquery.com/jquery.js"></script>
+<script src="https://zhangjoto.github.io/theme/js/jquery.min.js"></script>
 
 <!-- Include all compiled plugins (below), or include individual files as needed -->
 <script src="https://zhangjoto.github.io/theme/js/bootstrap.min.js"></script>
@@ -890,6 +874,7 @@ CMD /bin/bash
 <!-- Enable responsive features in IE8 with Respond.js (https://github.com/scottjehl/Respond) -->
 <script src="https://zhangjoto.github.io/theme/js/respond.min.js"></script>
 
+    <!-- Disqus -->
     <script type="text/javascript">
         /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
         var disqus_shortname = 'github'; // required: replace example with your forum shortname
@@ -903,5 +888,7 @@ CMD /bin/bash
             (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
         }());
     </script>
+    <!-- End Disqus Code -->
+
 </body>
 </html>

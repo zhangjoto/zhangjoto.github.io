@@ -77,11 +77,11 @@
 &lt;h3&gt;&lt;a class="toc-backref" href="#id11"&gt;分析外部依赖&lt;/a&gt;&lt;/h3&gt;
 &lt;p&gt;鉴于这套应用的移植是由欧洲工程师完成，H公司的中国工程师只负责性能测试相关工作，我觉得首先分析下应用特点是个靠谱的选择。一方面我得确认目前掌握的信息是否有误，另一方面也需要根据应用特点确定下一步分析的方向和手段。&lt;/p&gt;
 &lt;p&gt;先挑几个应用进程看一下打开的文件描述符：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; lsof -p &amp;lt;pid&amp;gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;$&lt;/span&gt; lsof -p &amp;lt;pid&amp;gt;
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;输出里可以看到每个进程打开了两个tcp连接，L告诉我远端端口号为30002的是与LDAP服务的连接，另一个就是与数据库服务器的连接了。除此以外的一堆输出不是标准输出标准错误就是.so动态库文件之类，没有什么可疑。&lt;/p&gt;
 &lt;p&gt;于是请L启动LoadRunner，我对进程做一下跟踪，看看它会跟哪些外部资源进行交互：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; strace -F -T -ttt -o /tmp/tt.trc -p &amp;lt;pid&amp;gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;$&lt;/span&gt; strace -F -T -ttt -o /tmp/tt.trc -p &amp;lt;pid&amp;gt;
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;结果发现每个应用Server都有两个线程，主线程执行Tuxedo的应用处理流程，中间会与数据库服务器发生交互；另外一个线程则专门负责与LDAP服务交互。我又请L把性能测试停一下，在应用&amp;quot;静止&amp;quot;状态下又做了一次strace，发现负责与LDAP服务交互的线程仍会定期醒来与LDAP服务通信。而且两次strace的结果中都没有发现与锁同步以及信号量相关的系统调用，也就是说至少在这个性能测试的环境下，两个线程是各自独立运行的。&lt;/p&gt;
 &lt;p&gt;除此之外，这个进程与外部资源的交互也就是打开、关闭和写日志文件。日志文件的问题，只要看看iowait的值就直接排除了，我在后面就不再提。&lt;/p&gt;
@@ -97,7 +97,7 @@
 &lt;p&gt;既然排除了外部依赖的影响，我就请L为我演示一下性能测试的效果。果然，在性能测试的开始阶段，TPS值基本是随着客户端并发数线性增长，但当TPS值达到780以后，客户端并发数怎么增长都不会带来TPS值的变化。而且与此同时，LoadRunner统计的平均响应时间也从20多毫秒变为了200多毫秒（此时200并发），而且粗看起来平均响应时间的变化与客户端并发数呈倒数关系。再逐步减小客户端并发数的话，平均响应时间会在原来的响应时间水平上保持几秒，然后很快降到一个新的稳定值。&lt;/p&gt;
 &lt;p&gt;从这些现象来看，很象是某个系统资源出现了瓶颈，导致并发的请求在排队，因此增大并发数就等比例的增大了响应时间，而减小并发数也要先消化完堆积的请求才能等比例的减小响应时间。而且LoadRunner显示的响应时间方差值很小，似乎排队之后得到处理的机会也是按照请求的先来后到次序分配的。&lt;/p&gt;
 &lt;p&gt;L告诉我，现在看到的现象与他们测试的结果是一致的。我在测试过程中登录应用服务器上进入tmadmin敲pq检查Tuxedo队列的情况，也确实没有发现队列堵塞。&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; tmadmin
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;$&lt;/span&gt; tmadmin
 &lt;span class="gp"&gt;&amp;gt;&lt;/span&gt; pq
 &lt;span class="gp"&gt;&amp;gt;&lt;/span&gt; quit
 &lt;span class="gp"&gt;$&lt;/span&gt;
@@ -113,10 +113,10 @@ BBL            123456            1         0         0       0.0     simple
 &lt;p&gt;其中Queued列是当前堵塞在队列里的请求个数，&amp;quot;Ave. Len&amp;quot;列则是这个Server的平均响应时间。但在他们这套环境上，&amp;quot;Ave. Len&amp;quot;列则全部是一个减号。&lt;/p&gt;
 &lt;p&gt;这让我有点困惑，不会是Tuxedo 12c里这个命令不好使了吧，难道虽然它的输出为0，但请求实际上是在排队的？想了想，我决定还是别的方向再验证一下。&lt;/p&gt;
 &lt;p&gt;第一个当然是看一下操作系统的消息队列：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; ipcs -q
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;$&lt;/span&gt; ipcs -q
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;看到的结果是所有的队列中消息数基本都是0，偶尔有一个队列里有一个消息，也马上就被取走了。再看一下活跃中的Tuxedo Server数量：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; tmadmin &amp;lt;&amp;lt;-! | grep -v IDLE | wc -l
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;$&lt;/span&gt; tmadmin &amp;lt;&amp;lt;-! &lt;span class="p"&gt;|&lt;/span&gt; grep -v IDLE &lt;span class="p"&gt;|&lt;/span&gt; wc -l
 &lt;span class="gp"&gt;&amp;gt;&lt;/span&gt; psr
 &lt;span class="gp"&gt;&amp;gt;&lt;/span&gt; quit
 &lt;span class="gp"&gt;&amp;gt;&lt;/span&gt; !
@@ -146,7 +146,7 @@ BBL            123456            1         0         0       0.0     simple
 &lt;h3&gt;&lt;a class="toc-backref" href="#id13"&gt;时间消耗分析&lt;/a&gt;&lt;/h3&gt;
 &lt;p&gt;既然现在明确时间是消耗在业务处理上了，自然就要想办法分析时间到底消耗在什么操作上了。最简单的方式就是直接去找耗时最长的系统调用，于是我又在LoadRunner平均响应时间200毫秒的情况下对Tuxedo Server做了一段时间的strace，然后尝试找出耗时达到超出50ms的系统调用。&lt;/p&gt;
 &lt;p&gt;没想到不仅是没找到超过50ms的系统调用，而且连达到20～30ms的系统调用也很少。看起来这一次跟其它性能问题的典型症状不太一样，我还是先确认一下系统调用的耗时有没有问题比较安全。先看一下系统调用的统计信息：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; strace -F -c -p &amp;lt;pid&amp;gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;$&lt;/span&gt; strace -F -c -p &amp;lt;pid&amp;gt;
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;这个命令得到的输出会是类似这样（不要误会，我的例子实际上是回家以后strace -c ls得到的）：&lt;/p&gt;
 &lt;pre class="literal-block"&gt;
@@ -174,7 +174,7 @@ BBL            123456            1         0         0       0.0     simple
 &lt;p&gt;里面usecs/call列就是我关心的平均每次调用耗时。&lt;/p&gt;
 &lt;p&gt;我用上面这个命令对平均响应时间为20ms和200ms的情况分别做了跟踪，得到的结果是输出中有大量的read/write调用，另外还有少量的stat/mmap等调用，而且两次跟踪的read平均耗时有好几倍的差距。&lt;/p&gt;
 &lt;p&gt;既然有差距就好办了。只要有时间差距，那不是个别操作耗时太长，就是多个操作的耗时同时都变长了。再次对20ms和200ms的情况分别进行跟踪采样：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; strace -F -T -ttt -o /tmp/time.trc -p &amp;lt;pid&amp;gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;$&lt;/span&gt; strace -F -T -ttt -o /tmp/time.trc -p &amp;lt;pid&amp;gt;
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;两次得到的trc文件名分别为time1.trc和time2.trc。接下来的任务就是要从两个trc文件中分别选取一次完整的交易处理过程进行对比。&lt;/p&gt;
 &lt;p&gt;熟悉Tuxedo的朋友可能会知道，Tuxedo Server其实是一个死循环，静止状态时阻塞在msgrcv上，收到请求消息则开始进行业务处理，最后以msgsnd送回应答消息结束。因此我只要选取trc文件中以msgrcv开始，以msgsnd结束的一段记录就是我要的内容。&lt;/p&gt;

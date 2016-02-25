@@ -1,20 +1,33 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:og="http://ogp.me/ns#"
-      xmlns:fb="https://www.facebook.com/2008/fbml">
+<html lang="zh"
+>
 <head>
     <title>为Docker 1.4.0启用overlay存储驱动 - Keep Simple</title>
     <!-- Using the latest rendering mode for IE -->
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
 
-    <!-- Open Graph tags -->
-            <meta property="og:type" content="article"/>
-            <meta property="og:title" content="为Docker 1.4.0启用overlay存储驱动"/>
-            <meta property="og:url" content="https://zhangjoto.github.io/wei-docker-140qi-yong-overlaycun-chu-qu-dong.html"/>
-            <meta property="og:description" content="Contents 镜像备份 更新软件包 环境重建 环境确认 恢复备份 最终效果 自Docker诞生之初，就采用了aufs做为唯一的存储驱动。但因为aufs一直没有进入内核主线，所以各大发行版只有Ubuntu默认包含了aufs支持，这让Docker某种程度上成了专用于Ubuntu的容器技术。 直到后来红帽工程师为其实现了devicemapper存储驱动，其它发行版上使用Docker的技术门槛才低了许多。但是受内核的devicemapper机制的限制，Docker的devicemapper驱动在性能和资源消耗上相比aufs驱动都仍有差距。 直到内核版本3.18，另一个unionfs文件系统实现overlayfs并入了内核主线。而Docker（自1.4.0版本开始）在很短的时间内就提供了对overlayfs存储驱动的试验性支持。从此在各大发行版上使用unionfs做为Docker的存储驱动才成为了可能。 而我本人由于Docker+devicemapper驱动在使用中的种种问题，当然是盼望着尽快试用Docker的overlayfs驱动。 镜像备份 国内下载官方镜像太过费劲，因此在环境更新前要首先将已有的镜像导出。导出使用save命令： $ docker save -o /media/Storage/dockers/centos.tar centos:centos6 $ docker save -o /media/Storage/dockers/debian ..."/>
+
+
+<link rel="canonical" href="https://zhangjoto.github.io/wei-docker-140qi-yong-overlaycun-chu-qu-dong.html">
+
+        <meta name="author" content="zhangjoto" />
+        <meta name="keywords" content="docker,容器技术,overlayfs" />
+        <meta name="description" content="Contents 镜像备份 更新软件包 环境重建 环境确认 恢复备份 最终效果 自Docker诞生之初，就采用了aufs做为唯一的存储驱动。但因为aufs一直没有进入内核主线，所以各大发行版只有Ubuntu默认包含了aufs支持，这让Docker某种程度上成了专用于Ubuntu的容器技术。 直到后来红帽工程师为其实现了devicemapper存储驱动，其它发行版上使用Docker的技术门槛才低了许多。但是受内核的devicemapper机制的限制，Docker的devicemapper驱动在性能和资源消耗上相比aufs驱动都仍有差距。 直到内核版本3.18，另一个unionfs文件系统实现overlayfs并入了内核主线。而Docker（自1.4.0版本开始）在很短的时间内就提供了对overlayfs存储驱动的试验性支持。从此在各大发行版上使用unionfs做为Docker的存储驱动才成为了可能。 而我本人由于Docker+devicemapper驱动在使用中的种种问题，当然是盼望着尽快试用Docker的overlayfs驱动。 镜像备份 国内下载官方镜像太过费劲，因此在环境更新前要首先将已有的镜像导出。导出使用save命令： $ docker save -o /media/Storage/dockers/centos.tar centos:centos6 $ docker save -o /media/Storage/dockers/debian ..." />
+
+        <meta property="og:site_name" content="Keep Simple" />
+        <meta property="og:type" content="article"/>
+        <meta property="og:title" content="为Docker 1.4.0启用overlay存储驱动"/>
+        <meta property="og:url" content="https://zhangjoto.github.io/wei-docker-140qi-yong-overlaycun-chu-qu-dong.html"/>
+        <meta property="og:description" content="Contents 镜像备份 更新软件包 环境重建 环境确认 恢复备份 最终效果 自Docker诞生之初，就采用了aufs做为唯一的存储驱动。但因为aufs一直没有进入内核主线，所以各大发行版只有Ubuntu默认包含了aufs支持，这让Docker某种程度上成了专用于Ubuntu的容器技术。 直到后来红帽工程师为其实现了devicemapper存储驱动，其它发行版上使用Docker的技术门槛才低了许多。但是受内核的devicemapper机制的限制，Docker的devicemapper驱动在性能和资源消耗上相比aufs驱动都仍有差距。 直到内核版本3.18，另一个unionfs文件系统实现overlayfs并入了内核主线。而Docker（自1.4.0版本开始）在很短的时间内就提供了对overlayfs存储驱动的试验性支持。从此在各大发行版上使用unionfs做为Docker的存储驱动才成为了可能。 而我本人由于Docker+devicemapper驱动在使用中的种种问题，当然是盼望着尽快试用Docker的overlayfs驱动。 镜像备份 国内下载官方镜像太过费劲，因此在环境更新前要首先将已有的镜像导出。导出使用save命令： $ docker save -o /media/Storage/dockers/centos.tar centos:centos6 $ docker save -o /media/Storage/dockers/debian ..."/>
+        <meta property="article:published_time" content="2014-12-28" />
+            <meta property="article:section" content="docker" />
+            <meta property="article:tag" content="docker" />
+            <meta property="article:tag" content="容器技术" />
+            <meta property="article:tag" content="overlayfs" />
+            <meta property="article:author" content="zhangjoto" />
+
 
     <!-- Bootstrap -->
         <link rel="stylesheet" href="https://zhangjoto.github.io/theme/css/bootstrap.min.css" type="text/css"/>
@@ -30,7 +43,7 @@
 <body>
 
 <div class="navbar navbar-default navbar-fixed-top" role="navigation">
-    <div class="container">
+	<div class="container">
         <div class="navbar-header">
             <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
                 <span class="sr-only">Toggle navigation</span>
@@ -47,17 +60,21 @@ Keep Simple            </a>
                             <a href="https://zhangjoto.github.io/category/docker.html">Docker</a>
                         </li>
                         <li >
+                            <a href="https://zhangjoto.github.io/category/documents.html">Documents</a>
+                        </li>
+                        <li >
                             <a href="https://zhangjoto.github.io/category/troubleshooting.html">Troubleshooting</a>
                         </li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
-                <li><a href="https://zhangjoto.github.io/archives.html"><i class="fa fa-th-list"></i><span class="icon-label">Archives</span></a></li>
+              <li><a href="https://zhangjoto.github.io/archives.html"><i class="fa fa-th-list"></i><span class="icon-label">Archives</span></a></li>
             </ul>
         </div>
         <!-- /.navbar-collapse -->
     </div>
 </div> <!-- /.navbar -->
-
+<!-- Banner -->
+<!-- End Banner -->
 <div class="container">
     <div class="row">
         <div class="col-sm-9">
@@ -79,7 +96,7 @@ Keep Simple            </a>
 <footer class="post-info">
     <span class="label label-default">Date</span>
     <span class="published">
-        <i class="fa fa-calendar"></i><time datetime="2014-12-28T00:00:00"> Sun 28 December 2014</time>
+        <i class="fa fa-calendar"></i><time datetime="2014-12-28T00:00:00+08:00"> 日 28 十二月 2014</time>
     </span>
 
 
@@ -111,13 +128,13 @@ Keep Simple            </a>
 <div class="section" id="id2">
 <h2><a class="toc-backref" href="#id8">镜像备份</a></h2>
 <p>国内下载官方镜像太过费劲，因此在环境更新前要首先将已有的镜像导出。导出使用save命令：</p>
-<div class="highlight"><pre><span class="gp">$</span> docker save -o /media/Storage/dockers/centos.tar centos:centos6
+<div class="highlight"><pre><span></span><span class="gp">$</span> docker save -o /media/Storage/dockers/centos.tar centos:centos6
 <span class="gp">$</span> docker save -o /media/Storage/dockers/debian.tar debian
 <span class="go">......</span>
 </pre></div>
 <p>用同样的命令将所有的镜像全部导出备份。而容器则全部删除，这里不多说。</p>
 <p>以下是我docker info命令的完整输出，可以看到我的Docker数据及元数据分别存放在两个逻辑卷上，数据占用空间是8.291GB，共有43个镜像。</p>
-<div class="highlight"><pre><span class="gp">$</span> docker info
+<div class="highlight"><pre><span></span><span class="gp">$</span> docker info
 <span class="go">Containers: 0</span>
 <span class="go">Images: 43</span>
 <span class="go">Storage Driver: devicemapper</span>
@@ -156,7 +173,7 @@ Keep Simple            </a>
 <span class="go">centos              centos6             70441cac1ed5        6 weeks ago         215.8 MB</span>
 </pre></div>
 <p>确认所有镜像全部成功导出后停止docker。由于有更新内核并重做文件系统的需求，我还要禁止Docker开机自动启动：</p>
-<div class="highlight"><pre><span class="gp">$</span> sudo systemctl stop docker
+<div class="highlight"><pre><span></span><span class="gp">$</span> sudo systemctl stop docker
 <span class="gp">$</span> sudo systemctl disable docker
 <span class="go">Removed symlink /etc/systemd/system/multi-user.target.wants/docker.service.</span>
 </pre></div>
@@ -164,10 +181,10 @@ Keep Simple            </a>
 <div class="section" id="id3">
 <h2><a class="toc-backref" href="#id9">更新软件包</a></h2>
 <p>Docker 1.4.0发布后Arch Linux很快就同步到了最新版本，所以我只要直接更新就好：</p>
-<div class="highlight"><pre><span class="gp">$</span> yaourt -Sy docker
+<div class="highlight"><pre><span></span><span class="gp">$</span> yaourt -Sy docker
 </pre></div>
 <p>而3.18的内核虽然很快就进了testing仓库，但却迟迟没有进入core仓库，所以我要临时启用testing仓库：</p>
-<div class="highlight"><pre><span class="gp">$</span> su -
+<div class="highlight"><pre><span></span><span class="gp">$</span> su -
 <span class="gp">#</span> vi /etc/pacman.conf
 </pre></div>
 <p>将如下两行的注释去掉：</p>
@@ -176,14 +193,14 @@ Keep Simple            </a>
 #Include = /etc/pacman.d/mirrorlist
 </pre>
 <p>然后再更新内核才能看到我们想要的3.18。</p>
-<div class="highlight"><pre><span class="gp">$</span> yaourt -Sy linux
+<div class="highlight"><pre><span></span><span class="gp">$</span> yaourt -Sy linux
 </pre></div>
 <p>内核更新完成之后记得要将/etc/pacman.conf里修改的内容复原。</p>
 </div>
 <div class="section" id="id4">
 <h2><a class="toc-backref" href="#id10">环境重建</a></h2>
 <p>销毁Docker使用的两个逻辑卷及/var/lib/docker目录下所有文件：</p>
-<div class="highlight"><pre><span class="gp">$</span> su -
+<div class="highlight"><pre><span></span><span class="gp">$</span> su -
 <span class="gp">#</span> lvremove -f /dev/vgroot/lvdocker
 <span class="go">  Logical volume &quot;lvdocker&quot; successfully removed</span>
 <span class="gp">#</span> lvremove -f /dev/vgroot/lvdockermeta
@@ -191,7 +208,7 @@ Keep Simple            </a>
 <span class="gp">#</span> rm -rf /var/lib/docker
 </pre></div>
 <p>接着重建逻辑卷，创建文件系统并将其挂载，我个人比较偏好使用xfs文件系统，你自己也可以选择ext4：</p>
-<div class="highlight"><pre><span class="gp">#</span> lvcreate -L 20G -n lvdocker vgroot
+<div class="highlight"><pre><span></span><span class="gp">#</span> lvcreate -L 20G -n lvdocker vgroot
 <span class="go">WARNING: ext4 signature detected on /dev/vgroot/lvdocker at offset 1080. Wipe it? [y/n]: y</span>
 <span class="go">  Wiping ext4 signature on /dev/vgroot/lvdocker.</span>
 <span class="go">  Logical volume &quot;lvdocker&quot; created.</span>
@@ -231,7 +248,7 @@ Keep Simple            </a>
 <div class="section" id="id5">
 <h2><a class="toc-backref" href="#id11">环境确认</a></h2>
 <p>重启后/var/lib/docker文件系统应该已经自动挂载，再确认一下新的内核是否包含了overlayfs支持。注意，它对应的内核模块模块实际上叫overlay：</p>
-<div class="highlight"><pre><span class="gp">$</span> modinfo
+<div class="highlight"><pre><span></span><span class="gp">$</span> modinfo
 <span class="go">filename:       /lib/modules/3.18.1-1-ARCH/kernel/fs/overlayfs/overlay.ko.gz</span>
 <span class="go">alias:          fs-overlay</span>
 <span class="go">license:        GPL</span>
@@ -277,7 +294,7 @@ Keep Simple            </a>
 </pre></div>
 <p>这说明新的内核包含了overlayfs支持，但默认没有将对应模块载入。没有关系，只要我们正确的为Docker配置了overlay驱动，Docker服务启动时内核应该就会自动载入overlay模块了。</p>
 <p>因为overlayfs仍是实验特性，因此即便内核升级到了3.18版本，在Arch上Docker也仍然默认采用devicemapper驱动。必须指明参数迫使docker启用overlayfs。因为Arch Linux已经用systemd取代了SysV init脚本，所以我们应该去修改Docker的service文件。</p>
-<div class="highlight"><pre><span class="gp">$</span> su -
+<div class="highlight"><pre><span></span><span class="gp">$</span> su -
 <span class="gp">#</span> vi /lib/systemd/system/docker.service
 </pre></div>
 <p>可以看到文件内容有以ExecStart开头的一行：</p>
@@ -289,12 +306,12 @@ ExecStart=/usr/bin/docker -d -H fd://
 ExecStart=/usr/bin/docker -d -H fd:// -s overlay
 </pre>
 <p>修改了service文件以后，需要让systemd刷新一下再启动服务：</p>
-<div class="highlight"><pre><span class="gp">#</span> systemctl daemon-reload
+<div class="highlight"><pre><span></span><span class="gp">#</span> systemctl daemon-reload
 <span class="gp">#</span> systemctl start docker
 <span class="gp">#</span> <span class="nb">exit</span>
 </pre></div>
 <p>检查一下添加的参数是否生效了：</p>
-<div class="highlight"><pre><span class="gp">$</span> docker info
+<div class="highlight"><pre><span></span><span class="gp">$</span> docker info
 <span class="go">Containers: 0</span>
 <span class="go">Images: 0</span>
 <span class="go">Storage Driver: overlay</span>
@@ -308,7 +325,7 @@ ExecStart=/usr/bin/docker -d -H fd:// -s overlay
 </pre></div>
 <p>可以看到&quot;Storage Driver&quot;后面是overlay，设定的参数起作用了。</p>
 <p>看看/var/lib/docker文件系统下是什么情况：</p>
-<div class="highlight"><pre><span class="gp">#</span> ls /var/lib/docker
+<div class="highlight"><pre><span></span><span class="gp">#</span> ls /var/lib/docker
 <span class="go">containers  execdriver  graph  init  linkgraph.db  overlay  repositories-overlay  tmp  trust  volumes</span>
 <span class="gp">#</span> du -sh /var/lib/docker/*
 <span class="go">0       /var/lib/docker/containers</span>
@@ -327,19 +344,19 @@ ExecStart=/usr/bin/docker -d -H fd:// -s overlay
 <div class="section" id="id6">
 <h2><a class="toc-backref" href="#id12">恢复备份</a></h2>
 <p>将之前备份的所有镜像全部重新导入：</p>
-<div class="highlight"><pre><span class="gp">$</span> docker load -i /media/Storage/dockers/centos.tar
+<div class="highlight"><pre><span></span><span class="gp">$</span> docker load -i /media/Storage/dockers/centos.tar
 <span class="gp">$</span> docker load -i /media/Storage/dockers/debian.tar
 <span class="go">......</span>
 </pre></div>
 <p>导入完成之后还要确认一下镜像是可用的：</p>
-<div class="highlight"><pre><span class="gp">$</span> docker run -it centos:centos6 /bin/bash
-<span class="go">[root@147c15762dfa /]#</span>
+<div class="highlight"><pre><span></span><span class="gp">$</span> docker run -it centos:centos6 /bin/bash
+<span class="gp">[root@147c15762dfa /]#</span>
 </pre></div>
 </div>
 <div class="section" id="id7">
 <h2><a class="toc-backref" href="#id13">最终效果</a></h2>
 <p>至此为Docker 1.4.0启用overlay驱动的操作算是全部完成，数据也全部安全迁移到了新的Docker环境下。看一看这么一番折腾是否解决了我的问题：</p>
-<div class="highlight"><pre><span class="gp">$</span> docker info
+<div class="highlight"><pre><span></span><span class="gp">$</span> docker info
 <span class="go">Containers: 0</span>
 <span class="go">Images: 43</span>
 <span class="go">Storage Driver: overlay</span>
@@ -371,15 +388,18 @@ ExecStart=/usr/bin/docker -d -H fd:// -s overlay
 
             </div>
             <!-- /.entry-content -->
-    <hr />
+    <hr/>
     <section class="comments" id="comments">
         <h2>Comments</h2>
+
         <div id="disqus_thread"></div>
         <script type="text/javascript">
             /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
             var disqus_shortname = 'github'; // required: replace example with your forum shortname
-            var disqus_identifier = 'wei-docker-140qi-yong-overlaycun-chu-qu-dong';
-            var disqus_url = 'https://zhangjoto.github.io/wei-docker-140qi-yong-overlaycun-chu-qu-dong.html';
+
+                    var disqus_identifier = 'wei-docker-140qi-yong-overlaycun-chu-qu-dong';
+                var disqus_url = 'https://zhangjoto.github.io/wei-docker-140qi-yong-overlaycun-chu-qu-dong.html';
+
             var disqus_config = function () {
                 this.language = "zh";
             };
@@ -389,7 +409,7 @@ ExecStart=/usr/bin/docker -d -H fd:// -s overlay
                 var dsq = document.createElement('script');
                 dsq.type = 'text/javascript';
                 dsq.async = true;
-                dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+                dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
                 (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
             })();
         </script>
@@ -402,53 +422,18 @@ ExecStart=/usr/bin/docker -d -H fd:// -s overlay
     </section>
 
         </div>
-        <div class="col-sm-3 well well-sm" id="sidebar">
+        <div class="col-sm-3" id="sidebar">
+            <aside>
 
-<aside>
-    <section>
-        <ul class="list-group list-group-flush">
+<section class="well well-sm">
+    <ul class="list-group list-group-flush">
 
 
 
-                <li class="list-group-item"><a href="https://zhangjoto.github.io/"><h4><i class="fa fa-tags fa-lg"></i><span class="icon-label">Tags</span></h4></a>
-                    <ul class="list-group" id="tags">
-                        <li class="list-group-item tag-1">
-                            <a href="https://zhangjoto.github.io/tag/rong-qi-ji-zhu.html">
-                                容器技术
-                            </a>
-                        </li>
-                        <li class="list-group-item tag-1">
-                            <a href="https://zhangjoto.github.io/tag/docker.html">
-                                docker
-                            </a>
-                        </li>
-                        <li class="list-group-item tag-4">
-                            <a href="https://zhangjoto.github.io/tag/overlayfs.html">
-                                overlayfs
-                            </a>
-                        </li>
-                        <li class="list-group-item tag-4">
-                            <a href="https://zhangjoto.github.io/tag/strace.html">
-                                strace
-                            </a>
-                        </li>
-                        <li class="list-group-item tag-4">
-                            <a href="https://zhangjoto.github.io/tag/tuxedo.html">
-                                Tuxedo
-                            </a>
-                        </li>
-                        <li class="list-group-item tag-4">
-                            <a href="https://zhangjoto.github.io/tag/troubleshooting.html">
-                                troubleshooting
-                            </a>
-                        </li>
-                        <li class="list-group-item tag-4">
-                            <a href="https://zhangjoto.github.io/tag/oracle.html">
-                                Oracle
-                            </a>
-                        </li>
-                    </ul>
-                </li>    
+            <li class="list-group-item"><a href="https://zhangjoto.github.io/"><h4><i class="fa fa-tags fa-lg"></i><span class="icon-label">Tags</span></h4></a>
+                <ul class="list-group " id="tags">
+                </ul>
+            </li>
     <li class="list-group-item"><h4><i class="fa fa-external-link-square fa-lg"></i><span class="icon-label">Links</span></h4>
       <ul class="list-group" id="links">
         <li class="list-group-item">
@@ -468,18 +453,17 @@ ExecStart=/usr/bin/docker -d -H fd:// -s overlay
         </li>
       </ul>
     </li>
-
-        </ul>
-    </section>
-
-</aside>        </div>
+    </ul>
+</section>
+            </aside>
+        </div>
     </div>
 </div>
 <footer>
    <div class="container">
       <hr>
       <div class="row">
-         <div class="col-xs-10">&copy; 2014 zhangjoto
+         <div class="col-xs-10">&copy; 2016 zhangjoto
             &middot; Powered by <a href="https://github.com/DandyDev/pelican-bootstrap3" target="_blank">pelican-bootstrap3</a>,
             <a href="http://docs.getpelican.com/" target="_blank">Pelican</a>,
             <a href="http://getbootstrap.com" target="_blank">Bootstrap</a>         </div>
@@ -487,7 +471,7 @@ ExecStart=/usr/bin/docker -d -H fd:// -s overlay
       </div>
    </div>
 </footer>
-<script src="//code.jquery.com/jquery.js"></script>
+<script src="https://zhangjoto.github.io/theme/js/jquery.min.js"></script>
 
 <!-- Include all compiled plugins (below), or include individual files as needed -->
 <script src="https://zhangjoto.github.io/theme/js/bootstrap.min.js"></script>
@@ -495,6 +479,7 @@ ExecStart=/usr/bin/docker -d -H fd:// -s overlay
 <!-- Enable responsive features in IE8 with Respond.js (https://github.com/scottjehl/Respond) -->
 <script src="https://zhangjoto.github.io/theme/js/respond.min.js"></script>
 
+    <!-- Disqus -->
     <script type="text/javascript">
         /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
         var disqus_shortname = 'github'; // required: replace example with your forum shortname
@@ -508,5 +493,7 @@ ExecStart=/usr/bin/docker -d -H fd:// -s overlay
             (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
         }());
     </script>
+    <!-- End Disqus Code -->
+
 </body>
 </html>

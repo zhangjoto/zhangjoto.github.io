@@ -17,13 +17,13 @@
 &lt;div class="section" id="id2"&gt;
 &lt;h2&gt;&lt;a class="toc-backref" href="#id8"&gt;镜像备份&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;国内下载官方镜像太过费劲，因此在环境更新前要首先将已有的镜像导出。导出使用save命令：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker save -o /media/Storage/dockers/centos.tar centos:centos6
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker save -o /media/Storage/dockers/centos.tar centos:centos6
 &lt;span class="gp"&gt;$&lt;/span&gt; docker save -o /media/Storage/dockers/debian.tar debian
 &lt;span class="go"&gt;......&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;用同样的命令将所有的镜像全部导出备份。而容器则全部删除，这里不多说。&lt;/p&gt;
 &lt;p&gt;以下是我docker info命令的完整输出，可以看到我的Docker数据及元数据分别存放在两个逻辑卷上，数据占用空间是8.291GB，共有43个镜像。&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker info
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker info
 &lt;span class="go"&gt;Containers: 0&lt;/span&gt;
 &lt;span class="go"&gt;Images: 43&lt;/span&gt;
 &lt;span class="go"&gt;Storage Driver: devicemapper&lt;/span&gt;
@@ -62,7 +62,7 @@
 &lt;span class="go"&gt;centos              centos6             70441cac1ed5        6 weeks ago         215.8 MB&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;确认所有镜像全部成功导出后停止docker。由于有更新内核并重做文件系统的需求，我还要禁止Docker开机自动启动：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; sudo systemctl stop docker
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;$&lt;/span&gt; sudo systemctl stop docker
 &lt;span class="gp"&gt;$&lt;/span&gt; sudo systemctl disable docker
 &lt;span class="go"&gt;Removed symlink /etc/systemd/system/multi-user.target.wants/docker.service.&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
@@ -70,10 +70,10 @@
 &lt;div class="section" id="id3"&gt;
 &lt;h2&gt;&lt;a class="toc-backref" href="#id9"&gt;更新软件包&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;Docker 1.4.0发布后Arch Linux很快就同步到了最新版本，所以我只要直接更新就好：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; yaourt -Sy docker
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;$&lt;/span&gt; yaourt -Sy docker
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;而3.18的内核虽然很快就进了testing仓库，但却迟迟没有进入core仓库，所以我要临时启用testing仓库：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; su -
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;$&lt;/span&gt; su -
 &lt;span class="gp"&gt;#&lt;/span&gt; vi /etc/pacman.conf
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;将如下两行的注释去掉：&lt;/p&gt;
@@ -82,14 +82,14 @@
 #Include = /etc/pacman.d/mirrorlist
 &lt;/pre&gt;
 &lt;p&gt;然后再更新内核才能看到我们想要的3.18。&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; yaourt -Sy linux
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;$&lt;/span&gt; yaourt -Sy linux
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;内核更新完成之后记得要将/etc/pacman.conf里修改的内容复原。&lt;/p&gt;
 &lt;/div&gt;
 &lt;div class="section" id="id4"&gt;
 &lt;h2&gt;&lt;a class="toc-backref" href="#id10"&gt;环境重建&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;销毁Docker使用的两个逻辑卷及/var/lib/docker目录下所有文件：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; su -
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;$&lt;/span&gt; su -
 &lt;span class="gp"&gt;#&lt;/span&gt; lvremove -f /dev/vgroot/lvdocker
 &lt;span class="go"&gt;  Logical volume &amp;quot;lvdocker&amp;quot; successfully removed&lt;/span&gt;
 &lt;span class="gp"&gt;#&lt;/span&gt; lvremove -f /dev/vgroot/lvdockermeta
@@ -97,7 +97,7 @@
 &lt;span class="gp"&gt;#&lt;/span&gt; rm -rf /var/lib/docker
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;接着重建逻辑卷，创建文件系统并将其挂载，我个人比较偏好使用xfs文件系统，你自己也可以选择ext4：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;#&lt;/span&gt; lvcreate -L 20G -n lvdocker vgroot
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;#&lt;/span&gt; lvcreate -L 20G -n lvdocker vgroot
 &lt;span class="go"&gt;WARNING: ext4 signature detected on /dev/vgroot/lvdocker at offset 1080. Wipe it? [y/n]: y&lt;/span&gt;
 &lt;span class="go"&gt;  Wiping ext4 signature on /dev/vgroot/lvdocker.&lt;/span&gt;
 &lt;span class="go"&gt;  Logical volume &amp;quot;lvdocker&amp;quot; created.&lt;/span&gt;
@@ -137,7 +137,7 @@
 &lt;div class="section" id="id5"&gt;
 &lt;h2&gt;&lt;a class="toc-backref" href="#id11"&gt;环境确认&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;重启后/var/lib/docker文件系统应该已经自动挂载，再确认一下新的内核是否包含了overlayfs支持。注意，它对应的内核模块模块实际上叫overlay：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; modinfo
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;$&lt;/span&gt; modinfo
 &lt;span class="go"&gt;filename:       /lib/modules/3.18.1-1-ARCH/kernel/fs/overlayfs/overlay.ko.gz&lt;/span&gt;
 &lt;span class="go"&gt;alias:          fs-overlay&lt;/span&gt;
 &lt;span class="go"&gt;license:        GPL&lt;/span&gt;
@@ -183,7 +183,7 @@
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;这说明新的内核包含了overlayfs支持，但默认没有将对应模块载入。没有关系，只要我们正确的为Docker配置了overlay驱动，Docker服务启动时内核应该就会自动载入overlay模块了。&lt;/p&gt;
 &lt;p&gt;因为overlayfs仍是实验特性，因此即便内核升级到了3.18版本，在Arch上Docker也仍然默认采用devicemapper驱动。必须指明参数迫使docker启用overlayfs。因为Arch Linux已经用systemd取代了SysV init脚本，所以我们应该去修改Docker的service文件。&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; su -
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;$&lt;/span&gt; su -
 &lt;span class="gp"&gt;#&lt;/span&gt; vi /lib/systemd/system/docker.service
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;可以看到文件内容有以ExecStart开头的一行：&lt;/p&gt;
@@ -195,12 +195,12 @@ ExecStart=/usr/bin/docker -d -H fd://
 ExecStart=/usr/bin/docker -d -H fd:// -s overlay
 &lt;/pre&gt;
 &lt;p&gt;修改了service文件以后，需要让systemd刷新一下再启动服务：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;#&lt;/span&gt; systemctl daemon-reload
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;#&lt;/span&gt; systemctl daemon-reload
 &lt;span class="gp"&gt;#&lt;/span&gt; systemctl start docker
 &lt;span class="gp"&gt;#&lt;/span&gt; &lt;span class="nb"&gt;exit&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;检查一下添加的参数是否生效了：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker info
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker info
 &lt;span class="go"&gt;Containers: 0&lt;/span&gt;
 &lt;span class="go"&gt;Images: 0&lt;/span&gt;
 &lt;span class="go"&gt;Storage Driver: overlay&lt;/span&gt;
@@ -214,7 +214,7 @@ ExecStart=/usr/bin/docker -d -H fd:// -s overlay
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;可以看到&amp;quot;Storage Driver&amp;quot;后面是overlay，设定的参数起作用了。&lt;/p&gt;
 &lt;p&gt;看看/var/lib/docker文件系统下是什么情况：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;#&lt;/span&gt; ls /var/lib/docker
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;#&lt;/span&gt; ls /var/lib/docker
 &lt;span class="go"&gt;containers  execdriver  graph  init  linkgraph.db  overlay  repositories-overlay  tmp  trust  volumes&lt;/span&gt;
 &lt;span class="gp"&gt;#&lt;/span&gt; du -sh /var/lib/docker/*
 &lt;span class="go"&gt;0       /var/lib/docker/containers&lt;/span&gt;
@@ -233,19 +233,19 @@ ExecStart=/usr/bin/docker -d -H fd:// -s overlay
 &lt;div class="section" id="id6"&gt;
 &lt;h2&gt;&lt;a class="toc-backref" href="#id12"&gt;恢复备份&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;将之前备份的所有镜像全部重新导入：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker load -i /media/Storage/dockers/centos.tar
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker load -i /media/Storage/dockers/centos.tar
 &lt;span class="gp"&gt;$&lt;/span&gt; docker load -i /media/Storage/dockers/debian.tar
 &lt;span class="go"&gt;......&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;导入完成之后还要确认一下镜像是可用的：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker run -it centos:centos6 /bin/bash
-&lt;span class="go"&gt;[root@147c15762dfa /]#&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker run -it centos:centos6 /bin/bash
+&lt;span class="gp"&gt;[root@147c15762dfa /]#&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 &lt;/div&gt;
 &lt;div class="section" id="id7"&gt;
 &lt;h2&gt;&lt;a class="toc-backref" href="#id13"&gt;最终效果&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;至此为Docker 1.4.0启用overlay驱动的操作算是全部完成，数据也全部安全迁移到了新的Docker环境下。看一看这么一番折腾是否解决了我的问题：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker info
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker info
 &lt;span class="go"&gt;Containers: 0&lt;/span&gt;
 &lt;span class="go"&gt;Images: 43&lt;/span&gt;
 &lt;span class="go"&gt;Storage Driver: overlay&lt;/span&gt;
@@ -291,7 +291,7 @@ ExecStart=/usr/bin/docker -d -H fd:// -s overlay
 &lt;div class="section" id="id1"&gt;
 &lt;h2&gt;&lt;a class="toc-backref" href="#id7"&gt;环境说明&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;吐槽之前得说明一下我对Docker的使用方式。先看一眼Docker的服务启动文件：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;#&lt;/span&gt; cat /lib/systemd/system/docker.service
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;#&lt;/span&gt; cat /lib/systemd/system/docker.service
 &lt;span class="go"&gt;[Unit]&lt;/span&gt;
 &lt;span class="go"&gt;Description=Docker Application Container Engine&lt;/span&gt;
 &lt;span class="go"&gt;Documentation=http://docs.docker.com&lt;/span&gt;
@@ -316,15 +316,15 @@ ExecStart=/usr/bin/docker -d -H fd:// -s overlay
 &lt;p&gt;我创建了大小为20G的逻辑卷用做Docker的存储池（这几乎是我全部的剩余空间了），另外有几十M做为Docker的元数据存储空间。想一想常见的容器一般也就是300～400M上下，个人使用这样设置应该是不会有空间问题了吧？No。&lt;/p&gt;
 &lt;p&gt;我们来看一个例子。&lt;/p&gt;
 &lt;p&gt;首先打开两个终端，分别把它们叫做A终端和B终端。A终端准备运行docker命令，而B终端则要先su到root并执行两条命令：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; su -
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;$&lt;/span&gt; su -
 &lt;span class="gp"&gt;#&lt;/span&gt; &lt;span class="nb"&gt;cd&lt;/span&gt; /var/lib/docker
 &lt;span class="gp"&gt;#&lt;/span&gt; du -sh tmp
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;接下来从你已有的镜像中挑选一个大小合适的准备导出。大小合适的意思是要导出时间足够长，保证你来得及切换终端执行其它的命令；又不至于让时间长得让人失去耐心。我自己选取的是centos6的官方镜像，记得导出命令要在A终端执行：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker save -o /tmp/centos.tar centos:centos6
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker save -o /tmp/centos.tar centos:centos6
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;现在马上切换到B终端不断的执行一条命令直到A终端的docker save命令执行完毕：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;#&lt;/span&gt; du -sh tmp
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;#&lt;/span&gt; du -sh tmp
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;你可以看到tmp的占用空间大小在导出过程中会逐渐增长，最大的时候与导出镜像的大小相近，导出完成的时候又变为0。&lt;/p&gt;
 &lt;p&gt;这个现象不仅在执行save命令时存在，load/build命令也是一样。程序运行中使用一些临时空间是正常的，但是这样设计至少面临几个问题：&lt;/p&gt;
@@ -346,7 +346,7 @@ ExecStart=/usr/bin/docker -d -H fd:// -s overlay
 &lt;h3&gt;&lt;a class="toc-backref" href="#id10"&gt;空间虚耗问题&lt;/a&gt;&lt;/h3&gt;
 &lt;p&gt;所谓空间虚耗，顾名思义就是有些空间不知道被用到哪去了。还是来看一看例子。&lt;/p&gt;
 &lt;p&gt;下面是我的机器目前所有的镜像：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker images
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker images
 &lt;span class="go"&gt;REPOSITORY          TAG                 IMAGE ID            CREATED             VIRTUAL SIZE&lt;/span&gt;
 &lt;span class="go"&gt;ora                 prepared            e50218f3bfab        2 weeks ago         309.7 MB&lt;/span&gt;
 &lt;span class="go"&gt;python              3                   474f82d465a5        3 weeks ago         814.9 MB&lt;/span&gt;
@@ -364,7 +364,7 @@ ExecStart=/usr/bin/docker -d -H fd:// -s overlay
 &lt;span class="go"&gt;centos              centos6             70441cac1ed5        6 weeks ago         215.8 MB&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;看着虽然不少，但数数IMAGE ID可以看到实际上只有ora/python/postgres/debian/centos这五个不重复的镜像。就算完全不考虑镜像间共享数据的可能，这五个镜像加起来也就是占用1.7G不到的样子。而它们在存储池里的实际使用的空间是这样的：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker info
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker info
 &lt;span class="go"&gt;Containers: 0&lt;/span&gt;
 &lt;span class="go"&gt;Images: 43&lt;/span&gt;
 &lt;span class="go"&gt;Storage Driver: devicemapper&lt;/span&gt;
@@ -501,11 +501,11 @@ ExecStart=/usr/bin/docker -d -H fd:// -s overlay
 &lt;h3&gt;&lt;a class="toc-backref" href="#id11"&gt;分析外部依赖&lt;/a&gt;&lt;/h3&gt;
 &lt;p&gt;鉴于这套应用的移植是由欧洲工程师完成，H公司的中国工程师只负责性能测试相关工作，我觉得首先分析下应用特点是个靠谱的选择。一方面我得确认目前掌握的信息是否有误，另一方面也需要根据应用特点确定下一步分析的方向和手段。&lt;/p&gt;
 &lt;p&gt;先挑几个应用进程看一下打开的文件描述符：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; lsof -p &amp;lt;pid&amp;gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;$&lt;/span&gt; lsof -p &amp;lt;pid&amp;gt;
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;输出里可以看到每个进程打开了两个tcp连接，L告诉我远端端口号为30002的是与LDAP服务的连接，另一个就是与数据库服务器的连接了。除此以外的一堆输出不是标准输出标准错误就是.so动态库文件之类，没有什么可疑。&lt;/p&gt;
 &lt;p&gt;于是请L启动LoadRunner，我对进程做一下跟踪，看看它会跟哪些外部资源进行交互：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; strace -F -T -ttt -o /tmp/tt.trc -p &amp;lt;pid&amp;gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;$&lt;/span&gt; strace -F -T -ttt -o /tmp/tt.trc -p &amp;lt;pid&amp;gt;
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;结果发现每个应用Server都有两个线程，主线程执行Tuxedo的应用处理流程，中间会与数据库服务器发生交互；另外一个线程则专门负责与LDAP服务交互。我又请L把性能测试停一下，在应用&amp;quot;静止&amp;quot;状态下又做了一次strace，发现负责与LDAP服务交互的线程仍会定期醒来与LDAP服务通信。而且两次strace的结果中都没有发现与锁同步以及信号量相关的系统调用，也就是说至少在这个性能测试的环境下，两个线程是各自独立运行的。&lt;/p&gt;
 &lt;p&gt;除此之外，这个进程与外部资源的交互也就是打开、关闭和写日志文件。日志文件的问题，只要看看iowait的值就直接排除了，我在后面就不再提。&lt;/p&gt;
@@ -521,7 +521,7 @@ ExecStart=/usr/bin/docker -d -H fd:// -s overlay
 &lt;p&gt;既然排除了外部依赖的影响，我就请L为我演示一下性能测试的效果。果然，在性能测试的开始阶段，TPS值基本是随着客户端并发数线性增长，但当TPS值达到780以后，客户端并发数怎么增长都不会带来TPS值的变化。而且与此同时，LoadRunner统计的平均响应时间也从20多毫秒变为了200多毫秒（此时200并发），而且粗看起来平均响应时间的变化与客户端并发数呈倒数关系。再逐步减小客户端并发数的话，平均响应时间会在原来的响应时间水平上保持几秒，然后很快降到一个新的稳定值。&lt;/p&gt;
 &lt;p&gt;从这些现象来看，很象是某个系统资源出现了瓶颈，导致并发的请求在排队，因此增大并发数就等比例的增大了响应时间，而减小并发数也要先消化完堆积的请求才能等比例的减小响应时间。而且LoadRunner显示的响应时间方差值很小，似乎排队之后得到处理的机会也是按照请求的先来后到次序分配的。&lt;/p&gt;
 &lt;p&gt;L告诉我，现在看到的现象与他们测试的结果是一致的。我在测试过程中登录应用服务器上进入tmadmin敲pq检查Tuxedo队列的情况，也确实没有发现队列堵塞。&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; tmadmin
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;$&lt;/span&gt; tmadmin
 &lt;span class="gp"&gt;&amp;gt;&lt;/span&gt; pq
 &lt;span class="gp"&gt;&amp;gt;&lt;/span&gt; quit
 &lt;span class="gp"&gt;$&lt;/span&gt;
@@ -537,10 +537,10 @@ BBL            123456            1         0         0       0.0     simple
 &lt;p&gt;其中Queued列是当前堵塞在队列里的请求个数，&amp;quot;Ave. Len&amp;quot;列则是这个Server的平均响应时间。但在他们这套环境上，&amp;quot;Ave. Len&amp;quot;列则全部是一个减号。&lt;/p&gt;
 &lt;p&gt;这让我有点困惑，不会是Tuxedo 12c里这个命令不好使了吧，难道虽然它的输出为0，但请求实际上是在排队的？想了想，我决定还是别的方向再验证一下。&lt;/p&gt;
 &lt;p&gt;第一个当然是看一下操作系统的消息队列：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; ipcs -q
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;$&lt;/span&gt; ipcs -q
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;看到的结果是所有的队列中消息数基本都是0，偶尔有一个队列里有一个消息，也马上就被取走了。再看一下活跃中的Tuxedo Server数量：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; tmadmin &amp;lt;&amp;lt;-! | grep -v IDLE | wc -l
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;$&lt;/span&gt; tmadmin &amp;lt;&amp;lt;-! &lt;span class="p"&gt;|&lt;/span&gt; grep -v IDLE &lt;span class="p"&gt;|&lt;/span&gt; wc -l
 &lt;span class="gp"&gt;&amp;gt;&lt;/span&gt; psr
 &lt;span class="gp"&gt;&amp;gt;&lt;/span&gt; quit
 &lt;span class="gp"&gt;&amp;gt;&lt;/span&gt; !
@@ -570,7 +570,7 @@ BBL            123456            1         0         0       0.0     simple
 &lt;h3&gt;&lt;a class="toc-backref" href="#id13"&gt;时间消耗分析&lt;/a&gt;&lt;/h3&gt;
 &lt;p&gt;既然现在明确时间是消耗在业务处理上了，自然就要想办法分析时间到底消耗在什么操作上了。最简单的方式就是直接去找耗时最长的系统调用，于是我又在LoadRunner平均响应时间200毫秒的情况下对Tuxedo Server做了一段时间的strace，然后尝试找出耗时达到超出50ms的系统调用。&lt;/p&gt;
 &lt;p&gt;没想到不仅是没找到超过50ms的系统调用，而且连达到20～30ms的系统调用也很少。看起来这一次跟其它性能问题的典型症状不太一样，我还是先确认一下系统调用的耗时有没有问题比较安全。先看一下系统调用的统计信息：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; strace -F -c -p &amp;lt;pid&amp;gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;$&lt;/span&gt; strace -F -c -p &amp;lt;pid&amp;gt;
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;这个命令得到的输出会是类似这样（不要误会，我的例子实际上是回家以后strace -c ls得到的）：&lt;/p&gt;
 &lt;pre class="literal-block"&gt;
@@ -598,7 +598,7 @@ BBL            123456            1         0         0       0.0     simple
 &lt;p&gt;里面usecs/call列就是我关心的平均每次调用耗时。&lt;/p&gt;
 &lt;p&gt;我用上面这个命令对平均响应时间为20ms和200ms的情况分别做了跟踪，得到的结果是输出中有大量的read/write调用，另外还有少量的stat/mmap等调用，而且两次跟踪的read平均耗时有好几倍的差距。&lt;/p&gt;
 &lt;p&gt;既然有差距就好办了。只要有时间差距，那不是个别操作耗时太长，就是多个操作的耗时同时都变长了。再次对20ms和200ms的情况分别进行跟踪采样：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; strace -F -T -ttt -o /tmp/time.trc -p &amp;lt;pid&amp;gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;$&lt;/span&gt; strace -F -T -ttt -o /tmp/time.trc -p &amp;lt;pid&amp;gt;
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;两次得到的trc文件名分别为time1.trc和time2.trc。接下来的任务就是要从两个trc文件中分别选取一次完整的交易处理过程进行对比。&lt;/p&gt;
 &lt;p&gt;熟悉Tuxedo的朋友可能会知道，Tuxedo Server其实是一个死循环，静止状态时阻塞在msgrcv上，收到请求消息则开始进行业务处理，最后以msgsnd送回应答消息结束。因此我只要选取trc文件中以msgrcv开始，以msgsnd结束的一段记录就是我要的内容。&lt;/p&gt;
@@ -661,7 +661,7 @@ Oracle: 11.2.0.4
 &lt;/pre&gt;
 &lt;p&gt;为了便于区分容器内外进行的操作，我将容器内部进行操作时的命令提示符全部设为 myDocker$ 或 myDocker# ，容器外部的命令提示符则是 $ 或 #。&lt;/p&gt;
 &lt;p&gt;此外，为了避免每次使用Docker命令都要sudo或者考虑权限的问题，我将当前用户（swen）加入了docker组：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;#&lt;/span&gt; gpasswd -a swen docker
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;#&lt;/span&gt; gpasswd -a swen docker
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;记得正在使用的当前用户要重新登录。&lt;/p&gt;
 &lt;/div&gt;
@@ -675,7 +675,7 @@ Oracle: 11.2.0.4
 &lt;div class="section" id="id3"&gt;
 &lt;h3&gt;&lt;a class="toc-backref" href="#id26"&gt;空间问题解决&lt;/a&gt;&lt;/h3&gt;
 &lt;p&gt;先查看一下当前环境的情况：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker info
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker info
 &lt;span class="go"&gt;Containers: 0&lt;/span&gt;
 &lt;span class="go"&gt;Images: 0&lt;/span&gt;
 &lt;span class="go"&gt;Storage Driver: devicemapper&lt;/span&gt;
@@ -696,7 +696,7 @@ Oracle: 11.2.0.4
 &lt;blockquote&gt;
 /var/lib/docker/devicemapper/devicemapper/data&lt;/blockquote&gt;
 &lt;p&gt;很显然，我们可以利用软链接解决/var文件系统空间不足的问题。虽然出于性能方面的考虑我最终选择了逻辑卷存储为长期方案，不过实验的过程中空间需求不是个小问题，我决定暂时先利用外置硬盘上的空间。&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; su -
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;$&lt;/span&gt; su -
 &lt;span class="gp"&gt;#&lt;/span&gt; mount /dev/vgusb/lvfiles /media/storage
 &lt;span class="gp"&gt;#&lt;/span&gt; systemctl stop docker
 &lt;span class="gp"&gt;#&lt;/span&gt; &lt;span class="nb"&gt;cd&lt;/span&gt; /var/lib
@@ -708,7 +708,7 @@ Oracle: 11.2.0.4
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;为了建立一个完全干净的Docker环境，我的例子中是选择将整个docker目录删除。要注意&lt;strong&gt;这样做会丢失全部已有的镜像、容器以及元数据。&lt;/strong&gt;如果想要仍然保留原有的所有数据，那就将docker移动到你想要的地方并创建软链接。&lt;/p&gt;
 &lt;p&gt;再次查看docker的全局信息，可以看到docker已经检测到/var/lib/docker是一个软链接。并自动在/media/storage/docker6目录下执行初始化，重建了所有子目录以及文件：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker info
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker info
 &lt;span class="go"&gt;Containers: 0&lt;/span&gt;
 &lt;span class="go"&gt;Images: 0&lt;/span&gt;
 &lt;span class="go"&gt;Storage Driver: devicemapper&lt;/span&gt;
@@ -733,13 +733,13 @@ Oracle: 11.2.0.4
 &lt;div class="section" id="id4"&gt;
 &lt;h3&gt;&lt;a class="toc-backref" href="#id28"&gt;虚拟机硬盘挂载&lt;/a&gt;&lt;/h3&gt;
 &lt;p&gt;我的kvm虚拟机是指定一个名为/dev/vgroot/lvora的逻辑卷为本地硬盘，想生成tar文件首先要读取到其中的所有文件。而且为了保障数据一致性，在虚拟机关闭状态下读取其中的文件是最佳选择。利用loop设备配合几条基础的命令就可以做到这一点&lt;a class="footnote-reference" href="#id16" id="id5"&gt;[1]&lt;/a&gt;。&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; su -
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;$&lt;/span&gt; su -
 &lt;span class="gp"&gt;#&lt;/span&gt; losetup -f
 &lt;span class="go"&gt;/dev/loop0&lt;/span&gt;
 &lt;span class="gp"&gt;#&lt;/span&gt; losetup /dev/loop0 /dev/vgroot/lvora
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;首先找到系统中空闲的loop设备名，并将虚拟机硬盘安装为loop设备，就可以用fdisk命令查看它的分区表：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;#&lt;/span&gt; fdisk -l /dev/loop0
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;#&lt;/span&gt; fdisk -l /dev/loop0
 
 &lt;span class="go"&gt;Disk /dev/loop0: 8 GiB, 8589934592 bytes, 16777216 sectors&lt;/span&gt;
 &lt;span class="go"&gt;Units: sectors of 1 * 512 = 512 bytes&lt;/span&gt;
@@ -755,7 +755,7 @@ Oracle: 11.2.0.4
 &lt;p&gt;可以看到虚拟机硬盘分为了两个分区，/dev/loop0p1为虚拟机的/boot分区，/dev/loop0p2是一个lvm物理卷，虚拟机的根分区就在其中。&lt;/p&gt;
 &lt;p&gt;遗憾的是fdisk并不会自动为每个分区创建相应的设备文件，所以你在/dev目录下是找不着loop0p1这样的文件的。所幸losetup还支持指定偏移量，把loop0的一部分再映射为另一个loop设备。&lt;/p&gt;
 &lt;p&gt;因为/boot分区中的内核、引导器等在容器环境中是没有作用的，所以我直接跳过第一个分区，仅仅执行了物理卷的映射：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;#&lt;/span&gt; losetup /dev/loop1 /dev/vgroot/lvora -o 84934656  &lt;span class="c"&gt;# 165888 * 512&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;#&lt;/span&gt; losetup /dev/loop1 /dev/vgroot/lvora -o &lt;span class="m"&gt;84934656&lt;/span&gt;  &lt;span class="c1"&gt;# 165888 * 512&lt;/span&gt;
 &lt;span class="gp"&gt;#&lt;/span&gt; pvscan
 &lt;span class="go"&gt;PV /dev/loop1   VG vgroot   lvm2 [7.92 GiB / 0    free]&lt;/span&gt;
 &lt;span class="go"&gt;PV /dev/sdb2    VG vgusb    lvm2 [305.76 GiB / 135.76 GiB free]&lt;/span&gt;
@@ -763,7 +763,7 @@ Oracle: 11.2.0.4
 &lt;span class="go"&gt;Total: 3 [428.16 GiB] / in use: 3 [428.16 GiB] / in no VG: 0 [0   ]&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;pvscan找到的卷组中，/dev/loop1对应的卷组vgroot便是虚拟机硬盘上的根卷组。它与我的笔记本上的卷组重名（习惯问题），为了后续操作方便，要先获取到卷组的UUID，利用UUID将虚拟机中的卷组改名再mount文件系统。&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;#&lt;/span&gt; vgs -v
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;#&lt;/span&gt; vgs -v
 &lt;span class="go"&gt;    DEGRADED MODE. Incomplete RAID LVs will be processed.&lt;/span&gt;
 &lt;span class="go"&gt;    Finding all volume groups&lt;/span&gt;
 &lt;span class="go"&gt;    Finding volume group &amp;quot;vgroot&amp;quot;&lt;/span&gt;
@@ -791,18 +791,18 @@ Oracle: 11.2.0.4
 &lt;div class="section" id="id6"&gt;
 &lt;h3&gt;&lt;a class="toc-backref" href="#id29"&gt;文件系统导入&lt;/a&gt;&lt;/h3&gt;
 &lt;p&gt;接下来将虚拟机中的所有文件导入为Docker的镜像。&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;#&lt;/span&gt; tar --numeric-owner -c -C /media/ora . | docker import - debian:debian7
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;#&lt;/span&gt; tar --numeric-owner -c -C /media/ora . &lt;span class="p"&gt;|&lt;/span&gt; docker import - debian:debian7
 &lt;span class="go"&gt;5b05b8d7a4645b1fc371f673f9f2c18c75769be83d4c3a3abf594f8340f60a7b&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;然后就可以将虚拟机的文件系统和硬盘全部卸载，让它退休了：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;#&lt;/span&gt; umount /media/ora
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;#&lt;/span&gt; umount /media/ora
 &lt;span class="gp"&gt;#&lt;/span&gt; vgchange -a n vgora
 &lt;span class="gp"&gt;#&lt;/span&gt; losetup -d /dev/loop1
 &lt;span class="gp"&gt;#&lt;/span&gt; losetup -d /dev/loop0
 &lt;span class="gp"&gt;#&lt;/span&gt; &lt;span class="nb"&gt;exit&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;因为我的Oracle数据库是使用文件系统存储，所以只要文件导入完成，我的数据库就应该能直接使用了。下面测试一下：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker images
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker images
 &lt;span class="go"&gt;REPOSITORY          TAG                 IMAGE ID            CREATED             VIRTUAL SIZE&lt;/span&gt;
 &lt;span class="go"&gt;ora11g              latest              5b05b8d7a464        2 minutes ago       6.474 GB&lt;/span&gt;
 &lt;span class="gp"&gt;$&lt;/span&gt; docker run -it ora11g /bin/bash
@@ -861,7 +861,7 @@ Oracle: 11.2.0.4
 &lt;li&gt;利用openvz的模板&lt;a class="footnote-reference" href="#id19" id="id10"&gt;[4]&lt;/a&gt;导入；&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;利用openvz模板的方法我测试过是可行的，不过体积比Docker官方镜像大了不小，所以一般还是建议用代理或者国内镜像好了，有特殊需求的朋友可以考虑openvz的模板。&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker pull centos:centos6
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker pull centos:centos6
 &lt;span class="go"&gt;centos:centos6: The image you are pulling has been verified&lt;/span&gt;
 &lt;span class="go"&gt;5b12ef8fd570: Pulling fs layer&lt;/span&gt;
 &lt;span class="go"&gt;5b12ef8fd570: Download complete&lt;/span&gt;
@@ -893,7 +893,7 @@ Oracle: 11.2.0.4
 &lt;div class="section" id="oracle"&gt;
 &lt;h4&gt;&lt;a class="toc-backref" href="#id33"&gt;Oracle安装准备&lt;/a&gt;&lt;/h4&gt;
 &lt;p&gt;首先在Base Image的基础上安装缺失的软件包：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker run -it centos:centos6 /bin/bash
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker run -it centos:centos6 /bin/bash
 &lt;span class="go"&gt;myDocker# yum install -y compat-libstdc++-33 elfutils-libelf-devel elfutils-libelf-devel-static ksh libaio libaio-devel libstdc++-devel make numactl-devel sysstat gcc-c++&lt;/span&gt;
 &lt;span class="go"&gt;myDocker# yum install -y libXext&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
@@ -913,7 +913,7 @@ net.core.wmem_default = 262144
 net.core.wmem_max = 1048576
 &lt;/pre&gt;
 &lt;p&gt;但实际上，Base Image中一些核心参数（目前主要是共享内存相关）默认值就已经比Oracle的建议值还要大了。经过比对，我去掉了两个shm相关的参数：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="go"&gt;myDocker# vi /etc/sysctl.conf             # 在文件最后加入以下内容并保存&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="go"&gt;myDocker# vi /etc/sysctl.conf             # 在文件最后加入以下内容并保存&lt;/span&gt;
 &lt;span class="go"&gt;fs.aio-max-nr = 1048576&lt;/span&gt;
 &lt;span class="go"&gt;fs.file-max = 6815744&lt;/span&gt;
 &lt;span class="go"&gt;kernel.shmmni = 4096&lt;/span&gt;
@@ -932,14 +932,14 @@ net.core.wmem_max = 1048576
 &lt;span class="go"&gt;oracle              soft    stack   10240&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;这些调整完成以后就可以创建数据库相关的操作系统用户和组了：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="go"&gt;myDocker# groupadd -g 601 dba&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="go"&gt;myDocker# groupadd -g 601 dba&lt;/span&gt;
 &lt;span class="go"&gt;myDocker# groupadd -g 602 oinstall&lt;/span&gt;
 
 &lt;span class="go"&gt;myDocker# useradd -u 601 -m -g oinstall -G dba oracle&lt;/span&gt;
 &lt;span class="go"&gt;myDocker# echo &amp;quot;oracle:oracle&amp;quot; | chpasswd&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;下面我要做一件官方文档上不可能提到的事情，首先用编辑器打开容器中的fstab：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="go"&gt;myDocker# vi /etc/fstab&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="go"&gt;myDocker# vi /etc/fstab&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;可以看到如下所示的内容：&lt;/p&gt;
 &lt;pre class="literal-block"&gt;
@@ -975,7 +975,7 @@ PL/SQL: Statement ignored
 &lt;/pre&gt;
 &lt;p&gt;这个问题经我测试在Oracle for linux 64位的11.2.0.3/11.2.0.4版本都存在，11.2.0.2未测试，11.2.0.1版本倒是不受影响。所以你要根据Oracle软件版本自行决定。&lt;/p&gt;
 &lt;p&gt;最后我再偷个懒，提前把oracle用户建库时候要用的环境变量也全部设置好，工作量能省一点是一点：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="go"&gt;myDocker# su - oracle&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="go"&gt;myDocker# su - oracle&lt;/span&gt;
 &lt;span class="go"&gt;myDocker$ vi .bash_profile                # 在文件最后加入以下行并保存&lt;/span&gt;
 &lt;span class="go"&gt;ORACLE_SID=sand&lt;/span&gt;
 &lt;span class="go"&gt;ORACLE_BASE=$HOME/server&lt;/span&gt;
@@ -986,64 +986,64 @@ PL/SQL: Statement ignored
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;环境变量中的软件安装路径和数据库名我都按照自己的喜好修改过，你可以按自己的习惯自行调整，也可以遵循Oracle提供的默认设置。&lt;/p&gt;
 &lt;p&gt;至此基础镜像的准备已经全部就绪，现在把这个容器清理一下，再提交为镜像。因为现在我还只有一个容器，所以命令行中Container ID只需输入头几位，让Docker知道我指的是哪一个容器就行了：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="go"&gt;myDocker$ exit&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="go"&gt;myDocker$ exit&lt;/span&gt;
 &lt;span class="go"&gt;myDocker# yum clean all&lt;/span&gt;
 &lt;span class="go"&gt;myDocker# exit&lt;/span&gt;
 &lt;span class="gp"&gt;$&lt;/span&gt; docker ps -a
 &lt;span class="go"&gt;CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS                     PORTS               NAMES&lt;/span&gt;
 &lt;span class="go"&gt;0042412b5d55        centos:centos6      &amp;quot;/bin/bash&amp;quot;         9 minutes ago       Exited (0) 3 seconds ago                       jovial_kowalevski&lt;/span&gt;
-&lt;span class="gp"&gt;$&lt;/span&gt; docker commit -m &lt;span class="s1"&gt;&amp;#39;prepared for oracle install&amp;#39;&lt;/span&gt; 0042 ora11g:prepared
+&lt;span class="gp"&gt;$&lt;/span&gt; docker commit -m &lt;span class="s1"&gt;&amp;#39;prepared for oracle install&amp;#39;&lt;/span&gt; &lt;span class="m"&gt;0042&lt;/span&gt; ora11g:prepared
 &lt;span class="go"&gt;0042412b5d55348e8868349cf8435123614bc0926674e22dc7382e477d048586&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;再检查一下提交是否成功：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker images
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker images
 &lt;span class="go"&gt;REPOSITORY                      TAG                 IMAGE ID            CREATED             VIRTUAL SIZE&lt;/span&gt;
 &lt;span class="go"&gt;ora11g                          prepared            aa5e34846c4e        20 seconds ago      368.6 MB&lt;/span&gt;
 &lt;span class="go"&gt;centos                          centos6             68edf809afe7        3 weeks ago         212.7 MB&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;其实还有更简单一点的方式创建基础镜像，就是利用docker build。现友情赠送创建基础镜像的Dockerfile：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;FROM centos:centos6
-MAINTAINER zhangjoto@gmail.com
-RUN yum install -y compat-libstdc++-33 \
-    elfutils-libelf-devel \
-    elfutils-libelf-devel-static \
-    ksh \
-    libaio \
-    libaio-devel \
-    libstdc++-devel \
-    make \
-    numactl-devel \
-    sysstat \
-    gcc-c++ \
-    &amp;amp;&amp;amp; yum install -y libXext \
-    &amp;amp;&amp;amp; yum clean all
-RUN groupadd -g 601 dba \
-    &amp;amp;&amp;amp; groupadd -g 602 oinstall \
-    &amp;amp;&amp;amp; useradd -u 601 -g 602 -G 601 -m oracle \
-    &amp;amp;&amp;amp; chmod 750 /home/oracle \
-    &amp;amp;&amp;amp; echo &amp;quot;oracle:oracle&amp;quot; | chpasswd
-RUN echo    &amp;quot;fs.aio-max-nr = 1048576&amp;quot; &amp;gt;&amp;gt;/etc/sysctl.conf \
-    &amp;amp;&amp;amp; echo &amp;quot;fs.file-max = 6815744&amp;quot; &amp;gt;&amp;gt;/etc/sysctl.conf \
-    &amp;amp;&amp;amp; echo &amp;quot;kernel.shmmni = 4096&amp;quot; &amp;gt;&amp;gt;/etc/sysctl.conf \
-    &amp;amp;&amp;amp; echo &amp;quot;kernel.sem = 250 32000 100 128&amp;quot; &amp;gt;&amp;gt;/etc/sysctl.conf \
-    &amp;amp;&amp;amp; echo &amp;quot;net.ipv4.ip_local_port_range = 9000 65500&amp;quot; &amp;gt;&amp;gt;/etc/sysctl.conf \
-    &amp;amp;&amp;amp; echo &amp;quot;net.core.rmem_default = 262144&amp;quot; &amp;gt;&amp;gt;/etc/sysctl.conf \
-    &amp;amp;&amp;amp; echo &amp;quot;net.core.rmem_max = 4194304&amp;quot; &amp;gt;&amp;gt;/etc/sysctl.conf \
-    &amp;amp;&amp;amp; echo &amp;quot;net.core.wmem_default = 262144&amp;quot; &amp;gt;&amp;gt;/etc/sysctl.conf \
-    &amp;amp;&amp;amp; echo &amp;quot;net.core.wmem_max = 1048576&amp;quot; &amp;gt;&amp;gt;/etc/sysctl.conf
-RUN echo    &amp;quot;oracle              soft    nproc   2047&amp;quot; &amp;gt;&amp;gt;/etc/security/limits.conf \
-    &amp;amp;&amp;amp; echo &amp;quot;oracle              hard    nproc   16384&amp;quot; &amp;gt;&amp;gt;/etc/security/limits.conf \
-    &amp;amp;&amp;amp; echo &amp;quot;oracle              soft    nofile  1024&amp;quot; &amp;gt;&amp;gt;/etc/security/limits.conf \
-    &amp;amp;&amp;amp; echo &amp;quot;oracle              hard    nofile  65536&amp;quot; &amp;gt;&amp;gt;/etc/security/limits.conf \
-    &amp;amp;&amp;amp; echo &amp;quot;oracle              soft    stack   10240&amp;quot; &amp;gt;&amp;gt; /etc/security/limits.conf
-RUN echo    &amp;#39;ORACLE_SID=sand&amp;#39; &amp;gt;&amp;gt;/home/oracle/.bash_profile \
-    &amp;amp;&amp;amp; echo &amp;#39;ORACLE_BASE=$HOME/server&amp;#39; &amp;gt;&amp;gt;/home/oracle/.bash_profile \
-    &amp;amp;&amp;amp; echo &amp;#39;ORACLE_HOME=$ORACLE_BASE/product/11.2/db&amp;#39; &amp;gt;&amp;gt;/home/oracle/.bash_profile \
-    &amp;amp;&amp;amp; echo &amp;#39;PATH=$ORACLE_HOME/bin:$PATH&amp;#39; &amp;gt;&amp;gt;/home/oracle/.bash_profile \
-    &amp;amp;&amp;amp; echo &amp;#39;LD_LIBRARY_PATH=$ORACLE_HOME/lib:$LD_LIBRARY_PATH&amp;#39; &amp;gt;&amp;gt;/home/oracle/.bash_profile \
-    &amp;amp;&amp;amp; echo &amp;#39;export ORACLE_SID ORACLE_BASE ORACLE_HOME PATH LD_LIBRARY_PATH&amp;#39; &amp;gt;&amp;gt;/home/oracle/.bash_profile
-RUN sed -i &amp;#39;/\/dev\/shm/s/defaults/defaults,size=1g/&amp;#39; /etc/fstab
-CMD /bin/bash
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;FROM&lt;/span&gt;&lt;span class="s"&gt; centos:centos6&lt;/span&gt;
+&lt;span class="k"&gt;MAINTAINER&lt;/span&gt;&lt;span class="s"&gt; zhangjoto@gmail.com&lt;/span&gt;
+&lt;span class="k"&gt;RUN&lt;/span&gt; yum install -y compat-libstdc++-33 &lt;span class="se"&gt;\&lt;/span&gt;
+    elfutils-libelf-devel &lt;span class="se"&gt;\&lt;/span&gt;
+    elfutils-libelf-devel-static &lt;span class="se"&gt;\&lt;/span&gt;
+    ksh &lt;span class="se"&gt;\&lt;/span&gt;
+    libaio &lt;span class="se"&gt;\&lt;/span&gt;
+    libaio-devel &lt;span class="se"&gt;\&lt;/span&gt;
+    libstdc++-devel &lt;span class="se"&gt;\&lt;/span&gt;
+    make &lt;span class="se"&gt;\&lt;/span&gt;
+    numactl-devel &lt;span class="se"&gt;\&lt;/span&gt;
+    sysstat &lt;span class="se"&gt;\&lt;/span&gt;
+    gcc-c++ &lt;span class="se"&gt;\&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; yum install -y libXext &lt;span class="se"&gt;\&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; yum clean all
+&lt;span class="k"&gt;RUN&lt;/span&gt; groupadd -g &lt;span class="m"&gt;601&lt;/span&gt; dba &lt;span class="se"&gt;\&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; groupadd -g &lt;span class="m"&gt;602&lt;/span&gt; oinstall &lt;span class="se"&gt;\&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; useradd -u &lt;span class="m"&gt;601&lt;/span&gt; -g &lt;span class="m"&gt;602&lt;/span&gt; -G &lt;span class="m"&gt;601&lt;/span&gt; -m oracle &lt;span class="se"&gt;\&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; chmod &lt;span class="m"&gt;750&lt;/span&gt; /home/oracle &lt;span class="se"&gt;\&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;oracle:oracle&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;|&lt;/span&gt; chpasswd
+&lt;span class="k"&gt;RUN&lt;/span&gt; &lt;span class="nb"&gt;echo&lt;/span&gt;    &lt;span class="s2"&gt;&amp;quot;fs.aio-max-nr = 1048576&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt;/etc/sysctl.conf &lt;span class="se"&gt;\&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;fs.file-max = 6815744&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt;/etc/sysctl.conf &lt;span class="se"&gt;\&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;kernel.shmmni = 4096&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt;/etc/sysctl.conf &lt;span class="se"&gt;\&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;kernel.sem = 250 32000 100 128&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt;/etc/sysctl.conf &lt;span class="se"&gt;\&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;net.ipv4.ip_local_port_range = 9000 65500&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt;/etc/sysctl.conf &lt;span class="se"&gt;\&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;net.core.rmem_default = 262144&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt;/etc/sysctl.conf &lt;span class="se"&gt;\&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;net.core.rmem_max = 4194304&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt;/etc/sysctl.conf &lt;span class="se"&gt;\&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;net.core.wmem_default = 262144&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt;/etc/sysctl.conf &lt;span class="se"&gt;\&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;net.core.wmem_max = 1048576&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt;/etc/sysctl.conf
+&lt;span class="k"&gt;RUN&lt;/span&gt; &lt;span class="nb"&gt;echo&lt;/span&gt;    &lt;span class="s2"&gt;&amp;quot;oracle              soft    nproc   2047&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt;/etc/security/limits.conf &lt;span class="se"&gt;\&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;oracle              hard    nproc   16384&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt;/etc/security/limits.conf &lt;span class="se"&gt;\&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;oracle              soft    nofile  1024&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt;/etc/security/limits.conf &lt;span class="se"&gt;\&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;oracle              hard    nofile  65536&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt;/etc/security/limits.conf &lt;span class="se"&gt;\&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;oracle              soft    stack   10240&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt; /etc/security/limits.conf
+&lt;span class="k"&gt;RUN&lt;/span&gt; &lt;span class="nb"&gt;echo&lt;/span&gt;    &lt;span class="s1"&gt;&amp;#39;ORACLE_SID=sand&amp;#39;&lt;/span&gt; &amp;gt;&amp;gt;/home/oracle/.bash_profile &lt;span class="se"&gt;\&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;ORACLE_BASE=$HOME/server&amp;#39;&lt;/span&gt; &amp;gt;&amp;gt;/home/oracle/.bash_profile &lt;span class="se"&gt;\&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;ORACLE_HOME=$ORACLE_BASE/product/11.2/db&amp;#39;&lt;/span&gt; &amp;gt;&amp;gt;/home/oracle/.bash_profile &lt;span class="se"&gt;\&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;PATH=$ORACLE_HOME/bin:$PATH&amp;#39;&lt;/span&gt; &amp;gt;&amp;gt;/home/oracle/.bash_profile &lt;span class="se"&gt;\&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;LD_LIBRARY_PATH=$ORACLE_HOME/lib:$LD_LIBRARY_PATH&amp;#39;&lt;/span&gt; &amp;gt;&amp;gt;/home/oracle/.bash_profile &lt;span class="se"&gt;\&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;export ORACLE_SID ORACLE_BASE ORACLE_HOME PATH LD_LIBRARY_PATH&amp;#39;&lt;/span&gt; &amp;gt;&amp;gt;/home/oracle/.bash_profile
+&lt;span class="k"&gt;RUN&lt;/span&gt; sed -i &lt;span class="s1"&gt;&amp;#39;/\/dev\/shm/s/defaults/defaults,size=1g/&amp;#39;&lt;/span&gt; /etc/fstab
+&lt;span class="k"&gt;CMD&lt;/span&gt;&lt;span class="s"&gt; /bin/bash&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;因为Dockerfile对多行字符串的支持不太好，所以我用了很多个echo一行一行的向文件追加内容。如果你知道更好的方式（除了预先编辑文件COPY到容器内之外），还请记得留言告诉我。&lt;/p&gt;
 &lt;/div&gt;
@@ -1053,7 +1053,7 @@ CMD /bin/bash
 &lt;p&gt;容器是没有自己的图形界面的，想实现图形化安装就得将容器内部的图形程序转发到容器外部来显示。&lt;/p&gt;
 &lt;p&gt;通常实现这个目的最简单的方式利用sshd的X11转发功能，但Docker官方并不建议在容器中运行sshd，&lt;a class="footnote-reference" href="#id21" id="id12"&gt;[5]&lt;/a&gt;我也不希望多装软件包。实际上如果不考虑安全性的问题，完全可以通过将X11的socket文件映射到容器内部达到目的。国外已经有人用这种方式运行容器内的Firefox和其它程序&lt;a class="footnote-reference" href="#id22" id="id13"&gt;[6]&lt;/a&gt;。不过随着Docker新版本安全性的增强，原文的办法已不再完全适用，我需要做一点小小的调整（参见原文下面的讨论）。&lt;/p&gt;
 &lt;p&gt;首先从准备好的基础镜像创建准备用来安装Oracle数据库的容器，为了方便，我要将它命名为ora。&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker run -it --name ora -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -v &lt;span class="nv"&gt;$HOME&lt;/span&gt;/.Xauthority:/root/.Xauthority -v &lt;span class="nv"&gt;$HOME&lt;/span&gt;/ora:/mnt --net&lt;span class="o"&gt;=&lt;/span&gt;host --privileged ora11g:prepared /bin/bash
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker run -it --name ora -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -v $HOME/.Xauthority:/root/.Xauthority -v $HOME/ora:/mnt --net&lt;span class="o"&gt;=&lt;/span&gt;host --privileged ora11g:prepared /bin/bash
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;我先解释一下这行命令中各个参数的含义：&lt;/p&gt;
 &lt;ul class="simple"&gt;
@@ -1069,7 +1069,7 @@ CMD /bin/bash
 &lt;li&gt;--privileged 为容器申请特权。要在容器内改变/dev/shm的大小及设置核心参数都必须指定这个参数；&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;因为容器没有自己的init进程，因此Docker用户自定义的初始化任务都只能手工执行。比如根据fstab挂载文件系统和设置核心参数：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="go"&gt;myDocker# mount -o remount /dev/shm&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="go"&gt;myDocker# mount -o remount /dev/shm&lt;/span&gt;
 &lt;span class="go"&gt;myDocker# df -h&lt;/span&gt;
 &lt;span class="go"&gt;Filesystem            Size  Used Avail Use% Mounted on&lt;/span&gt;
 &lt;span class="go"&gt;rootfs                9.8G  388M  8.9G   5% /&lt;/span&gt;
@@ -1115,12 +1115,12 @@ CMD /bin/bash
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;可以看到对/dev/shm的修改生效了，而设置核心参数有很多error。不过不用担心，报错的这些参数只有在繁忙的数据库环境下才真的有必要调整。至于个人使用的实验环境，我们直接跳过不去管它就好了。&lt;/p&gt;
 &lt;p&gt;接下来为了启用图形化界面还要做点小小的处理：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="go"&gt;myDocker# cp ~/.Xauthority ~oracle/&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="go"&gt;myDocker# cp ~/.Xauthority ~oracle/&lt;/span&gt;
 &lt;span class="go"&gt;myDocker# chown oracle:oinstall ~oracle/.Xauthority&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;因为这个.Xauthority文件是从Host映射进来的，我不想让容器对外部环境造成干扰，因此为oracle用户单独复制了一份。如果你不想这么做，那就将容器内的oracle用户的uid和gid设为与Host内用户完全一样的值，并在前面启动容器的命令行里将该文件映射为/home/oracle/.Xauthority即可。&lt;/p&gt;
 &lt;p&gt;现在设置好Oracle安装介质所在目录的权限就可以开始运行安装程序：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="go"&gt;myDocker# chown -R oracle:oinstall /mnt&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="go"&gt;myDocker# chown -R oracle:oinstall /mnt&lt;/span&gt;
 &lt;span class="go"&gt;myDocker# su - oracle&lt;/span&gt;
 &lt;span class="go"&gt;myDocker$ cd /mnt/database&lt;/span&gt;
 &lt;span class="go"&gt;myDocker$ ./runInstaller&lt;/span&gt;
@@ -1134,17 +1134,17 @@ CMD /bin/bash
 &lt;ul class="simple"&gt;
 &lt;li&gt;启动容器的命令行更简略，由于是静默安装，所以图形转发相关的参数全都可以去掉：&lt;/li&gt;
 &lt;/ul&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker run -it --name ora -v &lt;span class="nv"&gt;$HOME&lt;/span&gt;/ora:/mnt --privileged ora11g:prepared /bin/bash
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker run -it --name ora -v $HOME/ora:/mnt --privileged ora11g:prepared /bin/bash
 &lt;/pre&gt;&lt;/div&gt;
 &lt;ul class="simple"&gt;
 &lt;li&gt;运行安装程序的参数要为静默方式指定响应文件并忽略系统需求检查。响应文件在图形化安装时录制或使用安装介质response目录下提供的模板修改均可。&lt;/li&gt;
 &lt;/ul&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="go"&gt;myDocker$ ./runInstaller -silent -responseFile /mnt/db.rsp -ignorePrereq&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="go"&gt;myDocker$ ./runInstaller -silent -responseFile /mnt/db.rsp -ignorePrereq&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 &lt;ul class="simple"&gt;
 &lt;li&gt;运行dbca程序也要指定大量参数：&lt;/li&gt;
 &lt;/ul&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="go"&gt;myDocker$ dbca -silent -createDatabase -templateName /mnt/sand.dbc \&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="go"&gt;myDocker$ dbca -silent -createDatabase -templateName /mnt/sand.dbc \&lt;/span&gt;
 &lt;span class="go"&gt;    -gdbname sand -sid sand -sysPassword sys -systemPassword sys \&lt;/span&gt;
 &lt;span class="go"&gt;    -characterSet ZHS16GBK -nationalCharacterSet AL16UTF16&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
@@ -1156,26 +1156,26 @@ $ORACLE_HOME/assistants/dbca/templates
 &lt;div class="section" id="dockerfile"&gt;
 &lt;h3&gt;&lt;a class="toc-backref" href="#id36"&gt;Dockerfile方式静默安装&lt;/a&gt;&lt;/h3&gt;
 &lt;p&gt;废话不多说，先贴上Dockerfile的内容。其中runInstaller多了一个参数&amp;quot;-waitforcompletion&amp;quot;，这是为了等待产品安装过程全部完成：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;FROM ora11g:prepared
-MAINTAINER zhangjoto@gmail.com
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;FROM&lt;/span&gt;&lt;span class="s"&gt; ora11g:prepared&lt;/span&gt;
+&lt;span class="k"&gt;MAINTAINER&lt;/span&gt;&lt;span class="s"&gt; zhangjoto@gmail.com&lt;/span&gt;
 COPY database /mnt/database
 COPY db.rsp /mnt/
 COPY sand.dbc /mnt/
-RUN sysctl -p &amp;amp;&amp;amp; mount -o remount /dev/shm
-RUN chown -R oracle:oinstall /mnt &amp;amp;&amp;amp; chown -R oracle:oinstall /home/oracle
-RUN su - oracle -c &amp;quot;/mnt/database/runInstaller -silent -responseFile /mnt/db.rsp -ignorePrereq -waitforcompletion&amp;quot;
-RUN /home/oracle/oraInventory/orainstRoot.sh \
-    &amp;amp;&amp;amp; /home/oracle/server/product/11.2/db/root.sh
+&lt;span class="k"&gt;RUN&lt;/span&gt; sysctl -p &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; mount -o remount /dev/shm
+&lt;span class="k"&gt;RUN&lt;/span&gt; chown -R oracle:oinstall /mnt &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; chown -R oracle:oinstall /home/oracle
+&lt;span class="k"&gt;RUN&lt;/span&gt; su - oracle -c &lt;span class="s2"&gt;&amp;quot;/mnt/database/runInstaller -silent -responseFile /mnt/db.rsp -ignorePrereq -waitforcompletion&amp;quot;&lt;/span&gt;
+&lt;span class="k"&gt;RUN&lt;/span&gt; /home/oracle/oraInventory/orainstRoot.sh &lt;span class="se"&gt;\&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; /home/oracle/server/product/11.2/db/root.sh
 USER oracle
-RUN . ~/.bash_profile \
-    &amp;amp;&amp;amp; dbca -silent -createDatabase -templateName /mnt/sand.dbc \
-        -gdbname sand -sid sand -sysPassword sys -systemPassword sys \
+&lt;span class="k"&gt;RUN&lt;/span&gt; . ~/.bash_profile &lt;span class="se"&gt;\&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; dbca -silent -createDatabase -templateName /mnt/sand.dbc &lt;span class="se"&gt;\&lt;/span&gt;
+        -gdbname sand -sid sand -sysPassword sys -systemPassword sys &lt;span class="se"&gt;\&lt;/span&gt;
         -characterSet ZHS16GBK -nationalCharacterSet AL16UTF16
 
-CMD /bin/bash
+&lt;span class="k"&gt;CMD&lt;/span&gt;&lt;span class="s"&gt; /bin/bash&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;但我要很遗憾的说，把这个Dockerfile应用于我前面指定的软件版本的话是要失败的。问题出在这一行代码上：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;RUN sysctl -p &amp;amp;&amp;amp; mount -o remount /dev/shm
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;RUN&lt;/span&gt; sysctl -p &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; mount -o remount /dev/shm
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;还记得我前面说过的话么？执行这两个命令必须用--privileged参数为容器指定特权，而Dockerfile现在是不支持使用特权的。有些用户在Docker项目主页提交了issue，希望提供RUNP命令或让build支持--privileged参数，但不知官方最终会作何反应。&lt;a class="footnote-reference" href="#id23" id="id15"&gt;[7]&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;如果将来官方对此需求提供了支持，我会回头来修改这一部分的内容。但在此之前，你只能用这个Dockerfile来安装Oracle 11.2.0.1及更低版本的数据库环境，并且记得要删除报错的那一行代码。&lt;/p&gt;
@@ -1184,7 +1184,7 @@ CMD /bin/bash
 &lt;h3&gt;&lt;a class="toc-backref" href="#id37"&gt;环境清理并创建Image&lt;/a&gt;&lt;/h3&gt;
 &lt;p&gt;至此可用于个人使用的Oracle实验环境就搭建完成了。不过为了更适合于个人使用和作为镜像分发，我决定关闭数据库的审计并清理各种临时文件之后再生成镜像。&lt;/p&gt;
 &lt;p&gt;下面的过程我不会做太详细的说明，需要研究的朋友应该很容易就能找到相关的详细资料。&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="go"&gt;myDocker$ sqlplus &amp;#39;/as sysdba&amp;#39;&lt;/span&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="go"&gt;myDocker$ sqlplus &amp;#39;/as sysdba&amp;#39;&lt;/span&gt;
 &lt;span class="go"&gt;SQL&amp;gt; alter user scott account unlock;&lt;/span&gt;
 
 &lt;span class="go"&gt;User altered.&lt;/span&gt;
@@ -1222,7 +1222,7 @@ CMD /bin/bash
 &lt;span class="go"&gt;myDocker# exit&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;现在可以生成一个比较干净的镜像了。&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker ps -a
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker ps -a
 &lt;span class="go"&gt;CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS                          PORTS               NAMES&lt;/span&gt;
 &lt;span class="go"&gt;375f693461a7        centos:centos6      &amp;quot;/bin/bash&amp;quot;         About an hour ago   Exited (0) About a minute ago                       ora&lt;/span&gt;
 &lt;span class="gp"&gt;$&lt;/span&gt; docker commit -m &lt;span class="s2"&gt;&amp;quot;oracle 11.2.0.4 on centos6&amp;quot;&lt;/span&gt; ora ora11g:11.2.0.4
