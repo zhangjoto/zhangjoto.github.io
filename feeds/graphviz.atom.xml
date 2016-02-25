@@ -126,7 +126,7 @@
 &lt;/div&gt;
 &lt;div class="section" id="subgraphsclusters"&gt;
 &lt;h2&gt;&lt;a class="toc-backref" href="#id10"&gt;Subgraphs和Clusters&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;子图（subgrap）在Graphviz中扮演三个角色。首先，子图可以用于指明图（译者：graph，不是视觉意义上的图形）的结构，比如某些节点（node）和edge应该视为一组。这是子图最常见的角色，用于指明关于图的组件的语义信息。它还为edge提供了一个速记法，一个edge语句允许直接连接两个子图，此时左侧子图中的每个节点到右侧子图的每个节点都会有一条edge。例如：:&lt;/p&gt;
+&lt;p&gt;子图（subgrap）在Graphviz中扮演三个角色。首先，子图可以用于指明图（译者：graph，不是视觉意义上的图形）的结构，比如某些节点（node）和edge应该视为一组。这是子图最常见的角色，用于指明关于图的组件的语义信息。它还为edge提供了一个速记法，一个edge语句允许直接连接两个子图，此时左侧子图中的每个节点到右侧子图的每个节点都会有一条edge。例如：&lt;/p&gt;
 &lt;pre class="literal-block"&gt;
 A -&amp;gt; {B C}
 &lt;/pre&gt;
@@ -135,7 +135,7 @@ A -&amp;gt; {B C}
 A -&amp;gt; B
 A -&amp;gt; C
 &lt;/pre&gt;
-&lt;p&gt;其次，子图可以提供设置属性的上下文。例如，子图可以指定它内部定义的所有节点默认为蓝色。这方面一个更有趣的例子是：:&lt;/p&gt;
+&lt;p&gt;其次，子图可以提供设置属性的上下文。例如，子图可以指定它内部定义的所有节点默认为蓝色。这方面一个更有趣的例子是：&lt;/p&gt;
 &lt;pre class="literal-block"&gt;
 subgraph {
 rank = same; A; B; C;
@@ -147,7 +147,7 @@ rank = same; A; B; C;
 &lt;div class="section" id="id5"&gt;
 &lt;h2&gt;&lt;a class="toc-backref" href="#id11"&gt;词法和语义注解&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;图必须被指明为digraph或graph。语义上，这指明了相连的两个节点是否有固有的从一个节点到另一个节点的方向性；词法上，有向图的edge要用 -&amp;gt; 指定，无向图则必须用 -- ；操作上，这用于定义渲染时默认属性的区别。比如，有向图的edge默认带有指向头节点（head node）的箭头，无向图的edge则默认不带箭头。&lt;/p&gt;
-&lt;p&gt;图还可以被描述为strict。这会禁止创建多条（相同的）edge，也就是说，在一对给定的尾节点（tail node）和头节点间最多能有一条edge。对于无向图，两个节点最多能有一条edge相连，多余的edge语句会被标识为之前已定义的那一条，并应用最后的edge语句的全部属性。例如：:&lt;/p&gt;
+&lt;p&gt;图还可以被描述为strict。这会禁止创建多条（相同的）edge，也就是说，在一对给定的尾节点（tail node）和头节点间最多能有一条edge。对于无向图，两个节点最多能有一条edge相连，多余的edge语句会被标识为之前已定义的那一条，并应用最后的edge语句的全部属性。例如：&lt;/p&gt;
 &lt;pre class="literal-block"&gt;
 strict graph {
     a -- b
