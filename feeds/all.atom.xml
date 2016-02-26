@@ -112,7 +112,7 @@
 &lt;/table&gt;&lt;p&gt;关键字node, edge, graph, digraph, subgraph和strict是大小写无关的。Note also that the allowed compass point values are not keywords, so these strings can be used elsewhere as ordinary identifiers and, conversely, the parser will actually accept any identifier.&lt;/p&gt;
 &lt;p&gt;ID可以是以下的任意一种：&lt;/p&gt;
 &lt;ul class="simple"&gt;
-&lt;li&gt;任意字母（[a-zA-Z200-377]），下划线或数字字符组成的字符串，且不以数字开头；&lt;/li&gt;
+&lt;li&gt;任意字母（[a-zA-Z\200-\377]），下划线或数字字符组成的字符串，且不以数字开头；&lt;/li&gt;
 &lt;li&gt;一个数字（[-]?(.[0-9]+|[0-9]+(.[0-9]*)?）；&lt;/li&gt;
 &lt;li&gt;任意双引号包围的字符串（&amp;quot;...&amp;quot;），可以包含转义的引号（&amp;quot;）；&lt;/li&gt;
 &lt;li&gt;一个HTML字符串（&amp;lt;...&amp;gt;）；&lt;/li&gt;

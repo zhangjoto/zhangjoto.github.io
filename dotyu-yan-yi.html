@@ -223,7 +223,7 @@ Keep Simple            </a>
 </table><p>关键字node, edge, graph, digraph, subgraph和strict是大小写无关的。Note also that the allowed compass point values are not keywords, so these strings can be used elsewhere as ordinary identifiers and, conversely, the parser will actually accept any identifier.</p>
 <p>ID可以是以下的任意一种：</p>
 <ul class="simple">
-<li>任意字母（[a-zA-Z200-377]），下划线或数字字符组成的字符串，且不以数字开头；</li>
+<li>任意字母（[a-zA-Z\200-\377]），下划线或数字字符组成的字符串，且不以数字开头；</li>
 <li>一个数字（[-]?(.[0-9]+|[0-9]+(.[0-9]*)?）；</li>
 <li>任意双引号包围的字符串（&quot;...&quot;），可以包含转义的引号（&quot;）；</li>
 <li>一个HTML字符串（&lt;...&gt;）；</li>
