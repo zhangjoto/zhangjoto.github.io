@@ -2,7 +2,7 @@
 <html lang="zh"
 >
 <head>
-    <title>Oracle - Keep Simple</title>
+    <title>Python - Keep Simple</title>
     <!-- Using the latest rendering mode for IE -->
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta charset="utf-8">
@@ -12,7 +12,7 @@
 
 
     <meta name="author" content="zhangjoto" />
-    <meta name="keywords" content="Oracle" />
+    <meta name="keywords" content="Python" />
 
     <!-- Open Graph tags -->
         <meta property="og:site_name" content="Keep Simple" />
@@ -76,45 +76,42 @@ Keep Simple            </a>
         <div class="col-sm-9">
 
             <article>
-                <h2><a href="https://zhangjoto.github.io/li-yong-dockerjian-li-oracle-11gshi-yan-huan-jing.html">利用Docker建立Oracle 11g实验环境</a></h2>
+                <h2><a href="https://zhangjoto.github.io/multiprocessingku-zhi-poolqian-xi.html">multiprocessing库之pool浅析</a></h2>
                 <div class="summary"><div class="contents topic" id="contents">
 <p class="topic-title first">Contents</p>
 <ul class="simple">
-<li><a class="reference internal" href="#id1" id="id24">基本信息</a></li>
-<li><a class="reference internal" href="#id2" id="id25">宿主机调整</a><ul>
-<li><a class="reference internal" href="#id3" id="id26">空间问题解决</a></li>
+<li><a class="reference internal" href="#id1" id="id8">多进程通信的限制</a></li>
+<li><a class="reference internal" href="#id2" id="id9">基本结构</a><ul>
+<li><a class="reference internal" href="#worker" id="id10">worker函数</a></li>
+<li><a class="reference internal" href="#applyresult" id="id11">ApplyResult类</a></li>
+<li><a class="reference internal" href="#pool" id="id12">Pool类</a><ul>
+<li><a class="reference internal" href="#id3" id="id13">通信队列</a></li>
+<li><a class="reference internal" href="#id4" id="id14">线程分工</a></li>
+<li><a class="reference internal" href="#id5" id="id15">数据流向</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#kvm" id="id27">直接从kvm虚拟机迁移</a><ul>
-<li><a class="reference internal" href="#id4" id="id28">虚拟机硬盘挂载</a></li>
-<li><a class="reference internal" href="#id6" id="id29">文件系统导入</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#docker" id="id30">Docker环境下重新安装</a><ul>
-<li><a class="reference internal" href="#id7" id="id31">基础镜像准备</a><ul>
-<li><a class="reference internal" href="#base-image" id="id32">获取官方Base Image</a></li>
-<li><a class="reference internal" href="#oracle" id="id33">Oracle安装准备</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#id11" id="id34">图形化方式安装</a></li>
-<li><a class="reference internal" href="#id14" id="id35">静默安装</a></li>
-<li><a class="reference internal" href="#dockerfile" id="id36">Dockerfile方式静默安装</a></li>
-<li><a class="reference internal" href="#image" id="id37">环境清理并创建Image</a></li>
+<li><a class="reference internal" href="#id6" id="id16">其它</a><ul>
+<li><a class="reference internal" href="#taskresult" id="id17">task与result的对应</a></li>
+<li><a class="reference internal" href="#id7" id="id18">参考</a></li>
 </ul>
 </li>
 </ul>
 </div>
-<p>最近一直在研究Docker，尝试拿它做一些小型的开发试验环境，确实是相当好用。</p>
-<p>某日突发奇想，打算将我的Oracle实验环境迁到Docker中来。虽然最终得到的镜像有点头重脚轻，不太符合Docker推荐的使用方式，但相比虚拟机好歹也节省了些开销。</p>
-<p>实验过程中各种方式折腾了好几轮，感觉都不太完美。先将过程做个记录，期望将来能找到更好的办法。</p>
+<p>因为著名的GIL问题，Python提供了一个标准库multiprocessing，并建议用它编写多进程并发程序，以解决CPU密集型程序的运行效率问题。这个库内部主要是在处理各种跨平台问题，使用起来比较繁琐。不过其中提供了一个进程池的实现，善加利用的话倒是能满足许多场景的需求。</p>
+<p>虽然自Python 3.2起又有一个concurrent库实现了进程/线程池并提供了更简便的接口，但从几个角度来讲我更倾向于使用multiprocessing的进程池：</p>
+<ul class="simple">
+<li>concurrent极大的限制了用户的控制权，难以应付复杂的应用场景；</li>
+<li>很难保证永远不会用到Python 2，所以在有可能的情况下最好是编写Python 2/3兼容的代码；</li>
+</ul>
+<p>关于multiprocessing.Pool的使用介绍目前已经遍地都是，我就来对它的内部机制做一点简单的分析。</p>
+<p>以下分析均基于Python 3.5.1的源码。</p>
 <div class="section" id="id1">
-<h2><a class="toc-backref" href="#id24">基本信息</a></h2>
-<p>我的笔记本本地硬盘是128G的SSD，所以实验过程中使用了外置硬盘做存储，好在是USB3.0连接。另外，基本的软件版本信息如下：</p>
-<pre class="literal-block">
-OS: Arch Linux (内核3.16.4-1)64位
-Docker: 1:1.3.0-1
-容器OS: CentOS 6 ...</pre></div>
-                    <a class="btn btn-default btn-xs" href="https://zhangjoto.github.io/li-yong-dockerjian-li-oracle-11gshi-yan-huan-jing.html">more ...</a>
+<h2><a class="toc-backref" href="#id8">多进程通信的限制</a></h2>
+<p>所有多进程协作的程序都会涉及进程间的通信问题，因此在谈论进程池的设计前，关于进程间通信的限制就不可不知。</p>
+<p>与多线程模型相比，由于每个进程的地址空间是独立的，因此进程间传递数据就必须依托于操作系统提供的机制。这些机制可能是共享内存/消息队列/信号量或Domain socket等 ...</p></div>
+                    <a class="btn btn-default btn-xs" href="https://zhangjoto.github.io/multiprocessingku-zhi-poolqian-xi.html">more ...</a>
                 </div>
             </article>
             <hr/>
@@ -161,7 +158,7 @@ Docker: 1:1.3.0-1
    <div class="container">
       <hr>
       <div class="row">
-         <div class="col-xs-10">&copy; 2014 zhangjoto
+         <div class="col-xs-10">&copy; 2016 zhangjoto
             &middot; Powered by <a href="https://github.com/DandyDev/pelican-bootstrap3" target="_blank">pelican-bootstrap3</a>,
             <a href="http://docs.getpelican.com/" target="_blank">Pelican</a>,
             <a href="http://getbootstrap.com" target="_blank">Bootstrap</a>         </div>

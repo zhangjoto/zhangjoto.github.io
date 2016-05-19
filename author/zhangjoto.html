@@ -55,6 +55,9 @@ Keep Simple            </a>
                             <a href="https://zhangjoto.github.io/category/documents.html">Documents</a>
                         </li>
                         <li >
+                            <a href="https://zhangjoto.github.io/category/python.html">Python</a>
+                        </li>
+                        <li >
                             <a href="https://zhangjoto.github.io/category/troubleshooting.html">Troubleshooting</a>
                         </li>
             </ul>
@@ -71,6 +74,46 @@ Keep Simple            </a>
     <div class="row">
         <div class="col-sm-9">
 
+            <article>
+                <h2><a href="https://zhangjoto.github.io/multiprocessingku-zhi-poolqian-xi.html">multiprocessing库之pool浅析</a></h2>
+                <div class="summary"><div class="contents topic" id="contents">
+<p class="topic-title first">Contents</p>
+<ul class="simple">
+<li><a class="reference internal" href="#id1" id="id8">多进程通信的限制</a></li>
+<li><a class="reference internal" href="#id2" id="id9">基本结构</a><ul>
+<li><a class="reference internal" href="#worker" id="id10">worker函数</a></li>
+<li><a class="reference internal" href="#applyresult" id="id11">ApplyResult类</a></li>
+<li><a class="reference internal" href="#pool" id="id12">Pool类</a><ul>
+<li><a class="reference internal" href="#id3" id="id13">通信队列</a></li>
+<li><a class="reference internal" href="#id4" id="id14">线程分工</a></li>
+<li><a class="reference internal" href="#id5" id="id15">数据流向</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id6" id="id16">其它</a><ul>
+<li><a class="reference internal" href="#taskresult" id="id17">task与result的对应</a></li>
+<li><a class="reference internal" href="#id7" id="id18">参考</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<p>因为著名的GIL问题，Python提供了一个标准库multiprocessing，并建议用它编写多进程并发程序，以解决CPU密集型程序的运行效率问题。这个库内部主要是在处理各种跨平台问题，使用起来比较繁琐。不过其中提供了一个进程池的实现，善加利用的话倒是能满足许多场景的需求。</p>
+<p>虽然自Python 3.2起又有一个concurrent库实现了进程/线程池并提供了更简便的接口，但从几个角度来讲我更倾向于使用multiprocessing的进程池：</p>
+<ul class="simple">
+<li>concurrent极大的限制了用户的控制权，难以应付复杂的应用场景；</li>
+<li>很难保证永远不会用到Python 2，所以在有可能的情况下最好是编写Python 2/3兼容的代码；</li>
+</ul>
+<p>关于multiprocessing.Pool的使用介绍目前已经遍地都是，我就来对它的内部机制做一点简单的分析。</p>
+<p>以下分析均基于Python 3.5.1的源码。</p>
+<div class="section" id="id1">
+<h2><a class="toc-backref" href="#id8">多进程通信的限制</a></h2>
+<p>所有多进程协作的程序都会涉及进程间的通信问题，因此在谈论进程池的设计前，关于进程间通信的限制就不可不知。</p>
+<p>与多线程模型相比，由于每个进程的地址空间是独立的，因此进程间传递数据就必须依托于操作系统提供的机制。这些机制可能是共享内存/消息队列/信号量或Domain socket等 ...</p></div>
+                    <a class="btn btn-default btn-xs" href="https://zhangjoto.github.io/multiprocessingku-zhi-poolqian-xi.html">more ...</a>
+                </div>
+            </article>
+            <hr/>
             <article>
                 <h2><a href="https://zhangjoto.github.io/wei-docker-140qi-yong-overlaycun-chu-qu-dong.html">为Docker 1.4.0启用overlay存储驱动</a></h2>
                 <div class="summary"><div class="contents topic" id="contents">
@@ -260,7 +303,7 @@ Docker: 1:1.3.0-1
    <div class="container">
       <hr>
       <div class="row">
-         <div class="col-xs-10">&copy; 2014 zhangjoto
+         <div class="col-xs-10">&copy; 2016 zhangjoto
             &middot; Powered by <a href="https://github.com/DandyDev/pelican-bootstrap3" target="_blank">pelican-bootstrap3</a>,
             <a href="http://docs.getpelican.com/" target="_blank">Pelican</a>,
             <a href="http://getbootstrap.com" target="_blank">Bootstrap</a>         </div>
