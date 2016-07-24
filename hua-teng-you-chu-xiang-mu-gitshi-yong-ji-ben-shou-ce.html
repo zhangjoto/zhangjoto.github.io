@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="zh"
+>
+<head>
+    <title>华腾邮储项目Git使用基本手册 - Keep Simple</title>
+    <!-- Using the latest rendering mode for IE -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+
+<link rel="canonical" href="https://zhangjoto.github.io/hua-teng-you-chu-xiang-mu-gitshi-yong-ji-ben-shou-ce.html">
+
+        <meta name="author" content="zhangjoto" />
+        <meta name="keywords" content="Docker,Oracle,容器技术" />
+        <meta name="description" content="Contents Git基础知识 基本概念 Git基本命令速查 开发环境基本配置建议 多分支并行工作流 基本原则和愿景 工作流设计 工作流执行步骤 建立开发环境 feature分支开发完成 feature上线成功 附录 开发人员常用Git命令 参考 Git基础知识 Git（读音类似&#34;歌易特&#34;）是由Linux之父Linus Torvalds开发，并在Linux开发社区成长壮大起来的分布式版本控制系统（DVCS）。由于其性能优势、DVCS架构优势以及分支的便利性，如今大量的开源项目、公司都在纷纷向Git迁移。 所谓DVCS，即Distributed version control system。它与传统CVS/SVN等集中式版本控制系统的差别，好比是HTTP和BT两种文件下载方式的区别。有一张简单的示意图： 分布式版本控制 其中Server Computer是项目组指定的中心版本库，Computer A/Computer B为两个不同开发组或工程师使用的开发环境。A和B的使用者可以从Server Computer克隆中心版本库的所有内容到本地，并在A/B上进行开发、提交、测试，直到必须的时候 ..." />
+
+        <meta property="og:site_name" content="Keep Simple" />
+        <meta property="og:type" content="article"/>
+        <meta property="og:title" content="华腾邮储项目Git使用基本手册"/>
+        <meta property="og:url" content="https://zhangjoto.github.io/hua-teng-you-chu-xiang-mu-gitshi-yong-ji-ben-shou-ce.html"/>
+        <meta property="og:description" content="Contents Git基础知识 基本概念 Git基本命令速查 开发环境基本配置建议 多分支并行工作流 基本原则和愿景 工作流设计 工作流执行步骤 建立开发环境 feature分支开发完成 feature上线成功 附录 开发人员常用Git命令 参考 Git基础知识 Git（读音类似&#34;歌易特&#34;）是由Linux之父Linus Torvalds开发，并在Linux开发社区成长壮大起来的分布式版本控制系统（DVCS）。由于其性能优势、DVCS架构优势以及分支的便利性，如今大量的开源项目、公司都在纷纷向Git迁移。 所谓DVCS，即Distributed version control system。它与传统CVS/SVN等集中式版本控制系统的差别，好比是HTTP和BT两种文件下载方式的区别。有一张简单的示意图： 分布式版本控制 其中Server Computer是项目组指定的中心版本库，Computer A/Computer B为两个不同开发组或工程师使用的开发环境。A和B的使用者可以从Server Computer克隆中心版本库的所有内容到本地，并在A/B上进行开发、提交、测试，直到必须的时候 ..."/>
+        <meta property="article:published_time" content="2014-10-20" />
+            <meta property="article:section" content="Docker" />
+            <meta property="article:tag" content="Docker" />
+            <meta property="article:tag" content="Oracle" />
+            <meta property="article:tag" content="容器技术" />
+            <meta property="article:author" content="zhangjoto" />
+
+
+    <!-- Bootstrap -->
+        <link rel="stylesheet" href="https://zhangjoto.github.io/theme/css/bootstrap.min.css" type="text/css"/>
+    <link href="https://zhangjoto.github.io/theme/css/font-awesome.min.css" rel="stylesheet">
+
+    <link href="https://zhangjoto.github.io/theme/css/pygments/native.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://zhangjoto.github.io/theme/css/style.css" type="text/css"/>
+
+        <link href="https://zhangjoto.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate"
+              title="Keep Simple ATOM Feed"/>
+
+</head>
+<body>
+
+<div class="navbar navbar-default navbar-fixed-top" role="navigation">
+	<div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a href="https://zhangjoto.github.io/" class="navbar-brand">
+Keep Simple            </a>
+        </div>
+        <div class="collapse navbar-collapse navbar-ex1-collapse">
+            <ul class="nav navbar-nav">
+                        <li class="active">
+                            <a href="https://zhangjoto.github.io/category/docker.html">Docker</a>
+                        </li>
+                        <li >
+                            <a href="https://zhangjoto.github.io/category/documents.html">Documents</a>
+                        </li>
+                        <li >
+                            <a href="https://zhangjoto.github.io/category/python.html">Python</a>
+                        </li>
+                        <li >
+                            <a href="https://zhangjoto.github.io/category/troubleshooting.html">Troubleshooting</a>
+                        </li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+              <li><a href="https://zhangjoto.github.io/archives.html"><i class="fa fa-th-list"></i><span class="icon-label">Archives</span></a></li>
+            </ul>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+</div> <!-- /.navbar -->
+<!-- Banner -->
+<!-- End Banner -->
+<div class="container">
+    <div class="row">
+        <div class="col-sm-9">
+
+    <section id="content">
+        <article>
+            <header class="page-header">
+                <h1>
+                    <a href="https://zhangjoto.github.io/hua-teng-you-chu-xiang-mu-gitshi-yong-ji-ben-shou-ce.html"
+                       rel="bookmark"
+                       title="Permalink to 华腾邮储项目Git使用基本手册">
+                        华腾邮储项目Git使用基本手册
+                    </a>
+                </h1>
+            </header>
+            <div class="entry-content">
+                <div class="panel">
+                    <div class="panel-body">
+<footer class="post-info">
+    <span class="label label-default">Date</span>
+    <span class="published">
+        <i class="fa fa-calendar"></i><time datetime="2014-10-20T00:00:00+08:00"> 一 20 十月 2014</time>
+    </span>
+
+
+
+<span class="label label-default">Tags</span>
+	<a href="https://zhangjoto.github.io/tag/docker.html">Docker</a>
+        /
+	<a href="https://zhangjoto.github.io/tag/oracle.html">Oracle</a>
+        /
+	<a href="https://zhangjoto.github.io/tag/rong-qi-ji-zhu.html">容器技术</a>
+    
+</footer><!-- /.post-info -->                    </div>
+                </div>
+                <div class="contents topic" id="contents">
+<p class="topic-title first">Contents</p>
+<ul class="simple">
+<li><a class="reference internal" href="#id1" id="id15">Git基础知识</a><ul>
+<li><a class="reference internal" href="#id2" id="id16">基本概念</a></li>
+<li><a class="reference internal" href="#id3" id="id17">Git基本命令速查</a></li>
+<li><a class="reference internal" href="#id4" id="id18">开发环境基本配置建议</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id5" id="id19">多分支并行工作流</a><ul>
+<li><a class="reference internal" href="#id6" id="id20">基本原则和愿景</a></li>
+<li><a class="reference internal" href="#id7" id="id21">工作流设计</a></li>
+<li><a class="reference internal" href="#id8" id="id22">工作流执行步骤</a><ul>
+<li><a class="reference internal" href="#id9" id="id23">建立开发环境</a></li>
+<li><a class="reference internal" href="#feature" id="id24">feature分支开发完成</a></li>
+<li><a class="reference internal" href="#id10" id="id25">feature上线成功</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id11" id="id26">附录</a><ul>
+<li><a class="reference internal" href="#id12" id="id27">开发人员常用Git命令</a></li>
+<li><a class="reference internal" href="#id13" id="id28">参考</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="id1">
+<h2><a class="toc-backref" href="#id15">Git基础知识</a></h2>
+<p>Git（读音类似&quot;歌易特&quot;）是由Linux之父Linus Torvalds开发，并在Linux开发社区成长壮大起来的分布式版本控制系统（DVCS）。由于其性能优势、DVCS架构优势以及分支的便利性，如今大量的开源项目、公司都在纷纷向Git迁移。</p>
+<p>所谓DVCS，即Distributed version control system。它与传统CVS/SVN等集中式版本控制系统的差别，好比是HTTP和BT两种文件下载方式的区别。有一张简单的示意图：</p>
+<div class="figure">
+<img alt="" src="pics/01.dvcs.png" />
+<p class="caption">分布式版本控制</p>
+</div>
+<p>其中Server Computer是项目组指定的中心版本库，Computer A/Computer B为两个不同开发组或工程师使用的开发环境。A和B的使用者可以从Server Computer克隆中心版本库的所有内容到本地，并在A/B上进行开发、提交、测试，直到必须的时候（比如功能上线）时才将本地的修改推送到Server Computer。</p>
+<p>同时，（在设置得当的情况下，）Computer A也可以直接将自己的修改内容同步到Computer B（反之也一样），在我们当前的工作方式下这也许没有多少意义，但你需要别人帮你看看代码时就用得上了。</p>
+<p>DVCS相比集中式VCS有几大优点：</p>
+<ul class="simple">
+<li>大部分工作在本地进行，不需要依赖网络；</li>
+<li>只有版本同步和推送时对Server有依赖，不会有Server挂掉导致整个项目组所有工作停滞的问题；</li>
+<li>每个节点都有完整的版本库副本，个别机器损坏之类的故障不会导致版本库数据丢失；</li>
+</ul>
+<div class="section" id="id2">
+<h3><a class="toc-backref" href="#id16">基本概念</a></h3>
+<p>Git中有几个独特的概念需要单独介绍一下的：</p>
+<ul class="simple">
+<li>HEAD，指向当前分支最新提交的指针；</li>
+<li>.gitignore文件，用于定义工作区内不需要版本管理的文件；</li>
+<li>工作区（也叫工作目录, working directory）；</li>
+<li>暂存区（staging area，也叫index）；</li>
+<li>本地仓库（repository，从实现上也可以叫git directory）；</li>
+</ul>
+<p>工作区就是你在开发环境中能看到的目录，比如我们开发环境的工作区通常就是$HOME。我们所有对程序文件、头文件以及配置文件的修改都是在工作区中进行。本地仓库则是与工作区关联的一个目录，通常是工作区内的隐藏目录.git，工作区所有已提交的内容所在里面保存并可以同步到远程仓库。暂存区则是文件进入版本库之前临时存储的区域，因为其内容目前保存在.git/index文件中，因此也常常叫它index。</p>
+<div class="figure">
+<img alt="" src="pics/04.git-areas.png" />
+<p class="caption">文件在三个工作区域间的流转</p>
+</div>
+<div class="highlight"><pre><span></span>$ git status
+On branch master
+Changes to be committed:
+  <span class="o">(</span>use <span class="s2">&quot;git reset HEAD &lt;file&gt;...&quot;</span> to unstage<span class="o">)</span>
+
+        modified:   center/src/oltp/ind/T101001.c
+
+Changes not staged <span class="k">for</span> commit:
+  <span class="o">(</span>use <span class="s2">&quot;git add &lt;file&gt;...&quot;</span> to update what will be committed<span class="o">)</span>
+  <span class="o">(</span>use <span class="s2">&quot;git checkout -- &lt;file&gt;...&quot;</span> to discard changes in working directory<span class="o">)</span>
+
+        modified:   center/src/oltp/ind/T101002.c
+</pre></div>
+<p>在如上如示的命令输出中，center/src/oltp/ind/T101001.c即是进入暂存区，而center/src/oltp/ind/T101002.c的状态则在工作区中未进入暂存区。此时执行commit命令默认是只会将center/src/oltp/ind/T101001.c提交到版本库的。</p>
+<p>因此在Git的文件状态转化如下图：</p>
+<div class="figure">
+<img alt="" src="pics/05.file-status.png" />
+<p class="caption">文件状态变化周期</p>
+</div>
+<p>这张图中每次状态变化涉及具体的操作后面会介绍。</p>
+<p>最后，虽然没有足够的篇幅介绍原理，但是Git的分支是非常轻量而便于使用的，几乎所有的使用建议都推荐使用者善用分支进行开发管理。</p>
+</div>
+<div class="section" id="id3">
+<h3><a class="toc-backref" href="#id17">Git基本命令速查</a></h3>
+<pre class="literal-block">
+git init         # 本地仓库初始化，仅在从零建立一个版本库时才会用到
+git clone        # 从远程仓库克隆建立一个本地仓库，仅在创建全新的开发环境时才会用到
+git status       # 显示工作区文件状态
+git add          # 将文件或目录加入暂存区
+git commit       # 将暂存区的文件提交到本地仓库
+git checkout     # 将本地仓库指定版本的内容检出到工作区
+git log          # 查看提交历史
+git diff         # 查看不同版本的内容差异
+git difftool     # 调用外部工具查看内容差异
+git branch       # 查看/创建/删除分支
+git merge        # 分支合并
+git rebase       # 分支变基
+git mergetool    # 调用外部工具处理分支合并中发生的冲突
+git mv           # 重命令文件
+git rm           # 删除文件
+git remote       # 查看/新增/删除远程仓库
+git reset        # 重置改变分支指针指向
+git show         # 显示各种类型的对象
+git fetch        # 获取远程仓库的更新
+git pull         # 拉回远程仓库的更新（并合并到本地分支）
+git push         # 将本地仓库的更新推送到远程仓库
+git config       # 查询/修改仓库配置
+git stash        # 保存和恢复进度
+git tag          # 标签，或者说里程碑管理
+git grep         # 类似于系统命令grep
+git blame        # 文件逐行追溯：谁在什么时间哪个版本加入了哪一行
+</pre>
+<p>有几条命令有一定危险性，一般开发人员应该极少使用，版本管理员和开发环境负责人也应慎用：</p>
+<pre class="literal-block">
+git reset
+git checkout
+git merge
+git rebase
+</pre>
+<p>注：在命令行键入git后直接回车可以得到git常用命令的列表，类似于这样：</p>
+<div class="highlight"><pre><span></span>usage: git <span class="o">[</span>--version<span class="o">]</span> <span class="o">[</span>--help<span class="o">]</span> <span class="o">[</span>-C &lt;path&gt;<span class="o">]</span> <span class="o">[</span>-c <span class="nv">name</span><span class="o">=</span>value<span class="o">]</span>
+           <span class="o">[</span>--exec-path<span class="o">[=</span>&lt;path&gt;<span class="o">]]</span> <span class="o">[</span>--html-path<span class="o">]</span> <span class="o">[</span>--man-path<span class="o">]</span> <span class="o">[</span>--info-path<span class="o">]</span>
+           <span class="o">[</span>-p <span class="p">|</span> --paginate <span class="p">|</span> --no-pager<span class="o">]</span> <span class="o">[</span>--no-replace-objects<span class="o">]</span> <span class="o">[</span>--bare<span class="o">]</span>
+           <span class="o">[</span>--git-dir<span class="o">=</span>&lt;path&gt;<span class="o">]</span> <span class="o">[</span>--work-tree<span class="o">=</span>&lt;path&gt;<span class="o">]</span> <span class="o">[</span>--namespace<span class="o">=</span>&lt;name&gt;<span class="o">]</span>
+           &lt;command&gt; <span class="o">[</span>&lt;args&gt;<span class="o">]</span>
+
+These are common Git commands used in various situations:
+
+start a working area <span class="o">(</span>see also: git <span class="nb">help</span> tutorial<span class="o">)</span>
+   clone      Clone a repository into a new directory
+   init       Create an empty Git repository or reinitialize an existing one
+
+work on the current change <span class="o">(</span>see also: git <span class="nb">help</span> everyday<span class="o">)</span>
+   add        Add file contents to the index
+   mv         Move or rename a file, a directory, or a symlink
+   reset      Reset current HEAD to the specified state
+   rm         Remove files from the working tree and from the index
+
+examine the <span class="nb">history</span> and state <span class="o">(</span>see also: git <span class="nb">help</span> revisions<span class="o">)</span>
+   bisect     Use binary search to find the commit that introduced a bug
+   grep       Print lines matching a pattern
+   log        Show commit logs
+   show       Show various types of objects
+   status     Show the working tree status
+
+grow, mark and tweak your common <span class="nb">history</span>
+   branch     List, create, or delete branches
+   checkout   Switch branches or restore working tree files
+   commit     Record changes to the repository
+   diff       Show changes between commits, commit and working tree, etc
+   merge      Join two or more development histories together
+   rebase     Reapply commits on top of another base tip
+   tag        Create, list, delete or verify a tag object signed with GPG
+
+collaborate <span class="o">(</span>see also: git <span class="nb">help</span> workflows<span class="o">)</span>
+   fetch      Download objects and refs from another repository
+   pull       Fetch from and integrate with another repository or a <span class="nb">local</span> branch
+   push       Update remote refs along with associated objects
+
+<span class="s1">&#39;git help -a&#39;</span> and <span class="s1">&#39;git help -g&#39;</span> list available subcommands and some
+concept guides. See <span class="s1">&#39;git help &lt;command&gt;&#39;</span> or <span class="s1">&#39;git help &lt;concept&gt;&#39;</span>
+to <span class="nb">read</span> about a specific subcommand or concept.
+</pre></div>
+<p>使用git command -h或man git command（command是有效的Git子命令）则分别可以得到简短/详细的帮助信息。</p>
+</div>
+<div class="section" id="id4">
+<h3><a class="toc-backref" href="#id18">开发环境基本配置建议</a></h3>
+<div class="highlight"><pre><span></span><span class="c1"># 配置开发环境负责人的姓名拼音</span>
+git config user.name xxx
+<span class="c1"># 配置开发环境负责人的邮箱</span>
+git config user.email xxx@huateng.com
+
+<span class="c1"># 不跟踪文件权限</span>
+git config core.filemode <span class="nb">false</span>
+<span class="c1"># 使用vimdiff执行代码比较</span>
+git config diff.tool vimdiff
+<span class="c1"># 使用vimdiff解决合并冲突</span>
+git config merge.tool vimdiff
+<span class="c1"># 关闭执行difftool的提示</span>
+git config difftool.prompt <span class="nb">false</span>
+<span class="c1"># 彩色输出，AIX/HP-UX平台可以跳过</span>
+git config color.ui <span class="nb">true</span>
+
+<span class="c1"># 支持中文文件名</span>
+git config core.quotepath <span class="nb">false</span>
+<span class="c1"># gbk环境下git log 中文输出，使用UTF-8编码则无需执行</span>
+git config i18n.logOutputEncoding gbk
+<span class="c1"># gbk环境下中文提交记录，使用UTF-8编码则无需执行</span>
+git config i18n.commitEncoding gbk
+
+<span class="c1"># AIX/HP-UX环境下定义分页器，Linux环境不需执行</span>
+git config core.pager pg
+
+<span class="c1"># 定义命令别名</span>
+git config alias.cf config
+git config alias.st status
+git config alias.ci commit
+git config alias.co checkout
+git config alias.br branch
+git config alias.dt difftool
+git config alias.mt mergetool
+</pre></div>
+<p>如果是中心版本库，最好再设定禁止非快进式推送，以防止各开发环境（意外的）同名分支在推送时互相覆盖：</p>
+<div class="highlight"><pre><span></span>git config receive.denyNoFastForwards <span class="nb">true</span>
+</pre></div>
+<p>以上所有的配置命令均可以在git config之后加上--global，这样的话配置会保存在$HOME/.gitconfig，否则就会保存在.git/config文件中。</p>
+<p>配置完成后可以查看配置是否有效，在工作区内执行：</p>
+<div class="highlight"><pre><span></span>git config -l
+</pre></div>
+<p>如果输出列表中有多个相同的选项，则是以最后一行输出的值为准。</p>
+</div>
+</div>
+<div class="section" id="id5">
+<h2><a class="toc-backref" href="#id19">多分支并行工作流</a></h2>
+<p>在单分支的开发工作中，Git的使用体验类似于SVN等传统集中式版本控制系统，这里不多加讨论。本手册接下来主要讨论多分支并行开发时Git的使用。</p>
+<div class="section" id="id6">
+<h3><a class="toc-backref" href="#id20">基本原则和愿景</a></h3>
+<p>在多分支并行开发的过程中，我们希望：</p>
+<ul class="simple">
+<li>鼓励所有开发人员只要完成了可用的修改就尽快提交（可能以通过编译为标志），以免丢失修改；</li>
+<li>中心版本库保留尽可能简单清晰的提交历史；</li>
+<li>版本管理人员可以轻松的从中心版本库检出与每次上线对应的完整版本；</li>
+<li>保证从中心版本库检出的版本A必然包含了在该版本之前已上线的所有功能或补丁，不管这些功能或补丁的开发时间是在版本A的开发时间之前还是之后；</li>
+<li>保证编译环境编译打包工作尽可能的顺利；</li>
+</ul>
+</div>
+<div class="section" id="id7">
+<h3><a class="toc-backref" href="#id21">工作流设计</a></h3>
+<p>假设项目组的中心版本库在make环境，有一个开发分支hotfix在开发环境dev_1，另一个开发分支feature在开发环境dev_2，结合我们的基本愿景和Git的功能特点，目前设计的工作流如下图所示：</p>
+<div class="figure">
+<img alt="" src="pics/git-flow.png" />
+<p class="caption">多分支并行开发流程</p>
+</div>
+<p>在以上开发流程执行中有以下几个注意点：</p>
+<ol class="arabic simple">
+<li>编译环境的merge永远不应该出现冲突；</li>
+<li>编译环境的版本历史为单线；</li>
+<li>中心版本库多数情况下只有master分支，功能完成等待上线时可能有一到多个release_xxx分支；</li>
+<li>release分支及开发分支在并入master后要尽快清理；</li>
+<li>只有一个功能上线稳定后才能合并入master分支，此时所有未上线的分支都要进行rebase；</li>
+<li>极少数无风险又极易冲突的文件可以提前进入中心版本库（需项目经理确认），以减少冲突频率；</li>
+<li>开发环境的master分支无需关注；</li>
+</ol>
+</div>
+<div class="section" id="id8">
+<h3><a class="toc-backref" href="#id22">工作流执行步骤</a></h3>
+<p>先确定几点假设：</p>
+<ul class="simple">
+<li>make环境主目录为/home/make，中心版本库在20.13.0.81:/home/make/.git，服务器主机名为git-srv；</li>
+<li>dev_1环境主目录为/home/dev_1，版本库在20.13.0.81:/home/dev_1/.git，主机名同上；</li>
+<li>dev_2环境主目录为/home/dev_2，版本库在20.13.0.82:/home/dev_1/.git，主机名为dev-srv；</li>
+<li>版本管理员为zhang_san，dev_1环境负责人为li_si，dev_2环境负责人为wang_wu；</li>
+<li>所有环境的工作区即为$HOME；</li>
+</ul>
+<div class="section" id="id9">
+<h4><a class="toc-backref" href="#id23">建立开发环境</a></h4>
+<ul class="simple">
+<li>版本管理员确认中心库版本master分支状态是否符合现状；</li>
+</ul>
+<div class="highlight"><pre><span></span><span class="o">[</span>make@git-srv<span class="o">]</span>$ <span class="nb">cd</span>
+<span class="o">[</span>make@git-srv<span class="o">]</span>$ git branch -v  <span class="c1"># 显示所有分支的最新提交</span>
+<span class="o">[</span>make@git-srv<span class="o">]</span>$ git release_xxx..master  <span class="c1"># 检查是否有已上线分支比master分支更新</span>
+<span class="o">[</span>make@git-srv<span class="o">]</span>$ git log --graph --decorate --branches  <span class="c1"># 检查所有分支历史衍合历史</span>
+<span class="o">[</span>make@git-srv<span class="o">]</span>$ <span class="c1"># 以上三种方法均可，显示信息量依次变详细</span>
+</pre></div>
+<ul class="simple">
+<li>li_si建立dev_1环境：</li>
+</ul>
+<div class="highlight"><pre><span></span><span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ <span class="c1"># 将主目录清理干净后执行克隆</span>
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ rm -rf *
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ git clone file:///home/make/.git .
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ <span class="c1"># 检查git相关的配置文件已clone过来</span>
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ git ls-files .git*
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ ls -ad .git*
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ <span class="c1"># 修改环境配置</span>
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ git config user.name li_si
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ git config user.email li_si@huateng.com
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ <span class="c1"># 修改filemode等其他配置</span>
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ <span class="c1"># ......</span>
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ git config -l <span class="c1"># 检查配置</span>
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ <span class="c1"># 以master分支为基准创建hotfix分支</span>
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ git checkout master
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ git branch hotfix
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ git checkout hotfix
+<span class="o">[</span>dev_1@dev-srv<span class="o">]</span>$ <span class="c1"># 确认hotfix分支与master分支内容一致</span>
+<span class="o">[</span>dev_1@dev-srv<span class="o">]</span>$ git diff hotfix master
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ <span class="c1"># 确认已工作在hotfix分支上</span>
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ git branch
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ <span class="c1"># 将远程仓库的推送地址改为使用ssh协议，否则推送会失败</span>
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ git remote set-url --push origin ssh://make@20.13.0.80:/~/.git
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ git remote -v
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ <span class="c1"># 修改项目配置文件及进行编译等</span>
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ <span class="c1"># ......</span>
+</pre></div>
+<ul class="simple">
+<li>wang_wu建立dev_2环境：</li>
+</ul>
+<div class="highlight"><pre><span></span><span class="o">[</span>dev_2@dev-srv<span class="o">]</span>$ <span class="c1"># 将主目录清理干净后执行克隆</span>
+<span class="o">[</span>dev_2@dev-srv<span class="o">]</span>$ rm -rf *
+<span class="o">[</span>dev_2@dev-srv<span class="o">]</span>$ git clone ssh://make@20.13.0.80:/~/.git .
+<span class="o">[</span>dev_2@dev-srv<span class="o">]</span>$ <span class="c1"># 检查git相关的配置文件已clone过来</span>
+<span class="o">[</span>dev_2@dev-srv<span class="o">]</span>$ git ls-files .git*
+<span class="o">[</span>dev_2@dev-srv<span class="o">]</span>$ ls -ad .git*
+<span class="o">[</span>dev_2@dev-srv<span class="o">]</span>$ <span class="c1"># 修改环境配置</span>
+<span class="o">[</span>dev_2@dev-srv<span class="o">]</span>$ git config user.name wang_wu
+<span class="o">[</span>dev_2@dev-srv<span class="o">]</span>$ git config user.email wang_wu@huateng.com
+<span class="o">[</span>dev_2@dev-srv<span class="o">]</span>$ <span class="c1"># 修改filemode等其他配置</span>
+<span class="o">[</span>dev_2@dev-srv<span class="o">]</span>$ <span class="c1"># ......</span>
+<span class="o">[</span>dev_2@dev-srv<span class="o">]</span>$ git config -l <span class="c1"># 检查配置</span>
+<span class="o">[</span>dev_2@dev-srv<span class="o">]</span>$ <span class="c1"># 以master分支为基准创建feature分支</span>
+<span class="o">[</span>dev_2@dev-srv<span class="o">]</span>$ git checkout master
+<span class="o">[</span>dev_2@dev-srv<span class="o">]</span>$ git branch feature
+<span class="o">[</span>dev_2@dev-srv<span class="o">]</span>$ git checkout feature
+<span class="o">[</span>dev_2@dev-srv<span class="o">]</span>$ <span class="c1"># 确认feature分支与master分支内容一致</span>
+<span class="o">[</span>dev_2@dev-srv<span class="o">]</span>$ git diff hotfix master
+<span class="o">[</span>dev_2@dev-srv<span class="o">]</span>$ <span class="c1"># 确认已工作在feature分支上</span>
+<span class="o">[</span>dev_2@dev-srv<span class="o">]</span>$ git branch
+<span class="o">[</span>dev_2@git-srv<span class="o">]</span>$ <span class="c1"># 修改项目配置文件及进行编译等</span>
+<span class="o">[</span>dev_2@git-srv<span class="o">]</span>$ <span class="c1"># ......</span>
+</pre></div>
+</div>
+<div class="section" id="feature">
+<h4><a class="toc-backref" href="#id24">feature分支开发完成</a></h4>
+<ul class="simple">
+<li>dev_2环境负责人检查修改的文件全部提交，并将分支推送到</li>
+</ul>
+<div class="highlight"><pre><span></span><span class="o">[</span>dev_2@dev-srv<span class="o">]</span>$ <span class="c1"># 确认当前工作分支为feature分支</span>
+<span class="o">[</span>dev_2@dev-srv<span class="o">]</span>$ git branch
+<span class="o">[</span>dev_2@dev-srv<span class="o">]</span>$ <span class="c1"># 确认修改文件已经全部提交，必要的时候检查修改内容</span>
+<span class="o">[</span>dev_2@dev-srv<span class="o">]</span>$ git diff master..HEAD --stat
+<span class="o">[</span>dev_2@dev-srv<span class="o">]</span>$ git difftool master..HEAD -- file1
+<span class="o">[</span>dev_2@dev-srv<span class="o">]</span>$ <span class="c1"># 检查工作区和暂存区是否还有遗漏的文件，必要的情况下检查修改内容</span>
+<span class="o">[</span>dev_2@dev-srv<span class="o">]</span>$ git status
+<span class="o">[</span>dev_2@dev-srv<span class="o">]</span>$ git difftool --cached  <span class="c1"># 暂存区和已提交版本比较</span>
+<span class="o">[</span>dev_2@dev-srv<span class="o">]</span>$ git difftool HEAD  <span class="c1"># 工作区和已提交版本比较</span>
+<span class="o">[</span>dev_2@dev-srv<span class="o">]</span>$ <span class="c1"># 有遗漏文件的话补充提交</span>
+<span class="o">[</span>dev_2@dev-srv<span class="o">]</span>$ git add file1 file2
+<span class="o">[</span>dev_2@dev-srv<span class="o">]</span>$ git commit
+<span class="o">[</span>dev_2@dev-srv<span class="o">]</span>$ <span class="c1"># 将feature分支推送到中心版本库</span>
+<span class="o">[</span>dev_2@dev-srv<span class="o">]</span>$ git push -u origin feature
+</pre></div>
+<ul class="simple">
+<li>版本管理员执行分支合并</li>
+</ul>
+<div class="highlight"><pre><span></span><span class="o">[</span>make@git-srv<span class="o">]</span>$ <span class="c1"># 确认feature分支已推送成功</span>
+<span class="o">[</span>make@git-srv<span class="o">]</span>$ git branch -v
+<span class="o">[</span>make@git-srv<span class="o">]</span>$ <span class="c1"># 创建release_feature分支</span>
+<span class="o">[</span>make@git-srv<span class="o">]</span>$ git checkout -b release_feature
+<span class="o">[</span>make@git-srv<span class="o">]</span>$ git diff master release_feature
+<span class="o">[</span>make@git-srv<span class="o">]</span>$ <span class="c1"># 在release_feature上合并feature分支</span>
+<span class="o">[</span>make@git-srv<span class="o">]</span>$ git branch
+<span class="o">[</span>make@git-srv<span class="o">]</span>$ git merge feature
+<span class="o">[</span>make@git-srv<span class="o">]</span>$ <span class="c1"># 如有冲突，说明dev_1开发环境创建后中心版本库master分支有变化，feature分支需要先在dev_1环境rebase后重新push</span>
+<span class="o">[</span>make@git-srv<span class="o">]</span>$ <span class="c1"># 正常合并则进行编译并生成版本供测试</span>
+</pre></div>
+<ul class="simple">
+<li>feature上线后等待一两天，确认无紧急升级或回滚；否则还要重复执行修改、推送、合并、编译的流程；</li>
+<li>确认版本稳定后由版本管理员更新中心版本库master分支；</li>
+</ul>
+<div class="highlight"><pre><span></span><span class="o">[</span>make@git-srv<span class="o">]</span>$ <span class="c1"># 确认release_feature对应上线版本</span>
+<span class="o">[</span>make@git-srv<span class="o">]</span>$ git branch -v
+<span class="o">[</span>make@git-srv<span class="o">]</span>$ git log --graph --decorate --branches
+<span class="o">[</span>make@git-srv<span class="o">]</span>$ <span class="c1"># 更新master分支</span>
+<span class="o">[</span>make@git-srv<span class="o">]</span>$ git checkout master
+<span class="o">[</span>make@git-srv<span class="o">]</span>$ git merge release_feature
+<span class="o">[</span>make@git-srv<span class="o">]</span>$ <span class="c1"># 清理release_feature和feature分支</span>
+<span class="o">[</span>make@git-srv<span class="o">]</span>$ git branch -d release_feature
+<span class="o">[</span>make@git-srv<span class="o">]</span>$ git branch -d feature
+<span class="o">[</span>make@git-srv<span class="o">]</span>$ <span class="c1"># 使用标签标记feature上线稳定版本</span>
+<span class="o">[</span>make@git-srv<span class="o">]</span>$ git tag -m <span class="s2">&quot;feature上线稳定版本，xxxxxx上线&quot;</span>
+</pre></div>
+</div>
+<div class="section" id="id10">
+<h4><a class="toc-backref" href="#id25">feature上线成功</a></h4>
+<ul class="simple">
+<li>dev_1环境负责人通知所有相关人员暂停开发并保存文件；</li>
+<li>dev_1环境负责人开始进行代码rebase：</li>
+</ul>
+<div class="highlight"><pre><span></span><span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ <span class="c1"># 确认工作在hotfix分支</span>
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ git branch
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ <span class="c1"># 保存开发进度</span>
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ git status <span class="c1"># 有不想被覆盖的untracked文件的话需要执行git add以防被覆盖，否则建议删除</span>
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ git stash
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ git stash list
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ <span class="c1"># 确认工作区clean</span>
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ git status
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ <span class="c1"># 拉取远程仓库最新版本到本地master分支</span>
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ git pull origin master
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ <span class="c1"># 将hotfix分支rebase为基于当前master修改</span>
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ git rebase master
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ <span class="c1"># 如果变基出现冲突，先解决冲突再继续</span>
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ git mergetool
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ git add file1 file2
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ git rebase --continue
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ <span class="c1"># 确认变基完成后恢复开发进度</span>
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ git status
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ git log --graph --decorate --branches
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ git stash pop
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ <span class="c1"># 恢复开发进度出现冲突也要解决</span>
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ <span class="c1"># ......</span>
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ git add
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ <span class="c1"># 确认开发进度已恢复</span>
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ git stash list
+<span class="o">[</span>dev_1@git-srv<span class="o">]</span>$ git status
+</pre></div>
+<ul class="simple">
+<li>dev_1相关人员继续进行开发；</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="section" id="id11">
+<h2><a class="toc-backref" href="#id26">附录</a></h2>
+<div class="section" id="id12">
+<h3><a class="toc-backref" href="#id27">开发人员常用Git命令</a></h3>
+<pre class="literal-block">
+git add file1 file2           # 将file1和file2加入暂存区
+git add dir1                  # 将dir1目录下所有修改加入暂存区
+git status                    # 查看工作区和暂存区状态
+git branch                    # 查看当前工作分支
+git commit                    # 提交暂存区内容
+git commit --amend            # 为最近一次提交补充文件，需要先git add
+git log --oneline             # 每项提交历史显示为一行
+git log -1 --stat             # 查看最新一次提交的统计信息
+git log -2 --name-only        # 查看最近两次提交的文件列表
+git log master..hotfix        # 查看master没有、hotfix分支中有的提交
+git show commit-id:file1      # 查看指定commit中file1的原始内容，commit-id可以只写前几位
+git show hotfix:file1         # 查看hotfix分支最新提交中file1的原始内容
+git diff file1                # 将工作区中的file1与暂存区中内容比较
+git diff --cached             # 将暂存区中的file1与HEAD中内容比较
+git diff HEAD file1           # 将工作区中的file1与HEAD中内容比较
+git diff HEAD^^ --stat        # 合并查看最新两次提交的内容差异统计
+git diff HEAD~4 --name-only   # 合并查看最新四次提交的文件列表
+git diff master hotfix file1  # 查看master和hotfix分支中file1的内容差异
+git diff origin/master master # 合并查看origin中master分支没有、本地master分支中有的修改
+git difftool file1            # 类似git diff file1，但会调用vimdiff等外部工具
+git reset -- file1            # 将file1从暂存区中删除，--必须，以防与分支重名造成误操作
+git checkout -- file1         # 从版本库检出file1，即放弃工作区中的修改。可能需要先git reset
+git grep pattern              # 对版本库所有文件执行grep pattern，默认8线程并发
+git tag                       # 显示版本库中的标签
+</pre>
+</div>
+<div class="section" id="id13">
+<h3><a class="toc-backref" href="#id28">参考</a></h3>
+<ul class="simple">
+<li>选择指定版本范围的语法<ul>
+<li>man gitrevisions</li>
+</ul>
+</li>
+<li>更多常用Git命令：<a class="reference external" href="https://gist.github.com/guweigang/9848271">这里（不保证准确）</a></li>
+</ul>
+</div>
+</div>
+
+            </div>
+            <!-- /.entry-content -->
+    <hr/>
+    <section class="comments" id="comments">
+        <h2>Comments</h2>
+
+        <div id="disqus_thread"></div>
+        <script type="text/javascript">
+            /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+            var disqus_shortname = 'github'; // required: replace example with your forum shortname
+
+                    var disqus_identifier = 'hua-teng-you-chu-xiang-mu-gitshi-yong-ji-ben-shou-ce';
+                var disqus_url = 'https://zhangjoto.github.io/hua-teng-you-chu-xiang-mu-gitshi-yong-ji-ben-shou-ce.html';
+
+            var disqus_config = function () {
+                this.language = "zh";
+            };
+
+            /* * * DON'T EDIT BELOW THIS LINE * * */
+            (function () {
+                var dsq = document.createElement('script');
+                dsq.type = 'text/javascript';
+                dsq.async = true;
+                dsq.src = 'https://' + disqus_shortname + '.disqus.com/embed.js';
+                (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+            })();
+        </script>
+        <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by
+            Disqus.</a></noscript>
+        <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+
+    </section>
+        </article>
+    </section>
+
+        </div>
+        <div class="col-sm-3" id="sidebar">
+            <aside>
+
+<section class="well well-sm">
+    <ul class="list-group list-group-flush">
+
+
+
+            <li class="list-group-item"><a href="https://zhangjoto.github.io/"><h4><i class="fa fa-tags fa-lg"></i><span class="icon-label">Tags</span></h4></a>
+                <ul class="list-group " id="tags">
+                </ul>
+            </li>
+    <li class="list-group-item"><h4><i class="fa fa-external-link-square fa-lg"></i><span class="icon-label">Links</span></h4>
+      <ul class="list-group" id="links">
+        <li class="list-group-item">
+            <a href="http://getpelican.com/" target="_blank">
+                Pelican
+            </a>
+        </li>
+        <li class="list-group-item">
+            <a href="http://python.org/" target="_blank">
+                Python.org
+            </a>
+        </li>
+        <li class="list-group-item">
+            <a href="http://jinja.pocoo.org/" target="_blank">
+                Jinja2
+            </a>
+        </li>
+      </ul>
+    </li>
+    </ul>
+</section>
+            </aside>
+        </div>
+    </div>
+</div>
+<footer>
+   <div class="container">
+      <hr>
+      <div class="row">
+         <div class="col-xs-10">&copy; 2016 zhangjoto
+            &middot; Powered by <a href="https://github.com/DandyDev/pelican-bootstrap3" target="_blank">pelican-bootstrap3</a>,
+            <a href="http://docs.getpelican.com/" target="_blank">Pelican</a>,
+            <a href="http://getbootstrap.com" target="_blank">Bootstrap</a>         </div>
+         <div class="col-xs-2"><p class="pull-right"><i class="fa fa-arrow-up"></i> <a href="#">Back to top</a></p></div>
+      </div>
+   </div>
+</footer>
+<script src="https://zhangjoto.github.io/theme/js/jquery.min.js"></script>
+
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="https://zhangjoto.github.io/theme/js/bootstrap.min.js"></script>
+
+<!-- Enable responsive features in IE8 with Respond.js (https://github.com/scottjehl/Respond) -->
+<script src="https://zhangjoto.github.io/theme/js/respond.min.js"></script>
+
+    <!-- Disqus -->
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'github'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function () {
+            var s = document.createElement('script');
+            s.async = true;
+            s.type = 'text/javascript';
+            s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+            (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+        }());
+    </script>
+    <!-- End Disqus Code -->
+
+</body>
+</html>

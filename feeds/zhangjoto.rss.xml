@@ -1,5 +1,109 @@
 <?xml version="1.0" encoding="utf-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Keep Simple</title><link>https://zhangjoto.github.io/</link><description></description><atom:link href="https://zhangjoto.github.io/feeds/zhangjoto.rss.xml" rel="self"></atom:link><lastBuildDate>Thu, 19 May 2016 00:00:00 +0800</lastBuildDate><item><title>multiprocessing库之pool浅析</title><link>https://zhangjoto.github.io/multiprocessingku-zhi-poolqian-xi.html</link><description>&lt;div class="contents topic" id="contents"&gt;
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Keep Simple</title><link>https://zhangjoto.github.io/</link><description></description><atom:link href="https://zhangjoto.github.io/feeds/zhangjoto.rss.xml" rel="self"></atom:link><lastBuildDate>Sun, 24 Jul 2016 00:00:00 +0800</lastBuildDate><item><title>tmux桌面通知及RSS源被墙的解决</title><link>https://zhangjoto.github.io/tmuxzhuo-mian-tong-zhi-ji-rssyuan-bei-qiang-de-jie-jue.html</link><description>&lt;div class="contents topic" id="contents"&gt;
+&lt;p class="topic-title first"&gt;Contents&lt;/p&gt;
+&lt;ul class="simple"&gt;
+&lt;li&gt;&lt;a class="reference internal" href="#tmux" id="id6"&gt;Tmux桌面通知&lt;/a&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a class="reference internal" href="#id1" id="id7"&gt;配置修改&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class="reference internal" href="#id2" id="id8"&gt;使用&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class="reference internal" href="#id3" id="id9"&gt;遗留问题&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;a class="reference internal" href="#liferearss" id="id10"&gt;Liferea订阅被墙RSS源的设置&lt;/a&gt;&lt;ul&gt;
+&lt;li&gt;&lt;a class="reference internal" href="#id4" id="id11"&gt;扩展阅读&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;p&gt;最近两天在家折腾自己机器，解决了几个小问题。解决的问题个人觉得有些用处，而且看了看网上似乎没有什么相关的资料提到，就合在一起说一下。&lt;/p&gt;
+&lt;div class="section" id="tmux"&gt;
+&lt;h2&gt;&lt;a class="toc-backref" href="#id6"&gt;Tmux桌面通知&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;tmux有个很有用的功能，就是可以帮助用户监控某个窗口的活动或静止状态。简单解释就是用户在tmux中的某个窗口执行一个长时间运行的命令（比如make）后，可以要求tmux监控该窗口然后切到其它窗口去工作；到该窗口的输出状态改变时，tmux会在它的状态栏显示提示信息或者以蜂鸣声提醒用户，用户就可以切回该窗口继续下一步工作了。&lt;/p&gt;
+&lt;p&gt;前面所说的窗口及状态栏都是tmux中的概念而非窗口管理器中的概念。换句话说，当我在rxvt中使用tmux时，提示信息只能在rxvt中显示，正在使用浏览器的用户是注意不到提示的；蜂鸣声也不适合在公共场合使用，这迫使用户仍然要时不时的自行切回tmux窗口检查状态。&lt;/p&gt;
+&lt;p&gt;需要补充说明一下的是tmux中窗口的状态改变是由窗口是否产生新输出来判定的。即窗口放置一段时间后产生了新输出即为静止（silence）状态变为活动（activity）状态，持续产生输出的窗口一定时间内不再产生输出了即为活动状态变为静止状态。&lt;/p&gt;
+&lt;p&gt;对此我希望能配置tmux使用notify-send来发送通知。目标是让tmux在其状态栏显示提示的同时，X桌面会弹出桌面通知我哪个tmux任务的哪一个窗口有了新输出或停止了输出。&lt;/p&gt;
+&lt;p&gt;很少有人提到的是，tmux提供了针对少量内部事件的hook机制，其配置语法为:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+set-hook [-g] [-t target-session] hook-name command
+&lt;/pre&gt;
+&lt;p&gt;支持的事件类型只有几种：&lt;/p&gt;
+&lt;ul class="simple"&gt;
+&lt;li&gt;alert-activity;&lt;/li&gt;
+&lt;li&gt;alert-bell;&lt;/li&gt;
+&lt;li&gt;alert-silence;&lt;/li&gt;
+&lt;li&gt;client-attached;&lt;/li&gt;
+&lt;li&gt;client-detached;&lt;/li&gt;
+&lt;li&gt;client-resized;&lt;/li&gt;
+&lt;li&gt;pane-died;&lt;/li&gt;
+&lt;li&gt;pane-exited;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;其中alert-activity和alert-silence正是我需要的事件，前者在窗口由静止变为活动时触发，后者在窗口由活动变为静止时触发。&lt;/p&gt;
+&lt;div class="section" id="id1"&gt;
+&lt;h3&gt;&lt;a class="toc-backref" href="#id7"&gt;配置修改&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;经过多番尝试，最终我在.tmux.conf中添加的相关配置如下：&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+# Binding key
+bind a send-prefix                  # 将tmux的快捷键前缀改为Ctrl-a
+bind m setw monitor-activity        # 快捷键m设定tmux开始/停止监控当前窗口的活动状态（变为活动时提示）
+bind q setw monitor-silence 10      # 快捷键q设定tmux监控当前窗口的静止状态（静止10秒时提示）
+bind Q setw monitor-silence 0       # 快捷键Q设定tmux停止监控当前窗口的静止状态
+
+# for desktop notify
+set-hook -g alert-activity 'run &amp;quot;notify-send \&amp;quot;tmux session #{session_name}#{window_id} has new output\&amp;quot;&amp;quot;'
+set-hook -g alert-silence 'run &amp;quot;notify-send \&amp;quot;tmux session #{session_name}#{window_id} has silenced 10s\&amp;quot;&amp;quot;'
+&lt;/pre&gt;
+&lt;p&gt;最后两行复杂一点，要分解说明一下。&lt;/p&gt;
+&lt;ul class="simple"&gt;
+&lt;li&gt;set-hook -g意为在全局范围而非特定窗口内设定hook；&lt;/li&gt;
+&lt;li&gt;alert-activity/alert-silent为tmux的内部事件名；&lt;/li&gt;
+&lt;li&gt;run即为run-shell的缩写，告诉tmux要执行外部命令；&lt;/li&gt;
+&lt;li&gt;session_name/window_id为tmux内部变量，使用#{var}语法tmux就会将相应的变量值填入；&lt;/li&gt;
+&lt;li&gt;tmux对配置文件的语法解析完全是一个萝卜一个坑的解析方式，多一个词都会报语法错误，因此要用引号层层嵌套的方式告诉set-hook/run只有一个参数；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id2"&gt;
+&lt;h3&gt;&lt;a class="toc-backref" href="#id8"&gt;使用&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;测试很简单，打开一个tmux并创建多个窗口后在其中一个窗口执行一个小shell循环：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;for&lt;/span&gt; i in &lt;span class="sb"&gt;`&lt;/span&gt;seq 3&lt;span class="sb"&gt;`&lt;/span&gt;:
+&lt;span class="k"&gt;do&lt;/span&gt;
+    sleep 5
+    &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;new line&amp;#39;&lt;/span&gt;
+&lt;span class="k"&gt;done&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;并Ctrl-a m和Ctrl-a q之后切换到其它窗口，5秒内及25之后就会看到两个桌面通知依次弹出。Ctrl-a m和Ctrl-a Q则是关闭新通知。&lt;/p&gt;
+&lt;/div&gt;
+&lt;div class="section" id="id3"&gt;
+&lt;h3&gt;&lt;a class="toc-backref" href="#id9"&gt;遗留问题&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;我个人会把工作用的代码放到另外一个操作系统用户（比如dev），dev用户执行notify-send命令由于是将通知发到了另一个dbus总线，因此无法弹出桌面通知。谁要有什么好的解决办法还望留言指点一下。&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div class="section" id="liferearss"&gt;
+&lt;h2&gt;&lt;a class="toc-backref" href="#id10"&gt;Liferea订阅被墙RSS源的设置&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;我一直使用Liferea阅读器订阅RSS源，今天在清理停止更新的RSS时发现有一个国外的RSS源更新报错是因为被墙了。这个站点叫All commands，下面就以它的真实地址做例子。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;curl http://feeds2.feedburner.com/Command-line-fu
+proxychains curl http://feeds2.feedburner.com/Command-line-fu
+&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;前一条命令等了很久以后报连接超时，后一条命令1秒内就返回了完整的xml文档，很显然是地址被墙了。&lt;/p&gt;
+&lt;p&gt;虽然Liferea阅读器支持HTTP代理，但是一来我偏爱和使用的是socks5代理，二来被墙的订阅毕竟是少数，没必要使用全局代理。所以还是要另找办法。&lt;/p&gt;
+&lt;p&gt;同样很少有人知道的是（我也是刚发现），liferea的feed类型除了URL以外，还可以是命令输出和本地文件。既然在命令行中可以获取完整的xml文档，那就可以将feed类型改为命令：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;p class="first"&gt;选择&amp;quot;Feed&amp;quot;，&amp;quot;属性&amp;quot;，在弹出窗口中选择&amp;quot;来源&amp;quot;选项卡；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p class="first"&gt;来源类型选择&amp;quot;命令&amp;quot;；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p class="first"&gt;在&amp;quot;源&amp;quot;的输入栏输入:&lt;/p&gt;
+&lt;pre class="literal-block"&gt;
+proxychains -q curl http://feeds2.feedburner.com/Command-line-fu
+&lt;/pre&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;注：-q是为了抑制proxychains的输出干扰，命令执行结果应该输出到标准输出。&lt;/p&gt;
+&lt;p&gt;最后趁机安利一下All commands这个网站，里面是用户提供的各种命令使用技巧，我自己时不时能学到些新东西。网站地址: &lt;a class="reference external" href="http://www.commandlinefu.com/"&gt;http://www.commandlinefu.com/&lt;/a&gt; ，RSS源: &lt;a class="reference external" href="http://feeds2.feedburner.com/Command-line-fu"&gt;http://feeds2.feedburner.com/Command-line-fu&lt;/a&gt; （是的，这货的网址和RSS源是两个域名）。&lt;/p&gt;
+&lt;div class="section" id="id4"&gt;
+&lt;h3&gt;&lt;a class="toc-backref" href="#id11"&gt;扩展阅读&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;还有人利用liferea的这个特性来订阅自己的gmail收件箱，感兴趣的请点 &lt;a class="reference external" href="https://moto.debian.tw/viewtopic.php?t=4651"&gt;这里&lt;/a&gt; 。当然，墙内别忘了加代理。&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+</description><dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">zhangjoto</dc:creator><pubDate>Sun, 24 Jul 2016 00:00:00 +0800</pubDate><guid>tag:zhangjoto.github.io,2016-07-24:tmuxzhuo-mian-tong-zhi-ji-rssyuan-bei-qiang-de-jie-jue.html</guid><category>tmux</category><category>tools</category><category>proxychains</category></item><item><title>multiprocessing库之pool浅析</title><link>https://zhangjoto.github.io/multiprocessingku-zhi-poolqian-xi.html</link><description>&lt;div class="contents topic" id="contents"&gt;
 &lt;p class="topic-title first"&gt;Contents&lt;/p&gt;
 &lt;ul class="simple"&gt;
 &lt;li&gt;&lt;a class="reference internal" href="#id1" id="id8"&gt;多进程通信的限制&lt;/a&gt;&lt;/li&gt;

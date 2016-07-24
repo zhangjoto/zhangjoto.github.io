@@ -2,7 +2,7 @@
 <html lang="zh"
 >
 <head>
-    <title>Archives - Keep Simple</title>
+    <title>tools - Keep Simple</title>
     <!-- Using the latest rendering mode for IE -->
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta charset="utf-8">
@@ -11,7 +11,8 @@
 
 
 
-        <meta name="author" content="zhangjoto" />
+    <meta name="author" content="zhangjoto" />
+    <meta name="keywords" content="tools" />
 
     <!-- Open Graph tags -->
         <meta property="og:site_name" content="Keep Simple" />
@@ -77,39 +78,42 @@ Keep Simple            </a>
     <div class="row">
         <div class="col-sm-9">
 
-    <section id="content">
-        <h1>Archives for Keep Simple</h1>
-        <div id="archives">
-                <p>
-                    <span class="categories-timestamp"><time datetime="2016-07-24T00:00:00+08:00">日 24 七月 2016</time></span>
-                    <a href="https://zhangjoto.github.io/tmuxzhuo-mian-tong-zhi-ji-rssyuan-bei-qiang-de-jie-jue.html">tmux桌面通知及RSS源被墙的解决</a>
-                </p>
-                <p>
-                    <span class="categories-timestamp"><time datetime="2016-05-19T00:00:00+08:00">四 19 五月 2016</time></span>
-                    <a href="https://zhangjoto.github.io/multiprocessingku-zhi-poolqian-xi.html">multiprocessing库之pool浅析</a>
-                </p>
-                <p>
-                    <span class="categories-timestamp"><time datetime="2016-02-25T00:00:00+08:00">四 25 二月 2016</time></span>
-                    <a href="https://zhangjoto.github.io/dotyu-yan-yi.html">DOT语言（译）</a>
-                </p>
-                <p>
-                    <span class="categories-timestamp"><time datetime="2014-12-28T00:00:00+08:00">日 28 十二月 2014</time></span>
-                    <a href="https://zhangjoto.github.io/wei-docker-140qi-yong-overlaycun-chu-qu-dong.html">为Docker 1.4.0启用overlay存储驱动</a>
-                </p>
-                <p>
-                    <span class="categories-timestamp"><time datetime="2014-12-22T00:00:00+08:00">一 22 十二月 2014</time></span>
-                    <a href="https://zhangjoto.github.io/dockershi-yong-zhong-de-wen-ti-xiao-jie.html">Docker使用中的问题小结</a>
-                </p>
-                <p>
-                    <span class="categories-timestamp"><time datetime="2014-11-13T00:00:00+08:00">四 13 十一月 2014</time></span>
-                    <a href="https://zhangjoto.github.io/yi-ci-xing-neng-ce-shi-troubleshootingji-lu.html">一次性能测试troubleshooting记录</a>
-                </p>
-                <p>
-                    <span class="categories-timestamp"><time datetime="2014-10-20T00:00:00+08:00">一 20 十月 2014</time></span>
-                    <a href="https://zhangjoto.github.io/li-yong-dockerjian-li-oracle-11gshi-yan-huan-jing.html">利用Docker建立Oracle 11g实验环境</a>
-                </p>
-        </div>
-    </section>
+            <article>
+                <h2><a href="https://zhangjoto.github.io/tmuxzhuo-mian-tong-zhi-ji-rssyuan-bei-qiang-de-jie-jue.html">tmux桌面通知及RSS源被墙的解决</a></h2>
+                <div class="summary"><div class="contents topic" id="contents">
+<p class="topic-title first">Contents</p>
+<ul class="simple">
+<li><a class="reference internal" href="#tmux" id="id6">Tmux桌面通知</a><ul>
+<li><a class="reference internal" href="#id1" id="id7">配置修改</a></li>
+<li><a class="reference internal" href="#id2" id="id8">使用</a></li>
+<li><a class="reference internal" href="#id3" id="id9">遗留问题</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#liferearss" id="id10">Liferea订阅被墙RSS源的设置</a><ul>
+<li><a class="reference internal" href="#id4" id="id11">扩展阅读</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<p>最近两天在家折腾自己机器，解决了几个小问题。解决的问题个人觉得有些用处，而且看了看网上似乎没有什么相关的资料提到，就合在一起说一下。</p>
+<div class="section" id="tmux">
+<h2><a class="toc-backref" href="#id6">Tmux桌面通知</a></h2>
+<p>tmux有个很有用的功能，就是可以帮助用户监控某个窗口的活动或静止状态。简单解释就是用户在tmux中的某个窗口执行一个长时间运行的命令（比如make）后，可以要求tmux监控该窗口然后切到其它窗口去工作；到该窗口的输出状态改变时，tmux会在它的状态栏显示提示信息或者以蜂鸣声提醒用户，用户就可以切回该窗口继续下一步工作了。</p>
+<p>前面所说的窗口及状态栏都是tmux中的概念而非窗口管理器中的概念。换句话说，当我在rxvt中使用tmux时，提示信息只能在rxvt中显示，正在使用浏览器的用户是注意不到提示的；蜂鸣声也不适合在公共场合使用，这迫使用户仍然要时不时的自行切回tmux窗口检查状态。</p>
+<p>需要补充说明一下的是tmux中窗口的状态改变是由窗口是否产生新输出来判定的。即窗口放置一段时间后产生了新输出即为静止（silence）状态变为活动（activity）状态，持续产生输出的窗口一定时间内不再产生输出了即为活动状态变为静止状态。</p>
+<p>对此我希望能配置tmux使用notify-send来发送通知。目标是让tmux在其状态栏显示提示的同时，X桌面会弹出桌面通知我哪个tmux任务的哪一个窗口有了新输出或停止了输出。</p>
+<p>很少有人提到的是，tmux提供了针对少量内部事件的hook机制，其配置语法为:</p>
+<pre class="literal-block">
+set-hook [-g] [-t target-session] hook-name command
+</pre>
+<p>支持的事件类型只有几种：</p>
+<ul class="simple">
+<li>alert-activity ...</li></ul></div>
+                    <a class="btn btn-default btn-xs" href="https://zhangjoto.github.io/tmuxzhuo-mian-tong-zhi-ji-rssyuan-bei-qiang-de-jie-jue.html">more ...</a>
+                </div>
+            </article>
+            <hr/>
+
         </div>
         <div class="col-sm-3" id="sidebar">
             <aside>
