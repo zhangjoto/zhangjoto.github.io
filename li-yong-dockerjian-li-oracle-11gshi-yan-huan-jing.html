@@ -66,6 +66,9 @@ Keep Simple            </a>
                             <a href="https://zhangjoto.github.io/category/python.html">Python</a>
                         </li>
                         <li >
+                            <a href="https://zhangjoto.github.io/category/shu-ju.html">数据</a>
+                        </li>
+                        <li >
                             <a href="https://zhangjoto.github.io/category/tools.html">Tools</a>
                         </li>
                         <li >
@@ -549,7 +552,7 @@ PL/SQL: Statement ignored
 <p>容器是没有自己的图形界面的，想实现图形化安装就得将容器内部的图形程序转发到容器外部来显示。</p>
 <p>通常实现这个目的最简单的方式利用sshd的X11转发功能，但Docker官方并不建议在容器中运行sshd，<a class="footnote-reference" href="#id21" id="id12">[5]</a>我也不希望多装软件包。实际上如果不考虑安全性的问题，完全可以通过将X11的socket文件映射到容器内部达到目的。国外已经有人用这种方式运行容器内的Firefox和其它程序<a class="footnote-reference" href="#id22" id="id13">[6]</a>。不过随着Docker新版本安全性的增强，原文的办法已不再完全适用，我需要做一点小小的调整（参见原文下面的讨论）。</p>
 <p>首先从准备好的基础镜像创建准备用来安装Oracle数据库的容器，为了方便，我要将它命名为ora。</p>
-<div class="highlight"><pre><span></span><span class="gp">$</span> docker run -it --name ora -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -v $HOME/.Xauthority:/root/.Xauthority -v $HOME/ora:/mnt --net<span class="o">=</span>host --privileged ora11g:prepared /bin/bash
+<div class="highlight"><pre><span></span><span class="gp">$</span> docker run -it --name ora -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -v <span class="nv">$HOME</span>/.Xauthority:/root/.Xauthority -v <span class="nv">$HOME</span>/ora:/mnt --net<span class="o">=</span>host --privileged ora11g:prepared /bin/bash
 </pre></div>
 <p>我先解释一下这行命令中各个参数的含义：</p>
 <ul class="simple">
@@ -630,7 +633,7 @@ PL/SQL: Statement ignored
 <ul class="simple">
 <li>启动容器的命令行更简略，由于是静默安装，所以图形转发相关的参数全都可以去掉：</li>
 </ul>
-<div class="highlight"><pre><span></span><span class="gp">$</span> docker run -it --name ora -v $HOME/ora:/mnt --privileged ora11g:prepared /bin/bash
+<div class="highlight"><pre><span></span><span class="gp">$</span> docker run -it --name ora -v <span class="nv">$HOME</span>/ora:/mnt --privileged ora11g:prepared /bin/bash
 </pre></div>
 <ul class="simple">
 <li>运行安装程序的参数要为静默方式指定响应文件并忽略系统需求检查。响应文件在图形化安装时录制或使用安装介质response目录下提供的模板修改均可。</li>

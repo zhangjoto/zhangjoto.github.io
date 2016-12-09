@@ -58,6 +58,9 @@ Keep Simple            </a>
                             <a href="https://zhangjoto.github.io/category/python.html">Python</a>
                         </li>
                         <li >
+                            <a href="https://zhangjoto.github.io/category/shu-ju.html">数据</a>
+                        </li>
+                        <li >
                             <a href="https://zhangjoto.github.io/category/tools.html">Tools</a>
                         </li>
                         <li >
@@ -77,6 +80,68 @@ Keep Simple            </a>
     <div class="row">
         <div class="col-sm-9">
 
+            <article>
+                <h2><a href="https://zhangjoto.github.io/xin-lang-gu-piao-apiji-lu-jie-gou.html">新浪股票API记录结构</a></h2>
+                <div class="summary"><p>由于手头有些港股的股票需要出掉，但自己又总是不记得去看行情，于是就想着写个爬虫每天把股价推到手机或者邮箱中去。</p>
+<p>在网上查了一下新浪财经就有现成的股票查询接口（&quot;<a class="reference external" href="http://hq.sinajs.cn/list=">http://hq.sinajs.cn/list=</a>&quot;），后面附加上逗号分隔的股票代码就可以得到相应的个股行情。由于相关的介绍在网上已经很多，具体细节不再赘述。</p>
+<p>但是我发现对于返回的记录结构，绝大部分相关的资料都与现在实际情况有出入。因此我索性根据相对靠谱点的资料以及实际数据分析了沪深股市股票以及港股查询返回的结构，记录在这里。</p>
+<table border="1" class="docutils">
+<caption>沪深股市</caption>
+<colgroup>
+<col width="13%" />
+<col width="19%" />
+<col width="19%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">字段索引</th>
+<th class="head">字段名称</th>
+<th class="head">数据示例</th>
+<th class="head">字段说明</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>0</td>
+<td>股票简称</td>
+<td>平安银行</td>
+<td>&nbsp;</td>
+</tr>
+<tr><td>1</td>
+<td>今日开盘价</td>
+<td>9.500</td>
+<td>&nbsp;</td>
+</tr>
+<tr><td>2</td>
+<td>昨日收盘价</td>
+<td>9.520</td>
+<td>&nbsp;</td>
+</tr>
+<tr><td>3</td>
+<td>最近成交价</td>
+<td>9.720</td>
+<td>&nbsp;</td>
+</tr>
+<tr><td>4</td>
+<td>最高成交价</td>
+<td>9.750</td>
+<td>&nbsp;</td>
+</tr>
+<tr><td>5</td>
+<td>最低成交价</td>
+<td>9.480</td>
+<td>&nbsp;</td>
+</tr>
+<tr><td>6</td>
+<td>买入价</td>
+<td>9.710</td>
+<td>&nbsp;</td>
+</tr>
+<tr><td>7</td>
+<td>卖出价 ...</td></tr></tbody></table>
+                    <a class="btn btn-default btn-xs" href="https://zhangjoto.github.io/xin-lang-gu-piao-apiji-lu-jie-gou.html">more ...</a>
+                </div>
+            </article>
+            <hr/>
             <article>
                 <h2><a href="https://zhangjoto.github.io/tmuxzhuo-mian-tong-zhi-ji-rssyuan-bei-qiang-de-jie-jue.html">tmux桌面通知及RSS源被墙的解决</a></h2>
                 <div class="summary"><div class="contents topic" id="contents">

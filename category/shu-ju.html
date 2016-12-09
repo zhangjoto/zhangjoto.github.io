@@ -2,7 +2,7 @@
 <html lang="zh"
 >
 <head>
-    <title>Python - Keep Simple</title>
+    <title>数据 - Keep Simple</title>
     <!-- Using the latest rendering mode for IE -->
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta charset="utf-8">
@@ -12,7 +12,7 @@
 
 
     <meta name="author" content="zhangjoto" />
-    <meta name="keywords" content="Python" />
+    <meta name="keywords" content="数据" />
 
     <!-- Open Graph tags -->
         <meta property="og:site_name" content="Keep Simple" />
@@ -55,10 +55,10 @@ Keep Simple            </a>
                         <li >
                             <a href="https://zhangjoto.github.io/category/documents.html">Documents</a>
                         </li>
-                        <li class="active">
+                        <li >
                             <a href="https://zhangjoto.github.io/category/python.html">Python</a>
                         </li>
-                        <li >
+                        <li class="active">
                             <a href="https://zhangjoto.github.io/category/shu-ju.html">数据</a>
                         </li>
                         <li >
@@ -82,42 +82,64 @@ Keep Simple            </a>
         <div class="col-sm-9">
 
             <article>
-                <h2><a href="https://zhangjoto.github.io/multiprocessingku-zhi-poolqian-xi.html">multiprocessing库之pool浅析</a></h2>
-                <div class="summary"><div class="contents topic" id="contents">
-<p class="topic-title first">Contents</p>
-<ul class="simple">
-<li><a class="reference internal" href="#id1" id="id8">多进程通信的限制</a></li>
-<li><a class="reference internal" href="#id2" id="id9">基本结构</a><ul>
-<li><a class="reference internal" href="#worker" id="id10">worker函数</a></li>
-<li><a class="reference internal" href="#applyresult" id="id11">ApplyResult类</a></li>
-<li><a class="reference internal" href="#pool" id="id12">Pool类</a><ul>
-<li><a class="reference internal" href="#id3" id="id13">通信队列</a></li>
-<li><a class="reference internal" href="#id4" id="id14">线程分工</a></li>
-<li><a class="reference internal" href="#id5" id="id15">数据流向</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li><a class="reference internal" href="#id6" id="id16">其它</a><ul>
-<li><a class="reference internal" href="#taskresult" id="id17">task与result的对应</a></li>
-<li><a class="reference internal" href="#id7" id="id18">参考</a></li>
-</ul>
-</li>
-</ul>
-</div>
-<p>因为著名的GIL问题，Python提供了一个标准库multiprocessing，并建议用它编写多进程并发程序，以解决CPU密集型程序的运行效率问题。这个库内部主要是在处理各种跨平台问题，使用起来比较繁琐。不过其中提供了一个进程池的实现，善加利用的话倒是能满足许多场景的需求。</p>
-<p>虽然自Python 3.2起又有一个concurrent库实现了进程/线程池并提供了更简便的接口，但从几个角度来讲我更倾向于使用multiprocessing的进程池：</p>
-<ul class="simple">
-<li>concurrent极大的限制了用户的控制权，难以应付复杂的应用场景；</li>
-<li>很难保证永远不会用到Python 2，所以在有可能的情况下最好是编写Python 2/3兼容的代码；</li>
-</ul>
-<p>关于multiprocessing.Pool的使用介绍目前已经遍地都是，我就来对它的内部机制做一点简单的分析。</p>
-<p>以下分析均基于Python 3.5.1的源码。</p>
-<div class="section" id="id1">
-<h2><a class="toc-backref" href="#id8">多进程通信的限制</a></h2>
-<p>所有多进程协作的程序都会涉及进程间的通信问题，因此在谈论进程池的设计前，关于进程间通信的限制就不可不知。</p>
-<p>与多线程模型相比，由于每个进程的地址空间是独立的，因此进程间传递数据就必须依托于操作系统提供的机制。这些机制可能是共享内存/消息队列/信号量或Domain socket等 ...</p></div>
-                    <a class="btn btn-default btn-xs" href="https://zhangjoto.github.io/multiprocessingku-zhi-poolqian-xi.html">more ...</a>
+                <h2><a href="https://zhangjoto.github.io/xin-lang-gu-piao-apiji-lu-jie-gou.html">新浪股票API记录结构</a></h2>
+                <div class="summary"><p>由于手头有些港股的股票需要出掉，但自己又总是不记得去看行情，于是就想着写个爬虫每天把股价推到手机或者邮箱中去。</p>
+<p>在网上查了一下新浪财经就有现成的股票查询接口（&quot;<a class="reference external" href="http://hq.sinajs.cn/list=">http://hq.sinajs.cn/list=</a>&quot;），后面附加上逗号分隔的股票代码就可以得到相应的个股行情。由于相关的介绍在网上已经很多，具体细节不再赘述。</p>
+<p>但是我发现对于返回的记录结构，绝大部分相关的资料都与现在实际情况有出入。因此我索性根据相对靠谱点的资料以及实际数据分析了沪深股市股票以及港股查询返回的结构，记录在这里。</p>
+<table border="1" class="docutils">
+<caption>沪深股市</caption>
+<colgroup>
+<col width="13%" />
+<col width="19%" />
+<col width="19%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">字段索引</th>
+<th class="head">字段名称</th>
+<th class="head">数据示例</th>
+<th class="head">字段说明</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>0</td>
+<td>股票简称</td>
+<td>平安银行</td>
+<td>&nbsp;</td>
+</tr>
+<tr><td>1</td>
+<td>今日开盘价</td>
+<td>9.500</td>
+<td>&nbsp;</td>
+</tr>
+<tr><td>2</td>
+<td>昨日收盘价</td>
+<td>9.520</td>
+<td>&nbsp;</td>
+</tr>
+<tr><td>3</td>
+<td>最近成交价</td>
+<td>9.720</td>
+<td>&nbsp;</td>
+</tr>
+<tr><td>4</td>
+<td>最高成交价</td>
+<td>9.750</td>
+<td>&nbsp;</td>
+</tr>
+<tr><td>5</td>
+<td>最低成交价</td>
+<td>9.480</td>
+<td>&nbsp;</td>
+</tr>
+<tr><td>6</td>
+<td>买入价</td>
+<td>9.710</td>
+<td>&nbsp;</td>
+</tr>
+<tr><td>7</td>
+<td>卖出价 ...</td></tr></tbody></table>
+                    <a class="btn btn-default btn-xs" href="https://zhangjoto.github.io/xin-lang-gu-piao-apiji-lu-jie-gou.html">more ...</a>
                 </div>
             </article>
             <hr/>
