@@ -1643,7 +1643,7 @@ Oracle: 11.2.0.4
 &lt;li&gt;使用国内镜像代替&lt;a class="footnote-reference" href="#id18" id="id9"&gt;[3]&lt;/a&gt;；&lt;/li&gt;
 &lt;li&gt;利用openvz的模板&lt;a class="footnote-reference" href="#id19" id="id10"&gt;[4]&lt;/a&gt;导入；&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;利用openvz模板的方法我测试过是可行的，不过体积比Docker官方镜像大了不小，所以一般还是建议用代理或者国内镜像好了，有特殊需求的朋友可以考虑openvz的模板。&lt;/p&gt;
+&lt;p&gt;利用openvz模板的方法我测试过是可行的，不过体积比Docker官方镜像大了不少，所以一般还是建议用代理或者国内镜像好了，有特殊需求的朋友可以考虑openvz的模板。&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="gp"&gt;$&lt;/span&gt; docker pull centos:centos6
 &lt;span class="go"&gt;centos:centos6: The image you are pulling has been verified&lt;/span&gt;
 &lt;span class="go"&gt;5b12ef8fd570: Pulling fs layer&lt;/span&gt;
@@ -1787,7 +1787,8 @@ PL/SQL: Statement ignored
 &lt;p&gt;其实还有更简单一点的方式创建基础镜像，就是利用docker build。现友情赠送创建基础镜像的Dockerfile：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;FROM&lt;/span&gt;&lt;span class="s"&gt; centos:centos6&lt;/span&gt;
 &lt;span class="k"&gt;MAINTAINER&lt;/span&gt;&lt;span class="s"&gt; zhangjoto@gmail.com&lt;/span&gt;
-&lt;span class="k"&gt;RUN&lt;/span&gt; yum install -y compat-libstdc++-33 &lt;span class="se"&gt;\&lt;/span&gt;
+&lt;span class="k"&gt;RUN&lt;/span&gt; yum update -y &lt;span class="se"&gt;\&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; yum install -y compat-libstdc++-33 &lt;span class="se"&gt;\&lt;/span&gt;
     elfutils-libelf-devel &lt;span class="se"&gt;\&lt;/span&gt;
     elfutils-libelf-devel-static &lt;span class="se"&gt;\&lt;/span&gt;
     ksh &lt;span class="se"&gt;\&lt;/span&gt;
@@ -1805,30 +1806,32 @@ PL/SQL: Statement ignored
     &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; useradd -u &lt;span class="m"&gt;601&lt;/span&gt; -g &lt;span class="m"&gt;602&lt;/span&gt; -G &lt;span class="m"&gt;601&lt;/span&gt; -m oracle &lt;span class="se"&gt;\&lt;/span&gt;
     &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; chmod &lt;span class="m"&gt;750&lt;/span&gt; /home/oracle &lt;span class="se"&gt;\&lt;/span&gt;
     &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;oracle:oracle&amp;quot;&lt;/span&gt; &lt;span class="p"&gt;|&lt;/span&gt; chpasswd
-&lt;span class="k"&gt;RUN&lt;/span&gt; &lt;span class="nb"&gt;echo&lt;/span&gt;    &lt;span class="s2"&gt;&amp;quot;fs.aio-max-nr = 1048576&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt;/etc/sysctl.conf &lt;span class="se"&gt;\&lt;/span&gt;
-    &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;fs.file-max = 6815744&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt;/etc/sysctl.conf &lt;span class="se"&gt;\&lt;/span&gt;
-    &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;kernel.shmmni = 4096&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt;/etc/sysctl.conf &lt;span class="se"&gt;\&lt;/span&gt;
-    &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;kernel.sem = 250 32000 100 128&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt;/etc/sysctl.conf &lt;span class="se"&gt;\&lt;/span&gt;
-    &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;net.ipv4.ip_local_port_range = 9000 65500&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt;/etc/sysctl.conf &lt;span class="se"&gt;\&lt;/span&gt;
-    &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;net.core.rmem_default = 262144&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt;/etc/sysctl.conf &lt;span class="se"&gt;\&lt;/span&gt;
-    &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;net.core.rmem_max = 4194304&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt;/etc/sysctl.conf &lt;span class="se"&gt;\&lt;/span&gt;
-    &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;net.core.wmem_default = 262144&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt;/etc/sysctl.conf &lt;span class="se"&gt;\&lt;/span&gt;
-    &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;net.core.wmem_max = 1048576&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt;/etc/sysctl.conf
-&lt;span class="k"&gt;RUN&lt;/span&gt; &lt;span class="nb"&gt;echo&lt;/span&gt;    &lt;span class="s2"&gt;&amp;quot;oracle              soft    nproc   2047&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt;/etc/security/limits.conf &lt;span class="se"&gt;\&lt;/span&gt;
-    &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;oracle              hard    nproc   16384&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt;/etc/security/limits.conf &lt;span class="se"&gt;\&lt;/span&gt;
-    &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;oracle              soft    nofile  1024&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt;/etc/security/limits.conf &lt;span class="se"&gt;\&lt;/span&gt;
-    &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;oracle              hard    nofile  65536&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt;/etc/security/limits.conf &lt;span class="se"&gt;\&lt;/span&gt;
-    &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;oracle              soft    stack   10240&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt; /etc/security/limits.conf
-&lt;span class="k"&gt;RUN&lt;/span&gt; &lt;span class="nb"&gt;echo&lt;/span&gt;    &lt;span class="s1"&gt;&amp;#39;ORACLE_SID=sand&amp;#39;&lt;/span&gt; &amp;gt;&amp;gt;/home/oracle/.bash_profile &lt;span class="se"&gt;\&lt;/span&gt;
-    &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;ORACLE_BASE=$HOME/server&amp;#39;&lt;/span&gt; &amp;gt;&amp;gt;/home/oracle/.bash_profile &lt;span class="se"&gt;\&lt;/span&gt;
-    &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;ORACLE_HOME=$ORACLE_BASE/product/11.2/db&amp;#39;&lt;/span&gt; &amp;gt;&amp;gt;/home/oracle/.bash_profile &lt;span class="se"&gt;\&lt;/span&gt;
-    &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;PATH=$ORACLE_HOME/bin:$PATH&amp;#39;&lt;/span&gt; &amp;gt;&amp;gt;/home/oracle/.bash_profile &lt;span class="se"&gt;\&lt;/span&gt;
-    &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;LD_LIBRARY_PATH=$ORACLE_HOME/lib:$LD_LIBRARY_PATH&amp;#39;&lt;/span&gt; &amp;gt;&amp;gt;/home/oracle/.bash_profile &lt;span class="se"&gt;\&lt;/span&gt;
-    &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="nb"&gt;echo&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;export ORACLE_SID ORACLE_BASE ORACLE_HOME PATH LD_LIBRARY_PATH&amp;#39;&lt;/span&gt; &amp;gt;&amp;gt;/home/oracle/.bash_profile
+&lt;span class="k"&gt;RUN&lt;/span&gt; &lt;span class="nb"&gt;printf&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;%s\n&amp;quot;&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;fs.aio-max-nr = 1048576&amp;quot;&lt;/span&gt;&lt;span class="se"&gt;\&lt;/span&gt;
+                  &lt;span class="s2"&gt;&amp;quot;fs.file-max = 6815744&amp;quot;&lt;/span&gt;&lt;span class="se"&gt;\&lt;/span&gt;
+                  &lt;span class="s2"&gt;&amp;quot;kernel.shmmni = 4096&amp;quot;&lt;/span&gt;&lt;span class="se"&gt;\&lt;/span&gt;
+                  &lt;span class="s2"&gt;&amp;quot;kernel.sem = 250 32000 100 128&amp;quot;&lt;/span&gt;&lt;span class="se"&gt;\&lt;/span&gt;
+                  &lt;span class="s2"&gt;&amp;quot;net.ipv4.ip_local_port_range = 9000 65500&amp;quot;&lt;/span&gt;&lt;span class="se"&gt;\&lt;/span&gt;
+                  &lt;span class="s2"&gt;&amp;quot;net.core.rmem_default = 262144&amp;quot;&lt;/span&gt;&lt;span class="se"&gt;\&lt;/span&gt;
+                  &lt;span class="s2"&gt;&amp;quot;net.core.rmem_max = 4194304&amp;quot;&lt;/span&gt;&lt;span class="se"&gt;\&lt;/span&gt;
+                  &lt;span class="s2"&gt;&amp;quot;net.core.wmem_default = 262144&amp;quot;&lt;/span&gt;&lt;span class="se"&gt;\&lt;/span&gt;
+                  &lt;span class="s2"&gt;&amp;quot;net.core.wmem_max = 1048576&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt;/etc/sysctl.conf &lt;span class="se"&gt;\&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="nb"&gt;printf&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;%s\n&amp;quot;&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;oracle           soft    nproc   2047&amp;quot;&lt;/span&gt;&lt;span class="se"&gt;\&lt;/span&gt;
+                     &lt;span class="s2"&gt;&amp;quot;oracle           hard    nproc   16384&amp;quot;&lt;/span&gt;&lt;span class="se"&gt;\&lt;/span&gt;
+                     &lt;span class="s2"&gt;&amp;quot;oracle           soft    nofile  1024&amp;quot;&lt;/span&gt;&lt;span class="se"&gt;\&lt;/span&gt;
+                     &lt;span class="s2"&gt;&amp;quot;oracle           hard    nofile  65536&amp;quot;&lt;/span&gt;&lt;span class="se"&gt;\&lt;/span&gt;
+                     &lt;span class="s2"&gt;&amp;quot;oracle           soft    stack   10240&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt; /etc/security/limits.conf &lt;span class="se"&gt;\&lt;/span&gt;
+    &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="nb"&gt;printf&lt;/span&gt; &lt;span class="s2"&gt;&amp;quot;%s\n&amp;quot;&lt;/span&gt; &lt;span class="s1"&gt;&amp;#39;ORACLE_SID=sand&amp;#39;&lt;/span&gt;&lt;span class="se"&gt;\&lt;/span&gt;
+                     &lt;span class="s1"&gt;&amp;#39;ORACLE_BASE=$HOME/server&amp;#39;&lt;/span&gt;&lt;span class="se"&gt;\&lt;/span&gt;
+                     &lt;span class="s1"&gt;&amp;#39;ORACLE_HOME=$ORACLE_BASE/product/11.2/db&amp;#39;&lt;/span&gt;&lt;span class="se"&gt;\&lt;/span&gt;
+                     &lt;span class="s1"&gt;&amp;#39;PATH=$ORACLE_HOME/bin:$PATH&amp;#39;&lt;/span&gt;&lt;span class="se"&gt;\&lt;/span&gt;
+                     &lt;span class="s1"&gt;&amp;#39;LD_LIBRARY_PATH=$ORACLE_HOME/lib:$LD_LIBRARY_PATH&amp;#39;&lt;/span&gt;&lt;span class="se"&gt;\&lt;/span&gt;
+                     &lt;span class="s1"&gt;&amp;#39;export ORACLE_SID ORACLE_BASE ORACLE_HOME PATH LD_LIBRARY_PATH&amp;#39;&lt;/span&gt;&lt;span class="se"&gt;\&lt;/span&gt;
+                     &amp;gt;&amp;gt;/home/oracle/.bash_profile
 &lt;span class="k"&gt;RUN&lt;/span&gt; sed -i &lt;span class="s1"&gt;&amp;#39;/\/dev\/shm/s/defaults/defaults,size=1g/&amp;#39;&lt;/span&gt; /etc/fstab
 &lt;span class="k"&gt;CMD&lt;/span&gt;&lt;span class="s"&gt; /bin/bash&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
-&lt;p&gt;因为Dockerfile对多行字符串的支持不太好，所以我用了很多个echo一行一行的向文件追加内容。如果你知道更好的方式（除了预先编辑文件COPY到容器内之外），还请记得留言告诉我。&lt;/p&gt;
+&lt;!-- 因为Dockerfile对多行字符串的支持不太好，所以我用了很多个echo一行一行的向文件追加内容。如果你知道更好的方式（除了预先编辑文件COPY到容器内之外），还请记得留言告诉我。 --&gt;
+&lt;p&gt;根据网友Memory Box留言的建议，使用printf &amp;quot;%sn&amp;quot;这种更干净清晰的方式来向文件中追加行。&lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;div class="section" id="id11"&gt;
